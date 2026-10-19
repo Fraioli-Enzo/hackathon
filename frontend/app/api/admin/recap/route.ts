@@ -1,0 +1,51 @@
+import { NextRequest, NextResponse } from "next/server";
+import { connectDB } from "@/lib/db";
+import { Commande } from "@/lib/models/Commande";
+import { getAdminEmail } from "@/lib/auth";
+import { getWeekRange } from "@/lib/week";
+
+export async function GET(req: NextRequest) {
+  const admin = await getAdminEmail(req);
+  if (!admin) {
+    return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
+  }
+  try {
+    await connectDB();
+    const { start, end } = getWeekRange();
+    const commandes = await Commande.find({ createdAt: { $gte: start, $lt: end } }).lean();
+
+    const parProduit = new Map<string, { nom: string; qte: number; total: number }>();
+    let ca = 0;
+    let enAttente = 0;
+    let recuperees = 0;
+
+    for (const commande of commandes) {
+      ca += commande.total;
+      if (commande.statut === "recuperee") recuperees++;
+      else enAttente++;
+      for (const item of commande.items) {
+        const existant = parProduit.get(item.nom) || { nom: item.nom, qte: 0, total: 0 };
+        existant.qte += item.qte;
+        existant.total += item.prix * item.qte;
+        parProduit.set(item.nom, existant);
+      }
+    }
+
+    const produits = Array.from(parProduit.values())
+      .map((p) => ({ ...p, total: Math.round(p.total * 100) / 100 }))
+      .sort((a, b) => b.qte - a.qte);
+
+    return NextResponse.json({
+      debut: start.toISOString(),
+      fin: end.toISOString(),
+      nbCommandes: commandes.length,
+      ca: Math.round(ca * 100) / 100,
+      enAttente,
+      recuperees,
+      produits,
+    });
+  } catch (e) {
+    console.error("GET /api/admin/recap", e);
+    return NextResponse.json({ error: "Erreur serveur." }, { status: 500 });
+  }
+}

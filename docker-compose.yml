@@ -1,0 +1,25 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: cafet-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  app:
+    build:
+      context: ./frontend
+    container_name: cafet-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/cafet
+      SESSION_SECRET: ${SESSION_SECRET:-cafet-secret-a-changer-en-prod}
+    depends_on:
+      - mongo
+
+volumes:
+  mongo-data:

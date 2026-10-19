@@ -1,0 +1,17 @@
+# dépendances
+node_modules/
+
+# build
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# env — jamais commité
+.env
+.env.local
+.env.*.local
+
+# divers
+.DS_Store
+npm-debug.log*

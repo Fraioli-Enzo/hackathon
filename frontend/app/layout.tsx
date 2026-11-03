@@ -4,7 +4,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Cafet CESI — Commandes",
+  title: "Cafet CESI - Commandes",
   description: "Commande ta nourriture pour la cafet du CESI : banh bao, nems, mochis.",
 };
 
@@ -33,7 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </header>
         <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-8">{children}</main>
         <footer className="border-t border-line py-4 text-center text-xs text-muted">
-          Hackathon CESI — paiement sur place (espèces / Lydia)
+          Hackathon CESI - paiement sur place (espèces / Lydia)
         </footer>
       </body>
     </html>

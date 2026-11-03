@@ -1,4 +1,4 @@
-# Cafet CESI — Site de commande
+# Cafet CESI - Site de commande
 
 Plateforme de commande de nourriture (banh bao, nems, mochis…) pour la cafétéria du CESI, avec regroupement automatique des commandes de la semaine pour les organisateurs.
 
@@ -7,7 +7,7 @@ Plateforme de commande de nourriture (banh bao, nems, mochis…) pour la cafét�
 
 ## Stack
 
-Next.js 14 (App Router) full-stack, Tailwind CSS (thème noir & jaune par défaut, bascule clair/sombre ☀️/🌙 dans le header), icônes via Iconify (`@iconify/react`, embarquées dans `frontend/lib/icons.ts` — pas d'appel réseau), MongoDB via Mongoose, PDF via `jspdf`, QR via `qrcode` + `jsqr`. Un seul service, dockerisable.
+Next.js 14 (App Router) full-stack, Tailwind CSS (thème noir & jaune par défaut, bascule clair/sombre ☀️/🌙 dans le header), icônes via Iconify (`@iconify/react`, embarquées dans `frontend/lib/icons.ts` - pas d'appel réseau), MongoDB via Mongoose, PDF via `jspdf`, QR via `qrcode` + `jsqr`. Un seul service, dockerisable.
 
 ## Structure
 

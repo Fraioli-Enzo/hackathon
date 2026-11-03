@@ -124,7 +124,7 @@ export default function AdminScanPage() {
               <p className="font-bold text-green-600">Commande marquée récupérée.</p>
             )}
             <p className="text-sm mt-1">
-              {resultat.commande.prenom} {resultat.commande.nom} — {resultat.commande.items.map((i) => `${i.qte}×${i.nom}`).join(", ")} —{" "}
+              {resultat.commande.prenom} {resultat.commande.nom} - {resultat.commande.items.map((i) => `${i.qte}×${i.nom}`).join(", ")} -{" "}
               {resultat.commande.total.toFixed(2)} €
             </p>
           </div>
@@ -150,10 +150,10 @@ export default function AdminScanPage() {
             <li key={c._id} className="flex items-center justify-between gap-3 border border-line rounded-lg p-3">
               <div className="text-sm">
                 <p className="font-semibold">
-                  {c.prenom} {c.nom} — {c.items.map((i) => `${i.qte}×${i.nom}`).join(", ")}
+                  {c.prenom} {c.nom} - {c.items.map((i) => `${i.qte}×${i.nom}`).join(", ")}
                 </p>
                 <p className="text-muted">
-                  {c.total.toFixed(2)} € — {c.statut === "recuperee" ? "Récupérée" : "En attente"}
+                  {c.total.toFixed(2)} € - {c.statut === "recuperee" ? "Récupérée" : "En attente"}
                 </p>
               </div>
               {c.statut !== "recuperee" && (

@@ -1,4 +1,4 @@
-# 📋 Plan — Site de commande pour la cafet CESI
+# 📋 Plan - Site de commande pour la cafet CESI
 
 Projet hackathon : plateforme de commande de nourriture (banh bao, nems, mochis) pour la cafétéria de l'école, avec regroupement automatique des commandes de la semaine pour les organisateurs.
 
@@ -9,7 +9,7 @@ Projet hackathon : plateforme de commande de nourriture (banh bao, nems, mochis)
 
 ## 🏗️ Architecture
 
-**Next.js full-stack + MongoDB** (pas de backend Python — l'API est intégrée à Next.js, un seul service à déployer).
+**Next.js full-stack + MongoDB** (pas de backend Python - l'API est intégrée à Next.js, un seul service à déployer).
 
 | Couche | Technologie |
 |---|---|
@@ -17,7 +17,7 @@ Projet hackathon : plateforme de commande de nourriture (banh bao, nems, mochis)
 | Back | API Routes Next.js (`app/api/**`) |
 | BDD | MongoDB (serveur perso en prod, container Docker en dev), driver via Mongoose |
 | PDF | Génération du ticket côté client (`jspdf` ou `pdf-lib`) |
-| QR code | `qrcode` — encode l'ID de commande pour le scan admin |
+| QR code | `qrcode` - encode l'ID de commande pour le scan admin |
 
 ## 📐 Structure du projet
 
@@ -84,7 +84,7 @@ commandes  { prenom, nom, email, batiment: "Orion"|"Antares",
 
 ### Côté admin
 1. **Login** (`/admin/login`) : email + mot de passe (hashé en BDD), session par cookie httpOnly.
-2. **Dashboard** (`/admin`) : panier de la semaine — total par produit à acheter (ex. "45 banh bao, 38 nems, 52 mochis"), nombre de commandes, CA de la semaine.
+2. **Dashboard** (`/admin`) : panier de la semaine - total par produit à acheter (ex. "45 banh bao, 38 nems, 52 mochis"), nombre de commandes, CA de la semaine.
 3. **Produits** (`/admin/produits`) : ajouter / modifier / supprimer des produits et leur prix (donc facile d'ajouter un produit au-delà des 3 de départ).
 4. **Commandes** (`/admin/commandes`) : liste détaillée de la semaine, statut par commande.
 5. **Scan QR** (`/admin/scan`) : scanner le QR du ticket → passe la commande en "récupérée" (évite les doubles retraits). Fallback : recherche manuelle par email.

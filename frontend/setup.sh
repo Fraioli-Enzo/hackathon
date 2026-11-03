@@ -45,7 +45,7 @@ SESSION_SECRET=$SECRET
 ADMIN_EMAIL=admin@cesi.fr
 ADMIN_PASSWORD=cafet2026
 EOF
-  echo ">> .env.local créé (admin : admin@cesi.fr / cafet2026 — à changer)."
+  echo ">> .env.local créé (admin : admin@cesi.fr / cafet2026 - à changer)."
 else
   echo ">> .env.local existant, conservé."
 fi

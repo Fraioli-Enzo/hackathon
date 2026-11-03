@@ -35,7 +35,7 @@ export default async function Accueil() {
             {produits.map((p) => (
               <div key={String(p._id)} className="flex flex-col gap-2 border border-line rounded-xl p-5 bg-card">
                 <h3 className="font-bold text-lg">{p.nom}</h3>
-                <p className="text-muted text-sm flex-1">{p.description || "—"}</p>
+                <p className="text-muted text-sm flex-1">{p.description || "-"}</p>
                 <p className="text-cesi-jaune font-black text-xl">{p.prix.toFixed(2)} €</p>
               </div>
             ))}

@@ -38,8 +38,8 @@ export default function AdminNav() {
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 mb-8 border-b border-line pb-4 max-sm:flex-col max-sm:items-end">
-      <nav className="flex flex-wrap gap-2 max-sm:self-start" aria-label="Navigation admin">
+    <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 mb-8 border-b border-line pb-4">
+      <nav className="flex flex-wrap gap-1.5 sm:gap-2" aria-label="Navigation admin">
         {LIENS.map((l) => {
           const actif = pathname === l.href;
           return (
@@ -47,7 +47,7 @@ export default function AdminNav() {
               key={l.href}
               href={l.href}
               aria-current={actif ? "page" : undefined}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors ${
+              className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-sm font-bold transition-colors ${
                 actif
                   ? "bg-cesi-jaune text-black"
                   : "border border-line hover:border-cesi-jaune hover:text-cesi-jaune"
@@ -62,7 +62,7 @@ export default function AdminNav() {
       </nav>
       <button
         onClick={deconnexion}
-        className="inline-flex items-center gap-1.5 text-sm border border-line px-3 py-1.5 rounded-lg hover:border-red-500 hover:text-red-500 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm border border-line px-2.5 sm:px-3 py-1.5 rounded-lg hover:border-red-500 hover:text-red-500 transition-colors"
       >
         <Icon icon="ph:sign-out-bold" ssr className="w-4 h-4" />
         <span className="hidden sm:inline">Déconnexion</span>

@@ -208,23 +208,26 @@ export default function AdminStockPage() {
           </thead>
           <tbody>
             {produitsAffiches.map((p) => (
-              <tr key={p._id} className="max-sm:block max-sm:mb-3 max-sm:rounded-xl max-sm:border max-sm:border-line max-sm:bg-card max-sm:p-4 sm:border-b sm:border-line sm:last:border-0">
-                <td data-label="Produit" className="px-4 py-3 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">
+              <tr key={p._id} className="max-sm:grid max-sm:grid-cols-[1fr,auto] max-sm:gap-x-3 max-sm:gap-y-3 max-sm:mb-3 max-sm:rounded-xl max-sm:border max-sm:border-line max-sm:bg-card max-sm:p-4 sm:border-b sm:border-line sm:last:border-0">
+                <td className="px-4 py-3 max-sm:col-start-1 max-sm:row-start-1 max-sm:py-0">
                   <div className="flex items-center gap-3">
-                    <ImageProduit src={p.image} alt={p.nom} className="w-9 h-9" width={54} height={54} />
-                    <span className="font-semibold">{p.nom}</span>
+                    <ImageProduit src={p.image} alt={p.nom} className="w-10 h-10" width={60} height={60} />
+                    <div className="min-w-0">
+                      <p className="font-semibold leading-tight">{p.nom}</p>
+                      <p className="text-muted text-xs sm:hidden">{p.categorie}</p>
+                    </div>
                   </div>
                 </td>
-                <td data-label="Prix" className="px-4 py-3 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">{p.prix.toFixed(2)} €</td>
-                <td data-label="Stock" className="px-4 py-3 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">
+                <td className="px-4 py-3 max-sm:col-start-2 max-sm:row-start-1 max-sm:py-0 max-sm:text-right max-sm:font-bold max-sm:whitespace-nowrap">{p.prix.toFixed(2)} €</td>
+                <td className="px-4 py-3 max-sm:col-start-1 max-sm:row-start-2 max-sm:py-0 max-sm:justify-self-start">
                   {edition !== p._id ? (
-                    <div className="flex items-center justify-center gap-2 font-bold">
+                    <div className="flex items-center gap-2 font-bold sm:justify-center">
                       <span>{p.stock ?? 0}</span>
                       {(p.stock ?? 0) === 0 && <span className="text-red-500 text-xs font-semibold">Rupture</span>}
                       {(p.stock ?? 0) > 0 && (p.stock ?? 0) <= 10 && <span className="text-orange-500 text-xs font-semibold">bas</span>}
                     </div>
                   ) : (
-                  <div className="flex items-center justify-center gap-2">
+                  <div className="flex items-center gap-2 sm:justify-center">
                     <button
                       onClick={() => majStock(p, (p.stock ?? 0) - 1)}
                       className="w-8 h-8 rounded-lg border border-line font-bold hover:border-cesi-jaune"
@@ -250,8 +253,8 @@ export default function AdminStockPage() {
                   </div>
                   )}
                 </td>
-                <td data-label="Catégorie" className="px-4 py-3 text-muted max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">{p.categorie}</td>
-                <td data-label="Actions" className="px-4 py-3 text-right max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">
+                <td className="px-4 py-3 text-muted max-sm:hidden">{p.categorie}</td>
+                <td className="px-4 py-3 text-right max-sm:col-start-2 max-sm:row-start-2 max-sm:py-0 max-sm:justify-self-end">
                   <div className="flex justify-end gap-2">
                     {edition === p._id ? (
                       <button

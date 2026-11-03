@@ -1,7 +1,7 @@
 // Types partagés entre pages client et API (sans dépendance à Mongoose).
 
 // Les menus ne sont pas soumis à la gestion de stock
-export const CATEGORIES = ["Banh Bao", "Nems", "Samoussa", "Desserts", "Menus"] as const;
+export const CATEGORIES = ["Banh Bao", "Nems", "Samoussa", "Mochis", "Desserts", "Menus"] as const;
 
 export type CompositionItem = {
   categorie?: string;

@@ -14,7 +14,7 @@ export default function CommanderPage() {
   const [erreur, setErreur] = useState<string | null>(null);
   const [envoi, setEnvoi] = useState(false);
   const [filtre, setFiltre] = useState("");
-  const [choix, setChoix] = useState<Record<string, Record<number, string>>>({});
+  const [choix, setChoix] = useState<Record<string, Record<number, string[]>>>({});
 
   useEffect(() => {
     fetch("/api/produits")
@@ -23,14 +23,14 @@ export default function CommanderPage() {
         const ps = d.produits || [];
         setProduits(ps);
         // Pré-sélection de la première variante pour chaque composant au choix des menus
-        const defauts: Record<string, Record<number, string>> = {};
+        const defauts: Record<string, Record<number, string[]>> = {};
         for (const menu of ps) {
           if (menu.categorie !== "Menus" || !menu.composition) continue;
           defauts[menu._id] = {};
           menu.composition.forEach((c: CompositionItem, i: number) => {
             if (!c.categorie) return;
             const variante = ps.find((v: ProduitClient) => v.categorie === c.categorie && v.actif !== false);
-            if (variante) defauts[menu._id][i] = variante._id;
+            if (variante) defauts[menu._id][i] = Array(c.qte).fill(variante._id);
           });
         }
         setChoix((ancien) => {
@@ -73,7 +73,9 @@ export default function CommanderPage() {
     }
     for (const l of panier) {
       if (l.produit.categorie !== "Menus" || !l.produit.composition) continue;
-      const incomplet = l.produit.composition.some((c, i) => c.categorie && !choix[l.produit._id]?.[i]);
+      const incomplet = l.produit.composition.some(
+        (c, i) => c.categorie && (!choix[l.produit._id]?.[i] || choix[l.produit._id][i].length !== c.qte || choix[l.produit._id][i].some((v) => !v))
+      );
       if (incomplet) {
         setErreur(`Choisis le type pour chaque produit du « ${l.produit.nom} ».`);
         return;
@@ -88,9 +90,9 @@ export default function CommanderPage() {
           ...form,
           email: form.email.trim(),
           items: panier.map((l) => {
-            const item: { produitId: string; qte: number; choix?: string[] } = { produitId: l.produit._id, qte: l.qte };
+            const item: { produitId: string; qte: number; choix?: string[][] } = { produitId: l.produit._id, qte: l.qte };
             if (l.produit.categorie === "Menus" && l.produit.composition?.some((c) => c.categorie)) {
-              item.choix = l.produit.composition.map((c, i) => (c.categorie ? choix[l.produit._id]?.[i] || "" : ""));
+              item.choix = l.produit.composition.map((c, i) => (c.categorie ? choix[l.produit._id]?.[i] || [] : []));
             }
             return item;
           }),
@@ -227,27 +229,33 @@ export default function CommanderPage() {
                   <p className="text-sm font-bold">Composition de ton menu</p>
                   {(p.composition || []).map((c, i) =>
                     c.categorie ? (
-                      <label key={i} className="flex items-center justify-between gap-3 text-sm">
-                        <span className="text-muted">{c.qte > 1 ? `${c.qte} × ` : ""}{c.categorie}</span>
-                        <select
-                          value={choix[p._id]?.[i] || ""}
-                          onChange={(e) =>
-                            setChoix((ch) => ({
-                              ...ch,
-                              [p._id]: { ...(ch[p._id] || {}), [i]: e.target.value },
-                            }))
-                          }
-                          className="bg-card border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
-                        >
-                          {produits
-                            .filter((v) => v.categorie === c.categorie && v.actif !== false)
-                            .map((v) => (
-                              <option key={v._id} value={v._id}>
-                                {v.nom}
-                              </option>
-                            ))}
-                        </select>
-                      </label>
+                      <div key={i} className="flex flex-wrap items-center gap-2 text-sm">
+                        <span className="text-muted min-w-20">{c.qte > 1 ? `${c.qte} × ` : ""}{c.categorie}</span>
+                        {Array.from({ length: c.qte }).map((_, u) => (
+                          <select
+                            key={u}
+                            aria-label={`${c.categorie} n°${u + 1}`}
+                            value={choix[p._id]?.[i]?.[u] || ""}
+                            onChange={(e) =>
+                              setChoix((ch) => {
+                                const actuel = ch[p._id]?.[i] || Array(c.qte).fill("");
+                                const copie = [...actuel];
+                                copie[u] = e.target.value;
+                                return { ...ch, [p._id]: { ...(ch[p._id] || {}), [i]: copie } };
+                              })
+                            }
+                            className="bg-card border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+                          >
+                            {produits
+                              .filter((v) => v.categorie === c.categorie && v.actif !== false)
+                              .map((v) => (
+                                <option key={v._id} value={v._id}>
+                                  {v.nom}
+                                </option>
+                              ))}
+                          </select>
+                        ))}
+                      </div>
                     ) : (
                       <p key={i} className="text-sm text-muted">
                         {c.qte > 1 ? `${c.qte} × ` : ""}{c.nomProduit}

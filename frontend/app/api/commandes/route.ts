@@ -32,9 +32,9 @@ export async function POST(req: NextRequest) {
 
     await connectDB();
     // Produits commandés + variantes choisies dans les menus
-    const idsItems = items.flatMap((i: { produitId: string; choix?: string[] }) => [
+    const idsItems = items.flatMap((i: { produitId: string; choix?: string[][] }) => [
       i.produitId,
-      ...(Array.isArray(i.choix) ? i.choix.filter((c) => typeof c === "string" && c) : []),
+      ...(Array.isArray(i.choix) ? (i.choix as unknown[]).flat().filter((c) => typeof c === "string" && c) : []),
     ]);
     const produits = await Produit.find({ _id: { $in: idsItems }, actif: true }).lean();
     const parId = new Map(produits.map((p) => [String(p._id), p]));
@@ -56,15 +56,29 @@ export async function POST(req: NextRequest) {
         for (let i = 0; i < produit.composition.length; i++) {
           const c = produit.composition[i];
           if (c.categorie) {
-            const variante = item.choix?.[i] ? parId.get(String(item.choix[i])) : null;
-            if (!variante || variante.categorie !== c.categorie || variante.actif === false) {
+            // Un choix par unité du composant (ex. 2 nems = 2 types possibles)
+            const ids = Array.isArray(item.choix?.[i]) ? item.choix[i] : [];
+            if (ids.length !== c.qte) {
               return NextResponse.json(
-                { error: `Choisis le type de ${c.categorie.toLowerCase()} pour « ${produit.nom} ».` },
+                { error: `Choisis le type de chaque ${c.categorie.toLowerCase()} pour « ${produit.nom} ».` },
                 { status: 400 }
               );
             }
-            qtes.set(String(variante._id), (qtes.get(String(variante._id)) || 0) + c.qte * item.qte);
-            detail.push(`${variante.nom}${c.qte > 1 ? ` ×${c.qte}` : ""}`);
+            const noms = new Map<string, number>();
+            for (const id of ids) {
+              const variante = parId.get(String(id));
+              if (!variante || variante.categorie !== c.categorie || variante.actif === false) {
+                return NextResponse.json(
+                  { error: `Choix invalide pour « ${produit.nom} » (type de ${c.categorie.toLowerCase()}).` },
+                  { status: 400 }
+                );
+              }
+              qtes.set(String(variante._id), (qtes.get(String(variante._id)) || 0) + item.qte);
+              noms.set(variante.nom, (noms.get(variante.nom) || 0) + 1);
+            }
+            for (const [nom, q] of Array.from(noms.entries())) {
+              detail.push(`${nom}${q > 1 ? ` ×${q}` : ""}`);
+            }
           } else if (c.nomProduit) {
             detail.push(`${c.nomProduit}${c.qte > 1 ? ` ×${c.qte}` : ""}`);
           }

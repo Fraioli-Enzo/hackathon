@@ -14,6 +14,7 @@ Next.js 14 (App Router) full-stack, Tailwind CSS (thème noir & jaune), MongoDB 
 ```
 hackathon/
 ├── PLAN.md               # plan projet
+├── start.sh              # lancement en une commande
 ├── docker-compose.yml    # mongo + app
 └── frontend/             # application Next.js complète (front + API intégrée)
     ├── app/              # pages, API routes (app/api/**)
@@ -28,12 +29,12 @@ hackathon/
 ## Démarrage rapide
 
 ```bash
-./frontend/setup.sh
+./start.sh
 ```
 
-Le script vérifie node ≥ 20 et docker, installe les dépendances, crée `.env.local`, démarre MongoDB dans Docker, fait le seed (admin + produits de départ), puis lance le serveur sur http://localhost:3000.
+Le script délègue à `frontend/setup.sh` qui vérifie node ≥ 20 et docker, installe les dépendances, crée `.env.local`, démarre MongoDB dans Docker, fait le seed (admin + produits de départ), puis lance le serveur sur http://localhost:3000.
 
-Options : `./frontend/setup.sh --seed-only`, `./frontend/setup.sh --no-start`.
+Options : `./start.sh --seed-only`, `./start.sh --no-start`.
 
 ## Comptes / variables
 

@@ -5,11 +5,17 @@ export const CATEGORIES = ["Banh Bao", "Nems", "Samoussa", "Mochis", "Desserts",
 
 // Images disponibles pour les produits (clé simple -> chemin)
 export const IMAGES_PRODUITS: Record<string, string> = {
-  Bao: "/images/bao.webp",
-  Nems: "/images/nems.webp",
-  Samoussa: "/images/samossa.jpg",
-  Mochis: "/images/mochi.webp",
-  Crêpe: "/images/crepes.jpg",
+  "Bao au Porc": "/images/bao-porc.webp",
+  "Bao au Boeuf": "/images/bao-boeuf.webp",
+  "Bao au Poulet": "/images/bao-poulet.webp",
+  "Nem au Poulet": "/images/nems-poulet.webp",
+  "Nem au Porc": "/images/nems-porc.webp",
+  "Nem aux Crevettes": "/images/nems-crevette.webp",
+  Samoussa: "/images/samossa.webp",
+  "Mochi Mangue": "/images/mochi-mangue.jpg",
+  "Mochi Oreo": "/images/mochi-oreo.webp",
+  "Mochi Kiwi": "/images/mochi-kiwi.png",
+  "Mochi Framboise": "/images/mochi-framboise.webp",
   Cookie: "/images/coockies.jpg",
 };
 

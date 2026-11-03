@@ -180,9 +180,9 @@ export default function AdminStockPage() {
         ))}
       </div>
 
-      <div className="border border-line rounded-xl overflow-hidden">
-        <table className="w-full text-left bg-card text-sm">
-          <thead className="border-b border-line text-muted">
+      <div className="border border-line rounded-xl overflow-hidden max-sm:border-0 max-sm:rounded-none">
+        <table className="w-full text-left bg-card text-sm max-sm:block max-sm:bg-transparent">
+          <thead className="border-b border-line text-muted max-sm:hidden">
             <tr>
               {([
                 { libelle: "Produit", champ: "nom", classe: "px-4 py-3 text-left" },
@@ -208,15 +208,15 @@ export default function AdminStockPage() {
           </thead>
           <tbody>
             {produitsAffiches.map((p) => (
-              <tr key={p._id} className="border-b border-line last:border-0">
-                <td className="px-4 py-3">
+              <tr key={p._id} className="max-sm:block max-sm:mb-3 max-sm:rounded-xl max-sm:border max-sm:border-line max-sm:bg-card max-sm:p-4 sm:border-b sm:border-line sm:last:border-0">
+                <td data-label="Produit" className="px-4 py-3 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">
                   <div className="flex items-center gap-3">
                     <ImageProduit src={p.image} alt={p.nom} className="w-9 h-9" width={54} height={54} />
                     <span className="font-semibold">{p.nom}</span>
                   </div>
                 </td>
-                <td className="px-4 py-3">{p.prix.toFixed(2)} €</td>
-                <td className="px-4 py-3">
+                <td data-label="Prix" className="px-4 py-3 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">{p.prix.toFixed(2)} €</td>
+                <td data-label="Stock" className="px-4 py-3 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">
                   {edition !== p._id ? (
                     <div className="flex items-center justify-center gap-2 font-bold">
                       <span>{p.stock ?? 0}</span>
@@ -250,8 +250,8 @@ export default function AdminStockPage() {
                   </div>
                   )}
                 </td>
-                <td className="px-4 py-3 text-muted">{p.categorie}</td>
-                <td className="px-4 py-3 text-right">
+                <td data-label="Catégorie" className="px-4 py-3 text-muted max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">{p.categorie}</td>
+                <td data-label="Actions" className="px-4 py-3 text-right max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">
                   <div className="flex justify-end gap-2">
                     {edition === p._id ? (
                       <button

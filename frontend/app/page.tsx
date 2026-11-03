@@ -35,7 +35,7 @@ export default async function Accueil() {
           <div className="grid sm:grid-cols-3 gap-4">
             {produits.map((p) => (
               <div key={String(p._id)} className="flex flex-col gap-2 border border-line rounded-xl p-5 bg-card">
-                <ImageProduit src={p.image} alt={p.nom} className="w-full h-36" width={384} height={144} />
+                <ImageProduit src={p.image} alt={p.nom} className="w-full h-40" ajustement="contain" width={384} height={160} />
                 <h3 className="font-bold text-lg">{p.nom}</h3>
                 <p className="text-muted text-sm flex-1">{p.description || "-"}</p>
                 <p className="text-cesi-jaune font-black text-xl">{p.prix.toFixed(2)} €</p>

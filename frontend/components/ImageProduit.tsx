@@ -6,12 +6,14 @@ export default function ImageProduit({
   className = "",
   width = 64,
   height = 64,
+  ajustement = "cover",
 }: {
   src?: string;
   alt: string;
   className?: string;
   width?: number;
   height?: number;
+  ajustement?: "cover" | "contain";
 }) {
   if (!src) {
     return (
@@ -23,5 +25,5 @@ export default function ImageProduit({
       </div>
     );
   }
-  return <Image src={src} alt={alt} width={width} height={height} className={`object-cover rounded-lg ${className}`} />;
+  return <Image src={src} alt={alt} width={width} height={height} className={`object-${ajustement} rounded-lg ${className}`} />;
 }

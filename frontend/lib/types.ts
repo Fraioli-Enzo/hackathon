@@ -7,6 +7,7 @@ export type ProduitClient = {
   description?: string;
   actif?: boolean;
   stock?: number;
+  image?: string;
 };
 
 export type LigneCommande = {
@@ -35,5 +36,5 @@ export type Recap = {
   enAttente: number;
   recuperees: number;
   produits: { nom: string; qte: number; total: number }[];
-  stockRestant: { nom: string; stock: number }[];
+  stockRestant: { nom: string; stock: number; image?: string }[];
 };

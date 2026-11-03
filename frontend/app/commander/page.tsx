@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import ImageProduit from "@/components/ImageProduit";
 import type { ProduitClient } from "@/lib/types";
 
 export default function CommanderPage() {
@@ -121,6 +122,7 @@ export default function CommanderPage() {
               const stock = p.stock ?? 0;
               return (
               <div key={p._id} className="flex items-center justify-between gap-4 border border-line rounded-xl p-4 bg-card">
+                <ImageProduit src={p.image} alt={p.nom} className="w-16 h-16 shrink-0" />
                 <div className="flex-1">
                   <p className="font-bold">{p.nom}</p>
                   <p className="text-sm text-muted">{p.description || ""}</p>

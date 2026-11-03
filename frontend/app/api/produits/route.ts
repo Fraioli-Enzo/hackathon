@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   }
   try {
     const body = await req.json();
-    const { nom, prix, description, actif, stock } = body ?? {};
+    const { nom, prix, description, actif, stock, image } = body ?? {};
     if (typeof nom !== "string" || !nom.trim()) {
       return NextResponse.json({ error: "Nom du produit requis." }, { status: 400 });
     }
@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
       description: typeof description === "string" ? description.trim() : "",
       actif: actif !== false,
       stock: typeof stock === "number" ? stock : 0,
+      image: typeof image === "string" ? image.trim() : "",
     });
     return NextResponse.json({ produit }, { status: 201 });
   } catch (e) {

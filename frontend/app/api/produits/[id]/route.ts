@@ -12,7 +12,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
   }
   try {
     const body = await req.json();
-    const { nom, prix, description, actif, stock } = body ?? {};
+    const { nom, prix, description, actif, stock, image } = body ?? {};
 
     const maj: Record<string, unknown> = {};
     if (nom !== undefined) {
@@ -44,6 +44,12 @@ export async function PUT(req: NextRequest, { params }: Params) {
         return NextResponse.json({ error: "Stock invalide (entier positif)." }, { status: 400 });
       }
       maj.stock = stock;
+    }
+    if (image !== undefined) {
+      if (typeof image !== "string") {
+        return NextResponse.json({ error: "Image invalide." }, { status: 400 });
+      }
+      maj.image = image.trim();
     }
 
     await connectDB();

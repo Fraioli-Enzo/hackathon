@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ImageProduit from "@/components/ImageProduit";
 import AdminNav from "@/components/AdminNav";
 import type { Recap } from "@/lib/types";
 
@@ -20,6 +21,7 @@ export default function AdminDashboard() {
 
   const debut = new Date(recap.debut).toLocaleDateString("fr-FR");
   const fin = new Date(recap.fin).toLocaleDateString("fr-FR");
+  const imageParNom = new Map((recap.stockRestant || []).map((p) => [p.nom, p.image]));
 
   return (
     <div>
@@ -64,7 +66,12 @@ export default function AdminDashboard() {
             <tbody>
               {recap.produits.map((p) => (
                 <tr key={p.nom} className="border-b border-line last:border-0">
-                  <td className="px-4 py-3 font-semibold">{p.nom}</td>
+                  <td className="px-4 py-3 font-semibold">
+                    <div className="flex items-center gap-3">
+                      <ImageProduit src={imageParNom.get(p.nom)} alt={p.nom} className="w-9 h-9" />
+                      {p.nom}
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-right font-black text-cesi-jaune">{p.qte}</td>
                   <td className="px-4 py-3 text-right">{p.total.toFixed(2)} €</td>
                 </tr>
@@ -87,7 +94,12 @@ export default function AdminDashboard() {
             <tbody>
               {recap.stockRestant.map((p) => (
                 <tr key={p.nom} className="border-b border-line last:border-0">
-                  <td className="px-4 py-3 font-semibold">{p.nom}</td>
+                  <td className="px-4 py-3 font-semibold">
+                    <div className="flex items-center gap-3">
+                      <ImageProduit src={p.image} alt={p.nom} className="w-9 h-9" />
+                      {p.nom}
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-right font-bold">
                     {p.stock === 0 ? (
                       <span className="text-red-500">Rupture</span>

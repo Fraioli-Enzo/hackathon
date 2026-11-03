@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
       .sort((a, b) => b.qte - a.qte);
 
     const stockRestant = await Produit.find({ actif: true })
-      .select("nom stock")
+      .select("nom stock image")
       .sort({ stock: 1, nom: 1 })
       .lean();
 

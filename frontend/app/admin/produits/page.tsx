@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import ImageProduit from "@/components/ImageProduit";
 import AdminNav from "@/components/AdminNav";
 import type { ProduitClient } from "@/lib/types";
 
 export default function AdminProduitsPage() {
   const [produits, setProduits] = useState<ProduitClient[]>([]);
-  const [nouveau, setNouveau] = useState({ nom: "", prix: "", description: "", stock: "" });
+  const [nouveau, setNouveau] = useState({ nom: "", prix: "", description: "", stock: "", image: "" });
   const [message, setMessage] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -42,6 +43,7 @@ export default function AdminProduitsPage() {
         prix,
         description: nouveau.description,
         stock: nouveau.stock.trim() === "" ? 0 : parseInt(nouveau.stock, 10),
+        image: nouveau.image.trim(),
       }),
     });
     const data = await res.json();
@@ -49,7 +51,7 @@ export default function AdminProduitsPage() {
       setErreur(data.error || "Erreur.");
       return;
     }
-    setNouveau({ nom: "", prix: "", description: "", stock: "" });
+    setNouveau({ nom: "", prix: "", description: "", stock: "", image: "" });
     informer("Produit ajouté.");
     charger();
   }
@@ -111,6 +113,15 @@ export default function AdminProduitsPage() {
             inputMode="numeric"
           />
         </label>
+        <label className="w-44 space-y-1">
+          <span className="text-sm text-muted">Image (chemin)</span>
+          <input
+            value={nouveau.image}
+            onChange={(e) => setNouveau({ ...nouveau, image: e.target.value })}
+            className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+            placeholder="/images/bao.webp"
+          />
+        </label>
         <button type="submit" className="bg-cesi-jaune text-black font-bold px-5 py-2 rounded-lg hover:bg-yellow-300">
           Ajouter
         </button>
@@ -141,6 +152,7 @@ function LigneProduit({
   const [prix, setPrix] = useState(String(produit.prix));
   const [description, setDescription] = useState(produit.description || "");
   const [stock, setStock] = useState(String(produit.stock ?? 0));
+  const [image, setImage] = useState(produit.image || "");
 
   function sauver() {
     const prixNum = parseFloat(prix.replace(",", "."));
@@ -150,11 +162,13 @@ function LigneProduit({
       ...(Number.isFinite(prixNum) && prixNum > 0 ? { prix: prixNum } : {}),
       ...(Number.isInteger(stockNum) && stockNum >= 0 ? { stock: stockNum } : {}),
       description,
+      image,
     });
   }
 
   return (
     <div className="border border-line rounded-xl bg-card p-4 flex flex-wrap items-center gap-3">
+      <ImageProduit src={produit.image} alt={produit.nom} className="w-12 h-12 shrink-0" />
       <input
         value={nom}
         onChange={(e) => setNom(e.target.value)}
@@ -180,6 +194,12 @@ function LigneProduit({
         />
         en stock
       </label>
+      <input
+        value={image}
+        onChange={(e) => setImage(e.target.value)}
+        placeholder="Image (ex. /images/bao.webp)"
+        className="w-44 bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
+      />
       <label className="flex items-center gap-2 text-sm text-muted">
         <input type="checkbox" checked={produit.actif !== false} onChange={(e) => onModifier(produit._id, { actif: e.target.checked })} />
         Actif

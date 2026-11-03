@@ -6,10 +6,30 @@ import bcrypt from "bcryptjs";
 import { Admin } from "../lib/models/Admin";
 import { Produit } from "../lib/models/Produit";
 
+// Produits issus de la feuille « Prix » de Trésorerie - Hackathon.xlsx
 const PRODUITS_INITIAUX = [
-  { nom: "Banh bao", prix: 2.5, description: "Brioche vapeur garnie de porc et oeuf.", actif: true },
-  { nom: "Nems", prix: 1.5, description: "Rouleaux de printemps frits au poulet.", actif: true },
-  { nom: "Mochis", prix: 2.0, description: "Bouchées de riz gluant fourrées.", actif: true },
+  { nom: "Banh Bao", prix: 3.0, description: "Brioche vapeur garnie de porc et oeuf.", actif: true },
+  { nom: "Cookie", prix: 1.2, description: "Cookie maison au chocolat.", actif: true },
+  { nom: "Crêpe", prix: 1.0, description: "Crêpe faite maison.", actif: true },
+  { nom: "Mochi", prix: 2.5, description: "Bouchée de riz gluant fourrée.", actif: true },
+  { nom: "Nem", prix: 1.6, description: "Rouleau de printemps frit au poulet.", actif: true },
+  { nom: "Samoussa", prix: 2.0, description: "Triangle croustillant farci à la viande épicée.", actif: true },
+  { nom: "3 crêpes", prix: 2.0, description: "3 crêpes.", actif: true },
+  { nom: "Menu Asia Cookie", prix: 5.8, description: "1 Bao + 2 Nem + 1 Cookie", actif: true },
+  { nom: "Menu Asia Mochi", prix: 6.4, description: "1 Bao + 2 Nem + 1 Mochi", actif: true },
+  { nom: "Menu Maxi Bao", prix: 6.5, description: "3 Bao", actif: true },
+  { nom: "Menu Maxi Cookie", prix: 5.8, description: "2 Bao + 1 Cookie", actif: true },
+  { nom: "Menu Maxi Mochi", prix: 6.6, description: "2 Bao + 1 Mochi", actif: true },
+  { nom: "Menu Mini Cookie", prix: 3.3, description: "1 Bao + 1 Cookie", actif: true },
+  { nom: "Menu Mini Mochi", prix: 4.3, description: "1 Bao + 1 Mochi", actif: true },
+];
+
+// Anciens noms du seed initial à renommer en place (les commandes gardent
+// leur snapshot mais leur produitId reste valide)
+const RENOMMAGES: Array<[ancien: string, nouveau: string]> = [
+  ["Banh bao", "Banh Bao"],
+  ["Nems", "Nem"],
+  ["Mochis", "Mochi"],
 ];
 
 async function main() {
@@ -23,10 +43,20 @@ async function main() {
   await Admin.findOneAndUpdate({ email }, { email, passwordHash }, { upsert: true });
   console.log(`Admin prêt : ${email}`);
 
+  for (const [ancien, nouveau] of RENOMMAGES) {
+    if (!(await Produit.exists({ nom: ancien }))) continue;
+    if (await Produit.exists({ nom: nouveau })) {
+      await Produit.deleteOne({ nom: ancien });
+    } else {
+      await Produit.updateOne({ nom: ancien }, { nom: nouveau });
+    }
+    console.log(`Renommé « ${ancien} » en « ${nouveau} »`);
+  }
+
   for (const p of PRODUITS_INITIAUX) {
     await Produit.findOneAndUpdate({ nom: p.nom }, p, { upsert: true });
   }
-  console.log("Produits initialisés :", PRODUITS_INITIAUX.map((p) => p.nom).join(", "));
+  console.log("Produits initialisés :", PRODUITS_INITIAUX.length, "produits");
 
   await mongoose.disconnect();
   console.log("Seed terminé.");

@@ -25,7 +25,7 @@ const PRODUITS_INITIAUX = [
   { nom: "Mochi Kiwi", prix: 2.5, description: "Saveur kiwi.", actif: true, stock: 50, image: "/images/mochi-kiwi.png", categorie: "Mochis" },
   { nom: "Mochi Framboise", prix: 2.5, description: "Saveur framboise.", actif: true, stock: 50, image: "/images/mochi-framboise.webp", categorie: "Mochis" },
   // Desserts
-  { nom: "Crêpe", prix: 1.0, description: "Nutella, confiture ou pâte à tartiner Bueno.", actif: true, stock: 50, image: "", categorie: "Desserts" },
+  { nom: "Crêpe", prix: 1.0, description: "Nutella, confiture ou pâte à tartiner Bueno.", actif: true, stock: 50, image: "/images/crepes.webp", categorie: "Desserts" },
   { nom: "Cookie", prix: 1.2, description: "Cookie du Resto U.", actif: true, stock: 50, image: "/images/coockies.jpg", categorie: "Desserts" },
   // Menus
   { nom: "Menu Mini Cookie", prix: 3.3, description: "1 Bao + 1 Cookie", actif: true, stock: 0, image: "/images/coockies.jpg", categorie: "Menus",

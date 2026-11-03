@@ -17,6 +17,7 @@ export const IMAGES_PRODUITS: Record<string, string> = {
   "Mochi Kiwi": "/images/mochi-kiwi.png",
   "Mochi Framboise": "/images/mochi-framboise.webp",
   Cookie: "/images/coockies.jpg",
+  Crêpe: "/images/crepes.webp",
 };
 
 export type CompositionItem = {

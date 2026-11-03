@@ -52,9 +52,10 @@ export default function AdminNav() {
                   ? "bg-cesi-jaune text-black"
                   : "border border-line hover:border-cesi-jaune hover:text-cesi-jaune"
               }`}
+              aria-label={l.label}
             >
               <Icon icon={l.icone} ssr className="w-4 h-4" />
-              {l.label}
+              <span className={actif ? "" : "hidden sm:inline"}>{l.label}</span>
             </Link>
           );
         })}
@@ -64,7 +65,7 @@ export default function AdminNav() {
         className="inline-flex items-center gap-1.5 text-sm border border-line px-3 py-1.5 rounded-lg hover:border-red-500 hover:text-red-500 transition-colors"
       >
         <Icon icon="ph:sign-out-bold" ssr className="w-4 h-4" />
-        Déconnexion
+        <span className="hidden sm:inline">Déconnexion</span>
       </button>
     </div>
   );

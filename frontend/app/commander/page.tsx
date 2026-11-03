@@ -230,27 +230,28 @@ export default function CommanderPage() {
                 </div>
               </div>
               {avecChoix && (qtes[p._id] || 0) > 0 && (
-                <div className="border border-line rounded-xl p-4 bg-card space-y-2">
+                <div className="border border-line rounded-xl p-4 bg-card space-y-3">
                   <p className="text-sm font-bold">Composition de ton menu</p>
                   {(p.composition || []).map((c, i) =>
                     c.categorie ? (
-                      <div key={i} className="flex flex-wrap items-center gap-2 text-sm">
-                        <span className="text-muted min-w-20">{c.qte > 1 ? `${c.qte} × ` : ""}{c.categorie}</span>
-                        {Array.from({ length: c.qte }).map((_, u) => (
-                          <select
-                            key={u}
-                            aria-label={`${c.categorie} n°${u + 1}`}
-                            value={choix[p._id]?.[i]?.[u] || ""}
-                            onChange={(e) =>
-                              setChoix((ch) => {
-                                const actuel = ch[p._id]?.[i] || Array(c.qte).fill("");
-                                const copie = [...actuel];
-                                copie[u] = e.target.value;
-                                return { ...ch, [p._id]: { ...(ch[p._id] || {}), [i]: copie } };
-                              })
-                            }
-                            className="bg-card border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
-                          >
+                      <div key={i} className="grid grid-cols-[auto,1fr] items-center gap-x-3 text-sm">
+                        <span className="text-muted">{c.qte > 1 ? `${c.qte} × ` : ""}{c.categorie}</span>
+                        <div className="flex flex-col gap-2">
+                          {Array.from({ length: c.qte }).map((_, u) => (
+                            <select
+                              key={u}
+                              aria-label={`${c.categorie} n°${u + 1}`}
+                              value={choix[p._id]?.[i]?.[u] || ""}
+                              onChange={(e) =>
+                                setChoix((ch) => {
+                                  const actuel = ch[p._id]?.[i] || Array(c.qte).fill("");
+                                  const copie = [...actuel];
+                                  copie[u] = e.target.value;
+                                  return { ...ch, [p._id]: { ...(ch[p._id] || {}), [i]: copie } };
+                                })
+                              }
+                              className="w-full bg-card border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+                            >
                             {produits
                               .filter((v) => v.categorie === c.categorie && v.actif !== false)
                               .map((v) => (
@@ -259,7 +260,8 @@ export default function CommanderPage() {
                                 </option>
                               ))}
                           </select>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                     ) : (
                       <p key={i} className="text-sm text-muted">

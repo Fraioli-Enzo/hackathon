@@ -8,6 +8,7 @@ import { phCaretUp, phCaretDown } from "@/lib/icons";
 addIcon("ph:caret-up", phCaretUp);
 addIcon("ph:caret-down", phCaretDown);
 import Banniere from "@/components/Banniere";
+import PopupConfirmation from "@/components/PopupConfirmation";
 import ImageProduit from "@/components/ImageProduit";
 import type { ProduitClient } from "@/lib/types";
 import { CATEGORIES } from "@/lib/types";
@@ -19,6 +20,7 @@ export default function AdminStockPage() {
   const [nouveau, setNouveau] = useState({ nom: "", prix: "", stock: "", categorie: "" });
   const [filtre, setFiltre] = useState("");
   const [edition, setEdition] = useState<string | null>(null);
+  const [aSupprimer, setASupprimer] = useState<ProduitClient | null>(null);
   const [tri, setTri] = useState<{ champ: "nom" | "prix" | "stock"; sens: 1 | -1 }>({ champ: "nom", sens: 1 });
 
   const charger = useCallback(async () => {
@@ -91,10 +93,11 @@ export default function AdminStockPage() {
     charger();
   }
 
-  async function supprimer(id: string, nom: string) {
-    if (!confirm(`Supprimer « ${nom} » ?`)) return;
-    const res = await fetch(`/api/produits/${id}`, { method: "DELETE" });
-    if (res.ok) informer("Produit supprimé.");
+  async function confirmerSuppression() {
+    if (!aSupprimer) return;
+    const res = await fetch(`/api/produits/${aSupprimer._id}`, { method: "DELETE" });
+    setASupprimer(null);
+    if (res.ok) informer(`« ${aSupprimer.nom} » supprimé.`);
     else setErreur("Suppression impossible.");
     charger();
   }
@@ -266,7 +269,7 @@ export default function AdminStockPage() {
                       </button>
                     )}
                     <button
-                      onClick={() => supprimer(p._id, p.nom)}
+                      onClick={() => setASupprimer(p)}
                       className="border border-red-500 text-red-500 font-bold px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white focus-visible:bg-red-500 focus-visible:text-white transition-colors"
                     >
                       Supprimer
@@ -279,6 +282,15 @@ export default function AdminStockPage() {
         </table>
         {produits.length === 0 && <p className="text-muted p-4">Aucun produit.</p>}
       </div>
+
+      {aSupprimer && (
+        <PopupConfirmation
+          titre="Supprimer le produit ?"
+          message={`« ${aSupprimer.nom} » sera définitivement supprimé du catalogue.`}
+          onConfirmer={confirmerSuppression}
+          onAnnuler={() => setASupprimer(null)}
+        />
+      )}
     </div>
   );
 }

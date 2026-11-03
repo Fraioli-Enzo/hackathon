@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import ImageProduit from "@/components/ImageProduit";
 import AdminNav from "@/components/AdminNav";
 import Banniere from "@/components/Banniere";
+import PopupConfirmation from "@/components/PopupConfirmation";
 import type { ProduitClient } from "@/lib/types";
 import { CATEGORIES } from "@/lib/types";
 
@@ -13,6 +14,7 @@ export default function AdminProduitsPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
   const [filtre, setFiltre] = useState("");
+  const [aSupprimer, setASupprimer] = useState<{ id: string; nom: string } | null>(null);
   const [tri, setTri] = useState("nom-asc");
 
   const charger = useCallback(async () => {
@@ -92,10 +94,12 @@ export default function AdminProduitsPage() {
     }
   }
 
-  async function supprimer(id: string, nom: string) {
-    if (!confirm(`Supprimer le produit « ${nom} » ?`)) return;
-    const res = await fetch(`/api/produits/${id}`, { method: "DELETE" });
-    if (res.ok) informer("Produit supprimé.");
+  async function confirmerSuppression() {
+    if (!aSupprimer) return;
+    const res = await fetch(`/api/produits/${aSupprimer.id}`, { method: "DELETE" });
+    setASupprimer(null);
+    if (res.ok) informer(`« ${aSupprimer.nom} » supprimé.`);
+    else setErreur("Suppression impossible.");
     charger();
   }
 
@@ -207,10 +211,19 @@ export default function AdminProduitsPage() {
 
       <div className="space-y-3">
         {produitsAffiches.map((p) => (
-          <LigneProduit key={p._id} produit={p} onModifier={modifier} onSupprimer={supprimer} />
+          <LigneProduit key={p._id} produit={p} onModifier={modifier} onSupprimer={(id, nom) => setASupprimer({ id, nom })} />
         ))}
         {produits.length === 0 && <p className="text-muted">Aucun produit.</p>}
       </div>
+
+      {aSupprimer && (
+        <PopupConfirmation
+          titre="Supprimer le produit ?"
+          message={`« ${aSupprimer.nom} » sera définitivement supprimé du catalogue.`}
+          onConfirmer={confirmerSuppression}
+          onAnnuler={() => setASupprimer(null)}
+        />
+      )}
     </div>
   );
 }

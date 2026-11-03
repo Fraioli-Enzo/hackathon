@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import AdminNav from "@/components/AdminNav";
 import type { CommandeClient } from "@/lib/types";
+import Banniere from "@/components/Banniere";
+import PopupConfirmation from "@/components/PopupConfirmation";
 
 function commandeFiltrees(commandes: CommandeClient[], recherche: string) {
   const q = recherche.trim().toLowerCase();
@@ -13,13 +15,36 @@ function commandeFiltrees(commandes: CommandeClient[], recherche: string) {
 export default function AdminCommandesPage() {
   const [commandes, setCommandes] = useState<CommandeClient[]>([]);
   const [recherche, setRecherche] = useState("");
+  const [aSupprimer, setASupprimer] = useState<CommandeClient | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [erreur, setErreur] = useState<string | null>(null);
+
+  const charger = useCallback(async () => {
+    try {
+      const res = await fetch("/api/commandes");
+      const data = await res.json();
+      if (res.ok) setCommandes(data.commandes || []);
+    } catch {
+      setCommandes([]);
+    }
+  }, []);
+
+  async function confirmerSuppression() {
+    if (!aSupprimer) return;
+    const res = await fetch(`/api/commandes/${aSupprimer._id}`, { method: "DELETE" });
+    setASupprimer(null);
+    if (res.ok) {
+      setMessage("Commande supprimée.");
+      setErreur(null);
+      charger();
+    } else {
+      setErreur("Suppression impossible.");
+    }
+  }
 
   useEffect(() => {
-    fetch("/api/commandes")
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("Erreur de chargement"))))
-      .then((d) => setCommandes(d.commandes || []))
-      .catch(() => setCommandes([]));
-  }, []);
+    charger();
+  }, [charger]);
 
   const filtrees = commandeFiltrees(commandes, recherche);
 
@@ -49,6 +74,7 @@ export default function AdminCommandesPage() {
                 <th className="px-3 py-3">Commande</th>
                 <th className="px-3 py-3 text-right">Total</th>
                 <th className="px-3 py-3">Statut</th>
+                <th className="px-3 py-3 text-right">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -92,12 +118,31 @@ export default function AdminCommandesPage() {
                       </span>
                     )}
                   </td>
+                  <td className="px-3 py-3 text-right">
+                    <button
+                      onClick={() => setASupprimer(c)}
+                      className="border border-red-500 text-red-500 font-bold px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white focus-visible:bg-red-500 focus-visible:text-white transition-colors max-sm:px-3 max-sm:py-1.5 max-sm:text-sm"
+                    >
+                      Supprimer
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
+      {aSupprimer && (
+        <PopupConfirmation
+          titre="Supprimer la commande ?"
+          message={`La commande de ${aSupprimer.prenom} ${aSupprimer.nom} (${aSupprimer.total.toFixed(2)} €) sera définitivement supprimée.`}
+          onConfirmer={confirmerSuppression}
+          onAnnuler={() => setASupprimer(null)}
+        />
+      )}
+
+      <Banniere texte={message} type="succes" />
+      <Banniere texte={erreur} type="erreur" />
     </div>
   );
 }

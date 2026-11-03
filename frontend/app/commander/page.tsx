@@ -150,23 +150,28 @@ export default function CommanderPage() {
               const avecChoix = menu && (p.composition?.some((c) => c.categorie) ?? false);
               return (
               <div key={p._id} className="space-y-2">
-              <div className="flex items-center justify-between gap-4 border border-line rounded-xl p-4 bg-card">
-                <ImageProduit src={p.image} alt={p.nom} className="w-16 h-16 shrink-0" width={96} height={96} />
-                <div className="flex-1">
-                  <p className="font-bold">{p.nom}</p>
-                  <p className="text-sm text-muted">{p.description || ""}</p>
+              <div className="border border-line rounded-xl p-3 sm:p-4 bg-card">
+                <div className="flex gap-3">
+                  <ImageProduit src={p.image} alt={p.nom} className="w-16 h-16 sm:w-20 sm:h-20 shrink-0" width={96} height={96} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="font-bold leading-tight">{p.nom}</p>
+                      <p className="text-cesi-jaune font-bold shrink-0">{p.prix.toFixed(2)} €</p>
+                    </div>
+                    <p className="text-sm text-muted line-clamp-2 sm:line-clamp-none">{p.description || ""}</p>
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center justify-between gap-3">
                   {!menu && (
-                    <p className="text-sm">
-                      {stock > 0 ? (
-                        <span className="text-muted">{stock} en stock</span>
-                      ) : (
-                        <span className="text-red-500 font-semibold">Rupture de stock</span>
-                      )}
+                    <p
+                      className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                        stock > 0 ? "bg-surface text-muted" : "bg-red-500/10 text-red-500"
+                      }`}
+                    >
+                      {stock > 0 ? `${stock} en stock` : "Rupture de stock"}
                     </p>
                   )}
-                  <p className="text-cesi-jaune font-semibold">{p.prix.toFixed(2)} €</p>
-                </div>
-                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 ml-auto">
                   <button
                     type="button"
                     onClick={() => majQte(p._id, -1)}
@@ -184,6 +189,7 @@ export default function CommanderPage() {
                   >
                     +
                   </button>
+                  </div>
                 </div>
               </div>
               {avecChoix && (qtes[p._id] || 0) > 0 && (
@@ -215,7 +221,7 @@ export default function CommanderPage() {
                               .filter((v) => v.categorie === c.categorie && v.actif !== false)
                               .map((v) => (
                                 <option key={v._id} value={v._id}>
-                                  {v.nom}
+                                  {v.nom} ({v.stock ?? 0} en stock)
                                 </option>
                               ))}
                           </select>

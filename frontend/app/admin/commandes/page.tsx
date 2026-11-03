@@ -56,13 +56,31 @@ export default function AdminCommandesPage() {
                     <p className="text-muted">{c.email}</p>
                   </td>
                   <td data-label="Bâtiment" className="px-3 py-3 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">{c.batiment}</td>
-                  <td data-label="Commande" className="px-3 py-3 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">{c.items.map((i) => `${i.qte}×${i.nom}`).join(", ")}</td>
+                  <td data-label="Commande" className="px-3 py-3 max-sm:flex max-sm:flex-col max-sm:items-start max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">
+                    <ul className="space-y-1.5">
+                      {c.items.map((i, idx) => {
+                        const sep = i.nom.indexOf(" (");
+                        const nom = sep > 0 ? i.nom.slice(0, sep) : i.nom;
+                        const detail = sep > 0 ? i.nom.slice(sep + 2, -1).split(" + ").join(" · ") : null;
+                        return (
+                          <li key={idx}>
+                            <p><span className="font-bold">{i.qte}×</span> {nom}</p>
+                            {detail && <p className="text-muted text-xs">{detail}</p>}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </td>
                   <td data-label="Total" className="px-3 py-3 text-right font-semibold max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">{c.total.toFixed(2)} €</td>
                   <td data-label="Statut" className="px-3 py-3 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">
                     {c.statut === "recuperee" ? (
-                      <span className="text-green-600 font-semibold">Récupérée</span>
+                      <span className="inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-600">
+                        Récupérée
+                      </span>
                     ) : (
-                      <span className="text-cesi-jaune font-semibold">En attente</span>
+                      <span className="inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-orange-500/10 text-orange-600">
+                        En attente
+                      </span>
                     )}
                   </td>
                 </tr>

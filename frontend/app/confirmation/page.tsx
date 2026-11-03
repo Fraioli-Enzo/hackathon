@@ -116,7 +116,7 @@ async function telechargerTicket(commande: CommandeClient) {
   doc.setFontSize(11);
   doc.text("Ticket de commande", 105, 48, { align: "center" });
 
-  let y = 60;
+  let y = 74; // sous le QR code (qui descend jusqu'à y=70)
   doc.text(`N° ${commande._id.slice(-8).toUpperCase()}`, 14, y);
   doc.text(new Date(commande.createdAt).toLocaleString("fr-FR"), 196, y, { align: "right" });
   y += 8;

@@ -168,7 +168,7 @@ function LigneProduit({
 
   return (
     <div className="border border-line rounded-xl bg-card p-4 flex flex-wrap items-center gap-3">
-      <ImageProduit src={produit.image} alt={produit.nom} className="w-12 h-12 shrink-0" />
+      <ImageProduit src={produit.image} alt={produit.nom} className="w-12 h-12 shrink-0" width={72} height={72} />
       <input
         value={nom}
         onChange={(e) => setNom(e.target.value)}

@@ -4,10 +4,14 @@ export default function ImageProduit({
   src,
   alt,
   className = "",
+  width = 64,
+  height = 64,
 }: {
   src?: string;
   alt: string;
   className?: string;
+  width?: number;
+  height?: number;
 }) {
   if (!src) {
     return (
@@ -19,5 +23,5 @@ export default function ImageProduit({
       </div>
     );
   }
-  return <Image src={src} alt={alt} width={64} height={64} className={`object-cover rounded-lg ${className}`} />;
+  return <Image src={src} alt={alt} width={width} height={height} className={`object-cover rounded-lg ${className}`} />;
 }

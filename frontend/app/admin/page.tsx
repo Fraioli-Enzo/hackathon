@@ -68,7 +68,7 @@ export default function AdminDashboard() {
                 <tr key={p.nom} className="border-b border-line last:border-0">
                   <td className="px-4 py-3 font-semibold">
                     <div className="flex items-center gap-3">
-                      <ImageProduit src={imageParNom.get(p.nom)} alt={p.nom} className="w-9 h-9" />
+                      <ImageProduit src={imageParNom.get(p.nom)} alt={p.nom} className="w-9 h-9" width={54} height={54} />
                       {p.nom}
                     </div>
                   </td>
@@ -96,7 +96,7 @@ export default function AdminDashboard() {
                 <tr key={p.nom} className="border-b border-line last:border-0">
                   <td className="px-4 py-3 font-semibold">
                     <div className="flex items-center gap-3">
-                      <ImageProduit src={p.image} alt={p.nom} className="w-9 h-9" />
+                      <ImageProduit src={p.image} alt={p.nom} className="w-9 h-9" width={54} height={54} />
                       {p.nom}
                     </div>
                   </td>

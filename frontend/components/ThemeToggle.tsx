@@ -28,7 +28,7 @@ export default function ThemeToggle() {
       title={clair ? "Passer en thème sombre" : "Passer en thème clair"}
       className="text-sm border border-line px-3 py-1 rounded-lg hover:border-cesi-jaune transition-colors"
     >
-      <Icon icon={clair ? "ph:moon-bold" : "ph:sun-bold"} className="w-4 h-4" />
+      <Icon icon={clair ? "ph:moon-bold" : "ph:sun-bold"} ssr className="w-4 h-4" />
     </button>
   );
 }

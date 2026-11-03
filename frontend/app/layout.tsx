@@ -12,7 +12,7 @@ const SCRIPT_THEME = `try{if(localStorage.getItem("cafet-theme")==="light")docum
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr">
+    <html lang="fr" suppressHydrationWarning>
       <head>
         {/* Applique le thème avant le premier rendu pour éviter le flash */}
         <script dangerouslySetInnerHTML={{ __html: SCRIPT_THEME }} />

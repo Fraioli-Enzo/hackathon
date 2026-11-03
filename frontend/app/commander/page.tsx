@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import ImageProduit from "@/components/ImageProduit";
-import type { ProduitClient } from "@/lib/types";
+import type { CompositionItem, ProduitClient } from "@/lib/types";
 import { CATEGORIES } from "@/lib/types";
 
 export default function CommanderPage() {
@@ -14,11 +14,31 @@ export default function CommanderPage() {
   const [erreur, setErreur] = useState<string | null>(null);
   const [envoi, setEnvoi] = useState(false);
   const [filtre, setFiltre] = useState("");
+  const [choix, setChoix] = useState<Record<string, Record<number, string>>>({});
 
   useEffect(() => {
     fetch("/api/produits")
       .then((r) => r.json())
-      .then((d) => setProduits(d.produits || []))
+      .then((d) => {
+        const ps = d.produits || [];
+        setProduits(ps);
+        // Pré-sélection de la première variante pour chaque composant au choix des menus
+        const defauts: Record<string, Record<number, string>> = {};
+        for (const menu of ps) {
+          if (menu.categorie !== "Menus" || !menu.composition) continue;
+          defauts[menu._id] = {};
+          menu.composition.forEach((c: CompositionItem, i: number) => {
+            if (!c.categorie) return;
+            const variante = ps.find((v: ProduitClient) => v.categorie === c.categorie && v.actif !== false);
+            if (variante) defauts[menu._id][i] = variante._id;
+          });
+        }
+        setChoix((ancien) => {
+          const fusion = { ...ancien };
+          for (const [id, c] of Object.entries(defauts)) fusion[id] = { ...c, ...(ancien[id] || {}) };
+          return fusion;
+        });
+      })
       .catch(() => setErreur("Impossible de charger les produits."));
   }, []);
 
@@ -51,6 +71,14 @@ export default function CommanderPage() {
       setErreur("Remplis tous les champs du formulaire.");
       return;
     }
+    for (const l of panier) {
+      if (l.produit.categorie !== "Menus" || !l.produit.composition) continue;
+      const incomplet = l.produit.composition.some((c, i) => c.categorie && !choix[l.produit._id]?.[i]);
+      if (incomplet) {
+        setErreur(`Choisis le type pour chaque produit du « ${l.produit.nom} ».`);
+        return;
+      }
+    }
     setEnvoi(true);
     try {
       const res = await fetch("/api/commandes", {
@@ -59,7 +87,13 @@ export default function CommanderPage() {
         body: JSON.stringify({
           ...form,
           email: form.email.trim(),
-          items: panier.map((l) => ({ produitId: l.produit._id, qte: l.qte })),
+          items: panier.map((l) => {
+            const item: { produitId: string; qte: number; choix?: string[] } = { produitId: l.produit._id, qte: l.qte };
+            if (l.produit.categorie === "Menus" && l.produit.composition?.some((c) => c.categorie)) {
+              item.choix = l.produit.composition.map((c, i) => (c.categorie ? choix[l.produit._id]?.[i] || "" : ""));
+            }
+            return item;
+          }),
         }),
       });
       const data = await res.json();
@@ -149,8 +183,10 @@ export default function CommanderPage() {
             {produitsFiltres.map((p) => {
               const menu = p.categorie === "Menus";
               const stock = p.stock ?? 0;
+              const avecChoix = menu && (p.composition?.some((c) => c.categorie) ?? false);
               return (
-              <div key={p._id} className="flex items-center justify-between gap-4 border border-line rounded-xl p-4 bg-card">
+              <div key={p._id} className="space-y-2">
+              <div className="flex items-center justify-between gap-4 border border-line rounded-xl p-4 bg-card">
                 <ImageProduit src={p.image} alt={p.nom} className="w-16 h-16 shrink-0" width={96} height={96} />
                 <div className="flex-1">
                   <p className="font-bold">{p.nom}</p>
@@ -185,6 +221,41 @@ export default function CommanderPage() {
                     +
                   </button>
                 </div>
+              </div>
+              {avecChoix && (qtes[p._id] || 0) > 0 && (
+                <div className="border border-line rounded-xl p-4 bg-card space-y-2">
+                  <p className="text-sm font-bold">Composition de ton menu</p>
+                  {(p.composition || []).map((c, i) =>
+                    c.categorie ? (
+                      <label key={i} className="flex items-center justify-between gap-3 text-sm">
+                        <span className="text-muted">{c.qte > 1 ? `${c.qte} × ` : ""}{c.categorie}</span>
+                        <select
+                          value={choix[p._id]?.[i] || ""}
+                          onChange={(e) =>
+                            setChoix((ch) => ({
+                              ...ch,
+                              [p._id]: { ...(ch[p._id] || {}), [i]: e.target.value },
+                            }))
+                          }
+                          className="bg-card border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+                        >
+                          {produits
+                            .filter((v) => v.categorie === c.categorie && v.actif !== false)
+                            .map((v) => (
+                              <option key={v._id} value={v._id}>
+                                {v.nom}
+                              </option>
+                            ))}
+                        </select>
+                      </label>
+                    ) : (
+                      <p key={i} className="text-sm text-muted">
+                        {c.qte > 1 ? `${c.qte} × ` : ""}{c.nomProduit}
+                      </p>
+                    )
+                  )}
+                </div>
+              )}
               </div>
               );
             })}

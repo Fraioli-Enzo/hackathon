@@ -24,13 +24,20 @@ const PRODUITS_INITIAUX = [
   { nom: "Crêpe", prix: 1.0, description: "Nutella, confiture ou pâte à tartiner Bueno.", actif: true, stock: 50, image: "/images/crepes.jpg", categorie: "Desserts" },
   { nom: "Cookie", prix: 1.2, description: "Cookie du Resto U.", actif: true, stock: 50, image: "/images/coockies.jpg", categorie: "Desserts" },
   // Menus
-  { nom: "Menu Mini Cookie", prix: 3.3, description: "1 Bao + 1 Cookie", actif: true, stock: 0, image: "/images/coockies.jpg", categorie: "Menus" },
-  { nom: "Menu Max Cookie", prix: 5.8, description: "2 Bao + 1 Cookie", actif: true, stock: 0, image: "/images/coockies.jpg", categorie: "Menus" },
-  { nom: "Menu Mini Mochi", prix: 4.3, description: "1 Bao + 1 Mochi", actif: true, stock: 0, image: "/images/mochi.webp", categorie: "Menus" },
-  { nom: "Menu Max Mochi", prix: 6.6, description: "2 Bao + 1 Mochi", actif: true, stock: 0, image: "/images/mochi.webp", categorie: "Menus" },
-  { nom: "Menu Asia Cookie", prix: 5.8, description: "1 Bao + 2 Nems + 1 Cookie", actif: true, stock: 0, image: "/images/coockies.jpg", categorie: "Menus" },
-  { nom: "Menu Asia Mochi", prix: 6.4, description: "1 Bao + 2 Nems + 1 Mochi", actif: true, stock: 0, image: "/images/mochi.webp", categorie: "Menus" },
-  { nom: "Menu Maxi Bao", prix: 6.5, description: "3 Bao", actif: true, stock: 0, image: "/images/bao.webp", categorie: "Menus" },
+  { nom: "Menu Mini Cookie", prix: 3.3, description: "1 Bao + 1 Cookie", actif: true, stock: 0, image: "/images/coockies.jpg", categorie: "Menus",
+    composition: [{ categorie: "Banh Bao", qte: 1 }, { nomProduit: "Cookie", qte: 1 }] },
+  { nom: "Menu Max Cookie", prix: 5.8, description: "2 Bao + 1 Cookie", actif: true, stock: 0, image: "/images/coockies.jpg", categorie: "Menus",
+    composition: [{ categorie: "Banh Bao", qte: 2 }, { nomProduit: "Cookie", qte: 1 }] },
+  { nom: "Menu Mini Mochi", prix: 4.3, description: "1 Bao + 1 Mochi", actif: true, stock: 0, image: "/images/mochi.webp", categorie: "Menus",
+    composition: [{ categorie: "Banh Bao", qte: 1 }, { nomProduit: "Mochi", qte: 1 }] },
+  { nom: "Menu Max Mochi", prix: 6.6, description: "2 Bao + 1 Mochi", actif: true, stock: 0, image: "/images/mochi.webp", categorie: "Menus",
+    composition: [{ categorie: "Banh Bao", qte: 2 }, { nomProduit: "Mochi", qte: 1 }] },
+  { nom: "Menu Asia Cookie", prix: 5.8, description: "1 Bao + 2 Nems + 1 Cookie", actif: true, stock: 0, image: "/images/coockies.jpg", categorie: "Menus",
+    composition: [{ categorie: "Banh Bao", qte: 1 }, { categorie: "Nems", qte: 2 }, { nomProduit: "Cookie", qte: 1 }] },
+  { nom: "Menu Asia Mochi", prix: 6.4, description: "1 Bao + 2 Nems + 1 Mochi", actif: true, stock: 0, image: "/images/mochi.webp", categorie: "Menus",
+    composition: [{ categorie: "Banh Bao", qte: 1 }, { categorie: "Nems", qte: 2 }, { nomProduit: "Mochi", qte: 1 }] },
+  { nom: "Menu Maxi Bao", prix: 6.5, description: "3 Bao", actif: true, stock: 0, image: "/images/bao.webp", categorie: "Menus",
+    composition: [{ categorie: "Banh Bao", qte: 3 }] },
 ];
 
 async function main() {

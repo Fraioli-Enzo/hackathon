@@ -31,7 +31,12 @@ export async function POST(req: NextRequest) {
     }
 
     await connectDB();
-    const produits = await Produit.find({ _id: { $in: items.map((i: { produitId: string }) => i.produitId) }, actif: true }).lean();
+    // Produits commandés + variantes choisies dans les menus
+    const idsItems = items.flatMap((i: { produitId: string; choix?: string[] }) => [
+      i.produitId,
+      ...(Array.isArray(i.choix) ? i.choix.filter((c) => typeof c === "string" && c) : []),
+    ]);
+    const produits = await Produit.find({ _id: { $in: idsItems }, actif: true }).lean();
     const parId = new Map(produits.map((p) => [String(p._id), p]));
 
     // Fusion des quantités par produit (au cas où un produit apparait plusieurs fois)
@@ -42,11 +47,35 @@ export async function POST(req: NextRequest) {
       if (!produit) {
         return NextResponse.json({ error: "Un des produits commandés n'est plus disponible." }, { status: 404 });
       }
-      // Le stock est géré sur les produits de base, pas sur les menus
-      if (produit.categorie !== "Menus") {
+
+      let nom = produit.nom;
+
+      // Menu : résolution des choix de variantes + impact stock des produits de base
+      if (produit.categorie === "Menus" && produit.composition?.length) {
+        const detail: string[] = [];
+        for (let i = 0; i < produit.composition.length; i++) {
+          const c = produit.composition[i];
+          if (c.categorie) {
+            const variante = item.choix?.[i] ? parId.get(String(item.choix[i])) : null;
+            if (!variante || variante.categorie !== c.categorie || variante.actif === false) {
+              return NextResponse.json(
+                { error: `Choisis le type de ${c.categorie.toLowerCase()} pour « ${produit.nom} ».` },
+                { status: 400 }
+              );
+            }
+            qtes.set(String(variante._id), (qtes.get(String(variante._id)) || 0) + c.qte * item.qte);
+            detail.push(`${variante.nom}${c.qte > 1 ? ` ×${c.qte}` : ""}`);
+          } else if (c.nomProduit) {
+            detail.push(`${c.nomProduit}${c.qte > 1 ? ` ×${c.qte}` : ""}`);
+          }
+        }
+        if (detail.length) nom = `${produit.nom} (${detail.join(" + ")})`;
+      } else if (produit.categorie !== "Menus") {
+        // Stock géré uniquement sur les produits de base
         qtes.set(String(produit._id), (qtes.get(String(produit._id)) || 0) + item.qte);
       }
-      lignes.push({ produitId: produit._id, nom: produit.nom, prix: produit.prix, qte: item.qte });
+
+      lignes.push({ produitId: produit._id, nom, prix: produit.prix, qte: item.qte });
     }
 
     // Décrément du stock, avec remise en état si un produit manque

@@ -3,6 +3,12 @@
 // Les menus ne sont pas soumis à la gestion de stock
 export const CATEGORIES = ["Banh Bao", "Nems", "Samoussa", "Desserts", "Menus"] as const;
 
+export type CompositionItem = {
+  categorie?: string;
+  nomProduit?: string;
+  qte: number;
+};
+
 export type ProduitClient = {
   _id: string;
   nom: string;
@@ -12,6 +18,7 @@ export type ProduitClient = {
   stock?: number;
   image?: string;
   categorie?: string;
+  composition?: CompositionItem[];
 };
 
 export type LigneCommande = {

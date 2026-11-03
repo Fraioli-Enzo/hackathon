@@ -38,8 +38,8 @@ export default function AdminNav() {
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 mb-8 border-b border-line pb-4">
-      <nav className="flex flex-wrap gap-2" aria-label="Navigation admin">
+    <div className="flex flex-wrap items-center justify-between gap-3 mb-8 border-b border-line pb-4 max-sm:flex-col max-sm:items-end">
+      <nav className="flex flex-wrap gap-2 max-sm:self-start" aria-label="Navigation admin">
         {LIENS.map((l) => {
           const actif = pathname === l.href;
           return (

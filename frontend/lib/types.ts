@@ -48,4 +48,5 @@ export type Recap = {
   recuperees: number;
   produits: { nom: string; qte: number; total: number }[];
   stockRestant: { nom: string; stock: number; image?: string }[];
+  imagesProduits: { nom: string; image?: string }[];
 };

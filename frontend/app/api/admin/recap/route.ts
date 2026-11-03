@@ -42,6 +42,12 @@ export async function GET(req: NextRequest) {
       .sort({ stock: 1, nom: 1 })
       .lean();
 
+    // Images de tous les produits actifs (pour illustrer les lignes « à acheter »,
+    // y compris les menus dont le libellé contient le détail des choix)
+    const imagesProduits = await Produit.find({ actif: true })
+      .select("nom image")
+      .lean();
+
     return NextResponse.json({
       debut: start.toISOString(),
       fin: end.toISOString(),
@@ -51,6 +57,7 @@ export async function GET(req: NextRequest) {
       recuperees,
       produits,
       stockRestant,
+      imagesProduits,
     });
   } catch (e) {
     console.error("GET /api/admin/recap", e);

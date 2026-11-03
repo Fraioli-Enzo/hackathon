@@ -21,7 +21,17 @@ export default function AdminDashboard() {
 
   const debut = new Date(recap.debut).toLocaleDateString("fr-FR");
   const fin = new Date(recap.fin).toLocaleDateString("fr-FR");
-  const imageParNom = new Map((recap.stockRestant || []).map((p) => [p.nom, p.image]));
+  const imageParNom = new Map((recap.imagesProduits || []).map((p) => [p.nom, p.image]));
+  // Les lignes de menus ont un libellé détaillé : on cherche l'image par nom exact,
+  // puis par préfixe (ex. « Menu Asia Cookie (Bao au Boeuf + ...) »)
+  function imageDe(nom: string): string | undefined {
+    const exacte = imageParNom.get(nom);
+    if (exacte) return exacte;
+    for (const [nomProduit, image] of Array.from(imageParNom.entries())) {
+      if (image && nom.startsWith(nomProduit)) return image;
+    }
+    return undefined;
+  }
 
   return (
     <div>
@@ -68,7 +78,7 @@ export default function AdminDashboard() {
                 <tr key={p.nom} className="max-sm:block max-sm:mb-3 max-sm:rounded-xl max-sm:border max-sm:border-line max-sm:bg-card max-sm:p-4 sm:border-b sm:border-line sm:last:border-0">
                   <td data-label="Produit" className="px-4 py-3 font-semibold max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">
                     <div className="flex items-center gap-3">
-                      <ImageProduit src={imageParNom.get(p.nom)} alt={p.nom} className="w-9 h-9" width={54} height={54} />
+                      <ImageProduit src={imageDe(p.nom)} alt={p.nom} className="w-9 h-9" width={54} height={54} />
                       {p.nom}
                     </div>
                   </td>

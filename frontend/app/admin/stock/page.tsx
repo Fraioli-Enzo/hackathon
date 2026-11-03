@@ -2,6 +2,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import AdminNav from "@/components/AdminNav";
+import { Icon, addIcon } from "@iconify/react";
+import { phCaretUp, phCaretDown } from "@/lib/icons";
+
+addIcon("ph:caret-up", phCaretUp);
+addIcon("ph:caret-down", phCaretDown);
+import Banniere from "@/components/Banniere";
 import ImageProduit from "@/components/ImageProduit";
 import type { ProduitClient } from "@/lib/types";
 import { CATEGORIES } from "@/lib/types";
@@ -11,6 +17,9 @@ export default function AdminStockPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
   const [nouveau, setNouveau] = useState({ nom: "", prix: "", stock: "", categorie: "" });
+  const [filtre, setFiltre] = useState("");
+  const [edition, setEdition] = useState<string | null>(null);
+  const [tri, setTri] = useState<{ champ: "nom" | "prix" | "stock"; sens: 1 | -1 }>({ champ: "nom", sens: 1 });
 
   const charger = useCallback(async () => {
     const res = await fetch("/api/produits?all=1");
@@ -21,6 +30,19 @@ export default function AdminStockPage() {
   useEffect(() => {
     charger();
   }, [charger]);
+
+  const categories = CATEGORIES.filter((c) => produits.some((p) => p.categorie === c));
+  const produitsAffiches = produits
+    .filter((p) => !filtre || p.categorie === filtre)
+    .sort((a, b) => {
+      const va = tri.champ === "nom" ? a.nom : a[tri.champ] ?? 0;
+      const vb = tri.champ === "nom" ? b.nom : b[tri.champ] ?? 0;
+      return va < vb ? -tri.sens : va > vb ? tri.sens : 0;
+    });
+
+  function basculerTri(champ: "nom" | "prix" | "stock") {
+    setTri((t) => (t.champ === champ ? { champ, sens: t.sens === 1 ? -1 : 1 } : { champ, sens: 1 }));
+  }
 
   function informer(texte: string) {
     setMessage(texte);
@@ -40,6 +62,7 @@ export default function AdminStockPage() {
       informer(`Stock de « ${produit.nom} » : ${valeur}.`);
     } else {
       setErreur("Impossible de modifier le stock.");
+      setEdition(null);
       charger();
     }
   }
@@ -129,22 +152,59 @@ export default function AdminStockPage() {
         </button>
       </form>
 
-      {erreur && <p className="text-red-500 border border-red-500 bg-red-500/10 rounded-lg px-4 py-2 mb-4">{erreur}</p>}
-      {message && <p className="text-green-600 border border-green-500 bg-green-500/10 rounded-lg px-4 py-2 mb-4">{message}</p>}
+      <Banniere texte={erreur} type="erreur" />
+      <Banniere texte={message} type="succes" />
+
+      <div className="flex flex-wrap gap-2 mb-4" role="group" aria-label="Filtrer les produits">
+        <button
+          onClick={() => setFiltre("")}
+          className={`text-sm px-3 py-1.5 rounded-lg border transition-colors ${
+            filtre === "" ? "bg-cesi-jaune text-black border-cesi-jaune font-bold" : "border-line hover:border-cesi-jaune"
+          }`}
+        >
+          Tous
+        </button>
+        {categories.map((c) => (
+          <button
+            key={c}
+            onClick={() => setFiltre(c)}
+            className={`text-sm px-3 py-1.5 rounded-lg border transition-colors ${
+              filtre === c ? "bg-cesi-jaune text-black border-cesi-jaune font-bold" : "border-line hover:border-cesi-jaune"
+            }`}
+          >
+            {c}
+          </button>
+        ))}
+      </div>
 
       <div className="border border-line rounded-xl overflow-hidden">
         <table className="w-full text-left bg-card text-sm">
           <thead className="border-b border-line text-muted">
             <tr>
-              <th className="px-4 py-3">Produit</th>
+              {([
+                { libelle: "Produit", champ: "nom", classe: "px-4 py-3 text-left" },
+                { libelle: "Prix", champ: "prix", classe: "px-4 py-3 text-left" },
+                { libelle: "Stock", champ: "stock", classe: "px-4 py-3 text-center" },
+              ] as const).map((col) => (
+                <th key={col.champ} className={col.classe}>
+                  <button
+                    onClick={() => basculerTri(col.champ)}
+                    className="inline-flex items-center gap-1 hover:text-cesi-jaune transition-colors"
+                    aria-label={`Trier par ${col.libelle.toLowerCase()}`}
+                  >
+                    {col.libelle}
+                    {tri.champ === col.champ && (
+                      <Icon icon={tri.sens === 1 ? "ph:caret-up" : "ph:caret-down"} ssr className="w-3 h-3" />
+                    )}
+                  </button>
+                </th>
+              ))}
               <th className="px-4 py-3">Catégorie</th>
-              <th className="px-4 py-3">Prix</th>
-              <th className="px-4 py-3 text-center">Stock</th>
               <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {produits.map((p) => (
+            {produitsAffiches.map((p) => (
               <tr key={p._id} className="border-b border-line last:border-0">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
@@ -152,9 +212,15 @@ export default function AdminStockPage() {
                     <span className="font-semibold">{p.nom}</span>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-muted">{p.categorie}</td>
                 <td className="px-4 py-3">{p.prix.toFixed(2)} €</td>
                 <td className="px-4 py-3">
+                  {edition !== p._id ? (
+                    <div className="flex items-center justify-center gap-2 font-bold">
+                      <span>{p.stock ?? 0}</span>
+                      {(p.stock ?? 0) === 0 && <span className="text-red-500 text-xs font-semibold">Rupture</span>}
+                      {(p.stock ?? 0) > 0 && (p.stock ?? 0) <= 10 && <span className="text-orange-500 text-xs font-semibold">bas</span>}
+                    </div>
+                  ) : (
                   <div className="flex items-center justify-center gap-2">
                     <button
                       onClick={() => majStock(p, (p.stock ?? 0) - 1)}
@@ -179,20 +245,39 @@ export default function AdminStockPage() {
                       +
                     </button>
                   </div>
+                  )}
                 </td>
+                <td className="px-4 py-3 text-muted">{p.categorie}</td>
                 <td className="px-4 py-3 text-right">
-                  <button
-                    onClick={() => supprimer(p._id, p.nom)}
-                    className="border border-line font-bold px-4 py-2 rounded-lg hover:border-red-500 hover:text-red-500 transition-colors"
-                  >
-                    Supprimer
-                  </button>
+                  <div className="flex justify-end gap-2">
+                    {edition === p._id ? (
+                      <button
+                        onClick={() => setEdition(null)}
+                        className="bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors"
+                      >
+                        Terminé
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setEdition(p._id)}
+                        className="border border-line font-bold px-4 py-2 rounded-lg hover:border-cesi-jaune transition-colors"
+                      >
+                        Modifier
+                      </button>
+                    )}
+                    <button
+                      onClick={() => supprimer(p._id, p.nom)}
+                      className="border border-red-500 text-red-500 font-bold px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white focus-visible:bg-red-500 focus-visible:text-white transition-colors"
+                    >
+                      Supprimer
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {produits.length === 0 && <p className="text-muted p-4">Aucun produit de base.</p>}
+        {produits.length === 0 && <p className="text-muted p-4">Aucun produit.</p>}
       </div>
     </div>
   );

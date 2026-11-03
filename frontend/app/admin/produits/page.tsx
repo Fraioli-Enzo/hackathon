@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import ImageProduit from "@/components/ImageProduit";
 import AdminNav from "@/components/AdminNav";
+import Banniere from "@/components/Banniere";
 import type { ProduitClient } from "@/lib/types";
 import { CATEGORIES } from "@/lib/types";
 
@@ -11,6 +12,8 @@ export default function AdminProduitsPage() {
   const [nouveau, setNouveau] = useState({ nom: "", prix: "", description: "", stock: "", image: "", categorie: "" });
   const [message, setMessage] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
+  const [filtre, setFiltre] = useState("");
+  const [tri, setTri] = useState("nom-asc");
 
   const charger = useCallback(async () => {
     const res = await fetch("/api/produits?all=1");
@@ -21,6 +24,22 @@ export default function AdminProduitsPage() {
   useEffect(() => {
     charger();
   }, [charger]);
+
+  const categories = CATEGORIES.filter((c) => produits.some((p) => p.categorie === c));
+  const produitsAffiches = produits
+    .filter((p) => !filtre || p.categorie === filtre)
+    .sort((a, b) => {
+      switch (tri) {
+        case "nom-desc":
+          return b.nom.localeCompare(a.nom);
+        case "prix-asc":
+          return a.prix - b.prix;
+        case "prix-desc":
+          return b.prix - a.prix;
+        default:
+          return a.nom.localeCompare(b.nom);
+      }
+    });
 
   function informer(texte: string) {
     setMessage(texte);
@@ -148,11 +167,46 @@ export default function AdminProduitsPage() {
           Ajouter
         </button>
       </form>
-      {erreur && <p className="text-red-500 border border-red-500 bg-red-500/10 rounded-lg px-4 py-2 mb-4">{erreur}</p>}
-      {message && <p className="text-green-600 border border-green-500 bg-green-500/10 rounded-lg px-4 py-2 mb-4">{message}</p>}
+      <Banniere texte={erreur} type="erreur" />
+      <Banniere texte={message} type="succes" />
+
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrer les produits">
+          <button
+            onClick={() => setFiltre("")}
+            className={`text-sm px-3 py-1.5 rounded-lg border transition-colors ${
+              filtre === "" ? "bg-cesi-jaune text-black border-cesi-jaune font-bold" : "border-line hover:border-cesi-jaune"
+            }`}
+          >
+            Tous
+          </button>
+          {categories.map((c) => (
+            <button
+              key={c}
+              onClick={() => setFiltre(c)}
+              className={`text-sm px-3 py-1.5 rounded-lg border transition-colors ${
+                filtre === c ? "bg-cesi-jaune text-black border-cesi-jaune font-bold" : "border-line hover:border-cesi-jaune"
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+        <select
+          value={tri}
+          onChange={(e) => setTri(e.target.value)}
+          className="text-sm bg-card border border-line rounded-lg px-3 py-1.5 focus:border-cesi-jaune focus:outline-none"
+          aria-label="Trier les produits"
+        >
+          <option value="nom-asc">Nom (A à Z)</option>
+          <option value="nom-desc">Nom (Z à A)</option>
+          <option value="prix-asc">Prix croissant</option>
+          <option value="prix-desc">Prix décroissant</option>
+        </select>
+      </div>
 
       <div className="space-y-3">
-        {produits.map((p) => (
+        {produitsAffiches.map((p) => (
           <LigneProduit key={p._id} produit={p} onModifier={modifier} onSupprimer={supprimer} />
         ))}
         {produits.length === 0 && <p className="text-muted">Aucun produit.</p>}
@@ -246,7 +300,7 @@ function LigneProduit({
       </button>
       <button
         onClick={() => onSupprimer(produit._id, produit.nom)}
-        className="border border-line font-bold px-4 py-2 rounded-lg hover:border-red-500 hover:text-red-500"
+        className="border border-red-500 text-red-500 font-bold px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white focus-visible:bg-red-500 focus-visible:text-white transition-colors"
       >
         Supprimer
       </button>

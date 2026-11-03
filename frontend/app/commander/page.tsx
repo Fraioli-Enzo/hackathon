@@ -56,12 +56,36 @@ export default function CommanderPage() {
   const total = panier.reduce((somme, l) => somme + l.produit.prix * l.qte, 0);
 
   const nbArticles = panier.reduce((somme, l) => somme + l.qte, 0);
+
+  // Stock dynamique : ce que la sélection en cours consomme (panier + choix des menus)
+  const reserves = useMemo(() => {
+    const r = new Map<string, number>();
+    for (const [id, q] of Object.entries(qtes)) {
+      if (q > 0) r.set(id, (r.get(id) || 0) + q);
+    }
+    for (const menu of produits) {
+      if (menu.categorie !== "Menus" || !menu.composition) continue;
+      const qteMenu = qtes[menu._id] || 0;
+      if (!qteMenu) continue;
+      menu.composition.forEach((c, i) => {
+        if (!c.categorie) return;
+        (choix[menu._id]?.[i] || []).forEach((idVariante) => {
+          if (idVariante) r.set(idVariante, (r.get(idVariante) || 0) + qteMenu);
+        });
+      });
+    }
+    return r;
+  }, [produits, qtes, choix]);
+
+  function stockRestantDe(p: ProduitClient) {
+    return Math.max(0, (p.stock ?? 0) - (reserves.get(p._id) || 0));
+  }
   const categories = CATEGORIES.filter((c) => produits.some((p) => p.categorie === c));
   const produitsFiltres = filtre ? produits.filter((p) => p.categorie === filtre) : produits;
 
   function majQte(id: string, delta: number) {
     const produit = produits.find((p) => p._id === id);
-    const max = produit?.categorie === "Menus" ? 50 : Math.min(50, produit?.stock ?? 0);
+    const max = produit?.categorie === "Menus" ? 50 : Math.min(50, produit ? stockRestantDe(produit) : 0);
     setQtes((q) => ({ ...q, [id]: Math.max(0, Math.min(max, (q[id] || 0) + delta)) }));
   }
 
@@ -146,7 +170,7 @@ export default function CommanderPage() {
             {produits.length === 0 && <p className="text-muted">Chargement…</p>}
             {produitsFiltres.map((p) => {
               const menu = p.categorie === "Menus";
-              const stock = p.stock ?? 0;
+              const stock = menu ? 0 : stockRestantDe(p);
               const avecChoix = menu && (p.composition?.some((c) => c.categorie) ?? false);
               return (
               <div key={p._id} className="space-y-2">
@@ -156,7 +180,14 @@ export default function CommanderPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <p className="font-bold leading-tight">{p.nom}</p>
-                      <p className="text-cesi-jaune font-bold shrink-0">{p.prix.toFixed(2)} €</p>
+                      <div className="text-right shrink-0">
+                        <p className="text-cesi-jaune font-bold">{p.prix.toFixed(2)} €</p>
+                        {!menu && (
+                          <span className="inline-block mt-1 text-xs font-semibold text-muted bg-surface px-2 py-0.5 rounded-full whitespace-nowrap">
+                            Quantité : 1
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <p className="text-sm text-muted line-clamp-2 sm:line-clamp-none">{p.description || ""}</p>
                   </div>
@@ -219,11 +250,15 @@ export default function CommanderPage() {
                             >
                             {produits
                               .filter((v) => v.categorie === c.categorie && v.actif !== false)
-                              .map((v) => (
-                                <option key={v._id} value={v._id}>
-                                  {v.nom} ({v.stock ?? 0} en stock)
-                                </option>
-                              ))}
+                              .map((v) => {
+                                const reserveUnite = choix[p._id]?.[i]?.[u] === v._id ? 1 : 0;
+                                const dispo = Math.max(0, (v.stock ?? 0) - ((reserves.get(v._id) || 0) - reserveUnite));
+                                return (
+                                  <option key={v._id} value={v._id}>
+                                    {v.nom} ({dispo} restant)
+                                  </option>
+                                );
+                              })}
                           </select>
                           ))}
                         </div>

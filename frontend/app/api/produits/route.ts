@@ -23,12 +23,15 @@ export async function POST(req: NextRequest) {
   }
   try {
     const body = await req.json();
-    const { nom, prix, description, actif } = body ?? {};
+    const { nom, prix, description, actif, stock } = body ?? {};
     if (typeof nom !== "string" || !nom.trim()) {
       return NextResponse.json({ error: "Nom du produit requis." }, { status: 400 });
     }
     if (typeof prix !== "number" || !Number.isFinite(prix) || prix <= 0) {
       return NextResponse.json({ error: "Prix invalide." }, { status: 400 });
+    }
+    if (stock !== undefined && (!Number.isInteger(stock) || stock < 0)) {
+      return NextResponse.json({ error: "Stock invalide (entier positif)." }, { status: 400 });
     }
     await connectDB();
     const produit = await Produit.create({
@@ -36,6 +39,7 @@ export async function POST(req: NextRequest) {
       prix: Math.round(prix * 100) / 100,
       description: typeof description === "string" ? description.trim() : "",
       actif: actif !== false,
+      stock: typeof stock === "number" ? stock : 0,
     });
     return NextResponse.json({ produit }, { status: 201 });
   } catch (e) {

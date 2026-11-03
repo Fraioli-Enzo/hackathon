@@ -8,20 +8,20 @@ import { Produit } from "../lib/models/Produit";
 
 // Produits issus de la feuille « Prix » de Trésorerie - Hackathon.xlsx
 const PRODUITS_INITIAUX = [
-  { nom: "Banh Bao", prix: 3.0, description: "Brioche vapeur garnie de porc et oeuf.", actif: true },
-  { nom: "Cookie", prix: 1.2, description: "Cookie maison au chocolat.", actif: true },
-  { nom: "Crêpe", prix: 1.0, description: "Crêpe faite maison.", actif: true },
-  { nom: "Mochi", prix: 2.5, description: "Bouchée de riz gluant fourrée.", actif: true },
-  { nom: "Nem", prix: 1.6, description: "Rouleau de printemps frit au poulet.", actif: true },
-  { nom: "Samoussa", prix: 2.0, description: "Triangle croustillant farci à la viande épicée.", actif: true },
-  { nom: "3 crêpes", prix: 2.0, description: "3 crêpes.", actif: true },
-  { nom: "Menu Asia Cookie", prix: 5.8, description: "1 Bao + 2 Nem + 1 Cookie", actif: true },
-  { nom: "Menu Asia Mochi", prix: 6.4, description: "1 Bao + 2 Nem + 1 Mochi", actif: true },
-  { nom: "Menu Maxi Bao", prix: 6.5, description: "3 Bao", actif: true },
-  { nom: "Menu Maxi Cookie", prix: 5.8, description: "2 Bao + 1 Cookie", actif: true },
-  { nom: "Menu Maxi Mochi", prix: 6.6, description: "2 Bao + 1 Mochi", actif: true },
-  { nom: "Menu Mini Cookie", prix: 3.3, description: "1 Bao + 1 Cookie", actif: true },
-  { nom: "Menu Mini Mochi", prix: 4.3, description: "1 Bao + 1 Mochi", actif: true },
+  { nom: "Banh Bao", prix: 3.0, description: "Brioche vapeur garnie de porc et oeuf.", actif: true, stock: 50 },
+  { nom: "Cookie", prix: 1.2, description: "Cookie maison au chocolat.", actif: true, stock: 50 },
+  { nom: "Crêpe", prix: 1.0, description: "Crêpe faite maison.", actif: true, stock: 50 },
+  { nom: "Mochi", prix: 2.5, description: "Bouchée de riz gluant fourrée.", actif: true, stock: 50 },
+  { nom: "Nem", prix: 1.6, description: "Rouleau de printemps frit au poulet.", actif: true, stock: 50 },
+  { nom: "Samoussa", prix: 2.0, description: "Triangle croustillant farci à la viande épicée.", actif: true, stock: 50 },
+  { nom: "3 crêpes", prix: 2.0, description: "3 crêpes.", actif: true, stock: 50 },
+  { nom: "Menu Asia Cookie", prix: 5.8, description: "1 Bao + 2 Nem + 1 Cookie", actif: true, stock: 50 },
+  { nom: "Menu Asia Mochi", prix: 6.4, description: "1 Bao + 2 Nem + 1 Mochi", actif: true, stock: 50 },
+  { nom: "Menu Maxi Bao", prix: 6.5, description: "3 Bao", actif: true, stock: 50 },
+  { nom: "Menu Maxi Cookie", prix: 5.8, description: "2 Bao + 1 Cookie", actif: true, stock: 50 },
+  { nom: "Menu Maxi Mochi", prix: 6.6, description: "2 Bao + 1 Mochi", actif: true, stock: 50 },
+  { nom: "Menu Mini Cookie", prix: 3.3, description: "1 Bao + 1 Cookie", actif: true, stock: 50 },
+  { nom: "Menu Mini Mochi", prix: 4.3, description: "1 Bao + 1 Mochi", actif: true, stock: 50 },
 ];
 
 // Anciens noms du seed initial à renommer en place (les commandes gardent

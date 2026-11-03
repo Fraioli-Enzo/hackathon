@@ -12,7 +12,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
   }
   try {
     const body = await req.json();
-    const { nom, prix, description, actif } = body ?? {};
+    const { nom, prix, description, actif, stock } = body ?? {};
 
     const maj: Record<string, unknown> = {};
     if (nom !== undefined) {
@@ -38,6 +38,12 @@ export async function PUT(req: NextRequest, { params }: Params) {
         return NextResponse.json({ error: "Statut actif invalide." }, { status: 400 });
       }
       maj.actif = actif;
+    }
+    if (stock !== undefined) {
+      if (!Number.isInteger(stock) || stock < 0) {
+        return NextResponse.json({ error: "Stock invalide (entier positif)." }, { status: 400 });
+      }
+      maj.stock = stock;
     }
 
     await connectDB();

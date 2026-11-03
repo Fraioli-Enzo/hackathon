@@ -29,7 +29,9 @@ export default function CommanderPage() {
   const total = panier.reduce((somme, l) => somme + l.produit.prix * l.qte, 0);
 
   function majQte(id: string, delta: number) {
-    setQtes((q) => ({ ...q, [id]: Math.max(0, Math.min(50, (q[id] || 0) + delta)) }));
+    const produit = produits.find((p) => p._id === id);
+    const max = Math.min(50, produit?.stock ?? 0);
+    setQtes((q) => ({ ...q, [id]: Math.max(0, Math.min(max, (q[id] || 0) + delta)) }));
   }
 
   async function valider(e: React.FormEvent) {
@@ -115,18 +117,28 @@ export default function CommanderPage() {
           <h2 className="text-xl font-bold pt-2">Produits</h2>
           <div className="space-y-3">
             {produits.length === 0 && <p className="text-muted">Chargement…</p>}
-            {produits.map((p) => (
+            {produits.map((p) => {
+              const stock = p.stock ?? 0;
+              return (
               <div key={p._id} className="flex items-center justify-between gap-4 border border-line rounded-xl p-4 bg-card">
                 <div className="flex-1">
                   <p className="font-bold">{p.nom}</p>
                   <p className="text-sm text-muted">{p.description || ""}</p>
+                  <p className="text-sm">
+                    {stock > 0 ? (
+                      <span className="text-muted">{stock} en stock</span>
+                    ) : (
+                      <span className="text-red-500 font-semibold">Rupture de stock</span>
+                    )}
+                  </p>
                   <p className="text-cesi-jaune font-semibold">{p.prix.toFixed(2)} €</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
                     onClick={() => majQte(p._id, -1)}
-                    className="w-9 h-9 rounded-lg border border-line font-bold hover:border-cesi-jaune"
+                    disabled={stock === 0}
+                    className="w-9 h-9 rounded-lg border border-line font-bold hover:border-cesi-jaune disabled:opacity-40"
                   >
                     −
                   </button>
@@ -134,13 +146,15 @@ export default function CommanderPage() {
                   <button
                     type="button"
                     onClick={() => majQte(p._id, 1)}
-                    className="w-9 h-9 rounded-lg bg-cesi-jaune text-black font-bold hover:bg-yellow-300"
+                    disabled={stock === 0 || (qtes[p._id] || 0) >= stock}
+                    className="w-9 h-9 rounded-lg bg-cesi-jaune text-black font-bold hover:bg-yellow-300 disabled:opacity-40"
                   >
                     +
                   </button>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

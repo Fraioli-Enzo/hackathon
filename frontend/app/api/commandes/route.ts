@@ -34,13 +34,33 @@ export async function POST(req: NextRequest) {
     const produits = await Produit.find({ _id: { $in: items.map((i: { produitId: string }) => i.produitId) }, actif: true }).lean();
     const parId = new Map(produits.map((p) => [String(p._id), p]));
 
+    // Fusion des quantités par produit (au cas où un produit apparait plusieurs fois)
+    const qtes = new Map<string, number>();
     const lignes = [];
     for (const item of items) {
       const produit = parId.get(String(item.produitId));
       if (!produit) {
         return NextResponse.json({ error: "Un des produits commandés n'est plus disponible." }, { status: 404 });
       }
+      qtes.set(String(produit._id), (qtes.get(String(produit._id)) || 0) + item.qte);
       lignes.push({ produitId: produit._id, nom: produit.nom, prix: produit.prix, qte: item.qte });
+    }
+
+    // Décrément du stock, avec remise en état si un produit manque
+    const decrements = new Map<string, number>();
+    for (const [id, qte] of Array.from(qtes.entries())) {
+      const res = await Produit.updateOne({ _id: id, stock: { $gte: qte } }, { $inc: { stock: -qte } });
+      if (res.matchedCount === 0) {
+        for (const [idR, qteR] of Array.from(decrements.entries())) {
+          await Produit.updateOne({ _id: idR }, { $inc: { stock: qteR } });
+        }
+        const produit = parId.get(id);
+        return NextResponse.json(
+          { error: `Stock insuffisant pour « ${produit?.nom} » (${produit?.stock} restant).` },
+          { status: 409 }
+        );
+      }
+      decrements.set(id, qte);
     }
 
     const total = Math.round(lignes.reduce((somme, l) => somme + l.prix * l.qte, 0) * 100) / 100;

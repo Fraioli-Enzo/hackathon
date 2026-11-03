@@ -5,6 +5,7 @@ export interface IProduit {
   prix: number;
   description: string;
   actif: boolean;
+  stock: number;
 }
 
 const ProduitSchema = new Schema<IProduit>({
@@ -12,6 +13,7 @@ const ProduitSchema = new Schema<IProduit>({
   prix: { type: Number, required: true, min: 0 },
   description: { type: String, default: "", trim: true },
   actif: { type: Boolean, default: true },
+  stock: { type: Number, default: 0, min: 0 },
 });
 
 export const Produit =

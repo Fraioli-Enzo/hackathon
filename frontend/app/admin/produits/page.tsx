@@ -6,7 +6,7 @@ import type { ProduitClient } from "@/lib/types";
 
 export default function AdminProduitsPage() {
   const [produits, setProduits] = useState<ProduitClient[]>([]);
-  const [nouveau, setNouveau] = useState({ nom: "", prix: "", description: "" });
+  const [nouveau, setNouveau] = useState({ nom: "", prix: "", description: "", stock: "" });
   const [message, setMessage] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -37,14 +37,19 @@ export default function AdminProduitsPage() {
     const res = await fetch("/api/produits", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nom: nouveau.nom, prix, description: nouveau.description }),
+      body: JSON.stringify({
+        nom: nouveau.nom,
+        prix,
+        description: nouveau.description,
+        stock: nouveau.stock.trim() === "" ? 0 : parseInt(nouveau.stock, 10),
+      }),
     });
     const data = await res.json();
     if (!res.ok) {
       setErreur(data.error || "Erreur.");
       return;
     }
-    setNouveau({ nom: "", prix: "", description: "" });
+    setNouveau({ nom: "", prix: "", description: "", stock: "" });
     informer("Produit ajouté.");
     charger();
   }
@@ -96,6 +101,16 @@ export default function AdminProduitsPage() {
             className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
           />
         </label>
+        <label className="w-28 space-y-1">
+          <span className="text-sm text-muted">Stock</span>
+          <input
+            value={nouveau.stock}
+            onChange={(e) => setNouveau({ ...nouveau, stock: e.target.value })}
+            className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+            placeholder="0"
+            inputMode="numeric"
+          />
+        </label>
         <button type="submit" className="bg-cesi-jaune text-black font-bold px-5 py-2 rounded-lg hover:bg-yellow-300">
           Ajouter
         </button>
@@ -125,12 +140,15 @@ function LigneProduit({
   const [nom, setNom] = useState(produit.nom);
   const [prix, setPrix] = useState(String(produit.prix));
   const [description, setDescription] = useState(produit.description || "");
+  const [stock, setStock] = useState(String(produit.stock ?? 0));
 
   function sauver() {
     const prixNum = parseFloat(prix.replace(",", "."));
+    const stockNum = parseInt(stock, 10);
     onModifier(produit._id, {
       nom,
       ...(Number.isFinite(prixNum) && prixNum > 0 ? { prix: prixNum } : {}),
+      ...(Number.isInteger(stockNum) && stockNum >= 0 ? { stock: stockNum } : {}),
       description,
     });
   }
@@ -153,6 +171,15 @@ function LigneProduit({
         placeholder="Description"
         className="flex-[2] min-w-[160px] bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
       />
+      <label className="flex items-center gap-2 text-sm text-muted">
+        <input
+          value={stock}
+          onChange={(e) => setStock(e.target.value)}
+          className="w-16 bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+          inputMode="numeric"
+        />
+        en stock
+      </label>
       <label className="flex items-center gap-2 text-sm text-muted">
         <input type="checkbox" checked={produit.actif !== false} onChange={(e) => onModifier(produit._id, { actif: e.target.checked })} />
         Actif

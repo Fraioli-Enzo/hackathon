@@ -6,6 +6,7 @@ export type ProduitClient = {
   prix: number;
   description?: string;
   actif?: boolean;
+  stock?: number;
 };
 
 export type LigneCommande = {

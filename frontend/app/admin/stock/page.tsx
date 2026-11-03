@@ -3,11 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import AdminNav from "@/components/AdminNav";
 import { Icon, addIcon } from "@iconify/react";
-import { phCaretUp, phCaretDown } from "@/lib/icons";
+import { phCaretUp, phCaretDown, phPlusBold } from "@/lib/icons";
 
 addIcon("ph:caret-up", phCaretUp);
 addIcon("ph:caret-down", phCaretDown);
+addIcon("ph:plus-bold", phPlusBold);
 import Banniere from "@/components/Banniere";
+import Popup from "@/components/Popup";
 import PopupConfirmation from "@/components/PopupConfirmation";
 import ImageProduit from "@/components/ImageProduit";
 import type { ProduitClient } from "@/lib/types";
@@ -21,6 +23,7 @@ export default function AdminStockPage() {
   const [filtre, setFiltre] = useState("");
   const [edition, setEdition] = useState<string | null>(null);
   const [aSupprimer, setASupprimer] = useState<ProduitClient | null>(null);
+  const [ajoutOuvert, setAjoutOuvert] = useState(false);
   const [tri, setTri] = useState<{ champ: "nom" | "prix" | "stock"; sens: 1 | -1 }>({ champ: "nom", sens: 1 });
 
   const charger = useCallback(async () => {
@@ -89,6 +92,7 @@ export default function AdminStockPage() {
       return;
     }
     setNouveau({ nom: "", prix: "", stock: "", categorie: "" });
+    setAjoutOuvert(false);
     informer("Produit ajouté.");
     charger();
   }
@@ -105,10 +109,22 @@ export default function AdminStockPage() {
   return (
     <div>
       <AdminNav />
-      <h1 className="text-3xl font-black mb-6">Stock</h1>
 
-      <form onSubmit={ajouter} className="flex flex-wrap gap-3 items-end mb-8 border border-line rounded-xl bg-card p-4">
-        <label className="flex-1 min-w-[160px] space-y-1">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-black">Stock</h1>
+        <button
+          onClick={() => setAjoutOuvert(true)}
+          className="inline-flex items-center gap-1.5 bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors"
+        >
+          <Icon icon="ph:plus-bold" ssr className="w-4 h-4" />
+          Ajouter
+        </button>
+      </div>
+
+      {ajoutOuvert && (
+        <Popup titre="Ajouter un produit" onFermer={() => setAjoutOuvert(false)}>
+      <form onSubmit={ajouter} className="grid grid-cols-1 sm:grid-cols-2 gap-3 ">
+        <label className="space-y-1">
           <span className="text-sm text-muted">Nom</span>
           <input
             value={nouveau.nom}
@@ -116,7 +132,7 @@ export default function AdminStockPage() {
             className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
           />
         </label>
-        <label className="w-28 space-y-1">
+        <label className="space-y-1">
           <span className="text-sm text-muted">Prix (€)</span>
           <input
             value={nouveau.prix}
@@ -126,7 +142,7 @@ export default function AdminStockPage() {
             placeholder="2.50"
           />
         </label>
-        <label className="w-28 space-y-1">
+        <label className="space-y-1">
           <span className="text-sm text-muted">Stock</span>
           <input
             value={nouveau.stock}
@@ -136,7 +152,7 @@ export default function AdminStockPage() {
             placeholder="0"
           />
         </label>
-        <label className="w-40 space-y-1">
+        <label className="space-y-1">
           <span className="text-sm text-muted">Catégorie</span>
           <select
             value={nouveau.categorie}
@@ -150,10 +166,21 @@ export default function AdminStockPage() {
             ))}
           </select>
         </label>
-        <button type="submit" className="bg-cesi-jaune text-black font-bold px-5 py-2 rounded-lg hover:bg-yellow-300">
-          Ajouter
-        </button>
+        <div className="col-span-1 sm:col-span-2 flex justify-end gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => setAjoutOuvert(false)}
+            className="border border-line font-bold px-4 py-2 rounded-lg hover:border-cesi-jaune transition-colors max-sm:flex-1 max-sm:py-3"
+          >
+            Annuler
+          </button>
+          <button type="submit" className="bg-cesi-jaune text-black font-bold px-5 py-2 rounded-lg hover:bg-yellow-300 max-sm:flex-1 max-sm:py-3">
+            Ajouter
+          </button>
+        </div>
       </form>
+        </Popup>
+      )}
 
       <Banniere texte={erreur} type="erreur" />
       <Banniere texte={message} type="succes" />

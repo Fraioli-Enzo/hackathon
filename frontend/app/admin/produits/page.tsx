@@ -4,6 +4,11 @@ import { useCallback, useEffect, useState } from "react";
 import ImageProduit from "@/components/ImageProduit";
 import AdminNav from "@/components/AdminNav";
 import Banniere from "@/components/Banniere";
+import Popup from "@/components/Popup";
+import { Icon, addIcon } from "@iconify/react";
+import { phPlusBold } from "@/lib/icons";
+
+addIcon("ph:plus-bold", phPlusBold);
 import PopupConfirmation from "@/components/PopupConfirmation";
 import type { ProduitClient } from "@/lib/types";
 import { CATEGORIES } from "@/lib/types";
@@ -15,6 +20,7 @@ export default function AdminProduitsPage() {
   const [erreur, setErreur] = useState<string | null>(null);
   const [filtre, setFiltre] = useState("");
   const [aSupprimer, setASupprimer] = useState<{ id: string; nom: string } | null>(null);
+  const [ajoutOuvert, setAjoutOuvert] = useState(false);
   const [tri, setTri] = useState("nom-asc");
 
   const charger = useCallback(async () => {
@@ -75,6 +81,7 @@ export default function AdminProduitsPage() {
       return;
     }
     setNouveau({ nom: "", prix: "", description: "", stock: "", image: "", categorie: "" });
+    setAjoutOuvert(false);
     informer("Produit ajouté.");
     charger();
   }
@@ -106,10 +113,24 @@ export default function AdminProduitsPage() {
   return (
     <div>
       <AdminNav />
-      <h1 className="text-3xl font-black mb-6">Produits & prix</h1>
 
-      <form onSubmit={ajouter} className="flex flex-wrap gap-3 items-end mb-8 border border-line rounded-xl bg-card p-4">
-        <label className="flex-1 min-w-[160px] space-y-1">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-black">Produits & prix</h1>
+        <button
+          onClick={() => setAjoutOuvert(true)}
+          className="inline-flex items-center gap-1.5 bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors"
+        >
+          <Icon icon="ph:plus-bold" ssr className="w-4 h-4" />
+          Ajouter
+        </button>
+      </div>
+
+      
+
+      {ajoutOuvert && (
+        <Popup titre="Ajouter un produit" onFermer={() => setAjoutOuvert(false)}>
+      <form onSubmit={ajouter} className="grid grid-cols-1 sm:grid-cols-2 gap-3 ">
+        <label className="space-y-1">
           <span className="text-sm text-muted">Nom</span>
           <input
             value={nouveau.nom}
@@ -117,7 +138,7 @@ export default function AdminProduitsPage() {
             className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
           />
         </label>
-        <label className="w-28 space-y-1">
+        <label className="space-y-1">
           <span className="text-sm text-muted">Prix (€)</span>
           <input
             value={nouveau.prix}
@@ -126,7 +147,7 @@ export default function AdminProduitsPage() {
             placeholder="2.50"
           />
         </label>
-        <label className="flex-[2] min-w-[200px] space-y-1">
+        <label className="space-y-1 sm:col-span-2">
           <span className="text-sm text-muted">Description</span>
           <input
             value={nouveau.description}
@@ -134,7 +155,7 @@ export default function AdminProduitsPage() {
             className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
           />
         </label>
-        <label className="w-28 space-y-1">
+        <label className="space-y-1">
           <span className="text-sm text-muted">Stock</span>
           <input
             value={nouveau.stock}
@@ -144,7 +165,7 @@ export default function AdminProduitsPage() {
             inputMode="numeric"
           />
         </label>
-        <label className="w-44 space-y-1">
+        <label className="space-y-1 sm:col-span-2">
           <span className="text-sm text-muted">Image (chemin)</span>
           <input
             value={nouveau.image}
@@ -153,7 +174,7 @@ export default function AdminProduitsPage() {
             placeholder="/images/bao.webp"
           />
         </label>
-        <label className="w-40 space-y-1">
+        <label className="space-y-1">
           <span className="text-sm text-muted">Catégorie</span>
           <select
             value={nouveau.categorie}
@@ -167,10 +188,21 @@ export default function AdminProduitsPage() {
             ))}
           </select>
         </label>
-        <button type="submit" className="bg-cesi-jaune text-black font-bold px-5 py-2 rounded-lg hover:bg-yellow-300">
-          Ajouter
-        </button>
+        <div className="col-span-1 sm:col-span-2 flex justify-end gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => setAjoutOuvert(false)}
+            className="border border-line font-bold px-4 py-2 rounded-lg hover:border-cesi-jaune transition-colors max-sm:flex-1 max-sm:py-3"
+          >
+            Annuler
+          </button>
+          <button type="submit" className="bg-cesi-jaune text-black font-bold px-5 py-2 rounded-lg hover:bg-yellow-300 max-sm:flex-1 max-sm:py-3">
+            Ajouter
+          </button>
+        </div>
       </form>
+        </Popup>
+      )}
       <Banniere texte={erreur} type="erreur" />
       <Banniere texte={message} type="succes" />
 

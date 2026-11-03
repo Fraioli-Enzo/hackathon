@@ -77,20 +77,20 @@ export default function CommanderPage() {
     return r;
   }, [produits, qtes, choix]);
 
-  // Détail d'un menu pour le panier : variantes choisies + composants fixes
-  function detailMenu(menu: ProduitClient, choixMenu?: Record<number, string[]>): string {
-    const parties: string[] = [];
+  // Détail d'un menu pour le panier : une ligne par sous-élément
+  function detailMenu(menu: ProduitClient, choixMenu?: Record<number, string[]>): string[] {
+    const lignes: string[] = [];
     menu.composition?.forEach((c, i) => {
       if (c.categorie) {
-        const noms = (choixMenu?.[i] || [])
-          .map((id) => produits.find((p) => p._id === id)?.nom)
-          .filter(Boolean);
-        if (noms.length) parties.push(noms.join(" + "));
+        (choixMenu?.[i] || []).forEach((id) => {
+          const nom = produits.find((p) => p._id === id)?.nom;
+          if (nom) lignes.push(nom);
+        });
       } else if (c.nomProduit) {
-        parties.push(c.qte > 1 ? `${c.qte} × ${c.nomProduit}` : c.nomProduit);
+        lignes.push(c.qte > 1 ? `${c.qte} × ${c.nomProduit}` : c.nomProduit);
       }
     });
-    return parties.join(" + ");
+    return lignes;
   }
 
   function stockRestantDe(p: ProduitClient) {
@@ -305,14 +305,20 @@ export default function CommanderPage() {
                 const detail =
                   l.produit.categorie === "Menus" && l.produit.composition
                     ? detailMenu(l.produit, choix[l.produit._id])
-                    : null;
+                    : [];
                 return (
                   <li key={l.produit._id} className="flex justify-between gap-2">
                     <div className="min-w-0">
                       <p>
                         {l.qte} × {l.produit.nom}
                       </p>
-                      {detail && <p className="text-muted text-xs leading-tight mt-0.5">{detail}</p>}
+                      {detail.length > 0 && (
+                        <ul className="text-muted text-xs leading-snug mt-0.5 list-disc list-inside">
+                          {detail.map((d, idx) => (
+                            <li key={idx}>{d}</li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
                     <span className="shrink-0">{(l.qte * l.produit.prix).toFixed(2)} €</span>
                   </li>

@@ -24,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/" className="flex items-center gap-2 text-xl font-black tracking-tight">
               <Image src="/images/logo-cesi-jaune.png" alt="" width={32} height={32} className="logo-sombre w-8 h-8" />
               <Image src="/images/logo-cesi-noir.png" alt="" width={32} height={32} className="logo-clair w-8 h-8" />
-              <span>
+              <span className="hidden sm:inline">
                 <span className="text-cesi-jaune">CAFET</span> CESI
               </span>
             </Link>

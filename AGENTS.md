@@ -16,4 +16,5 @@
 
 - Le projet se lance avec `./start.sh` (mode dev, `npm run dev`).
 - NE PAS lancer `npm run build` pendant qu'un serveur dev tourne : le build écrit dans le même `.next` et casse les chunks du serveur (erreurs 404 dans le navigateur). Vérifier le typage avec `npx tsc --noEmit` à la place.
+- UN SEUL serveur dev à la fois. Si un serveur tourne déjà (souvent celui de l'utilisateur sur le port 3000), faire les tests dessus s'il répond, sinon lancer le sien sur un autre port et LE COUPER SYSTÉMATIQUEMENT après les tests. Deux serveurs sur le même projet se corrompent mutuellement le `.next`.
 - Docker (`docker compose up`) lance aussi l'app en mode dev (source montée en volume, hot reload). Le stage `runner` du Dockerfile sert au build de production.

@@ -64,7 +64,13 @@ export default function AdminProduitsPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(maj),
     });
-    if (res.ok) charger();
+    if (res.ok) {
+      const nom = typeof maj.nom === "string" ? maj.nom : undefined;
+      informer(nom ? `« ${nom} » mis à jour.` : "Modification enregistrée.");
+      charger();
+    } else {
+      setErreur("Modification impossible.");
+    }
   }
 
   async function supprimer(id: string, nom: string) {
@@ -142,8 +148,8 @@ export default function AdminProduitsPage() {
           Ajouter
         </button>
       </form>
-      {erreur && <p className="text-red-500 mb-4">{erreur}</p>}
-      {message && <p className="text-green-600 mb-4">{message}</p>}
+      {erreur && <p className="text-red-500 border border-red-500 bg-red-500/10 rounded-lg px-4 py-2 mb-4">{erreur}</p>}
+      {message && <p className="text-green-600 border border-green-500 bg-green-500/10 rounded-lg px-4 py-2 mb-4">{message}</p>}
 
       <div className="space-y-3">
         {produits.map((p) => (

@@ -42,7 +42,10 @@ export async function POST(req: NextRequest) {
       if (!produit) {
         return NextResponse.json({ error: "Un des produits commandés n'est plus disponible." }, { status: 404 });
       }
-      qtes.set(String(produit._id), (qtes.get(String(produit._id)) || 0) + item.qte);
+      // Le stock est géré sur les produits de base, pas sur les menus
+      if (produit.categorie !== "Menus") {
+        qtes.set(String(produit._id), (qtes.get(String(produit._id)) || 0) + item.qte);
+      }
       lignes.push({ produitId: produit._id, nom: produit.nom, prix: produit.prix, qte: item.qte });
     }
 

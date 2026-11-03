@@ -4,10 +4,11 @@ import { useCallback, useEffect, useState } from "react";
 import ImageProduit from "@/components/ImageProduit";
 import AdminNav from "@/components/AdminNav";
 import type { ProduitClient } from "@/lib/types";
+import { CATEGORIES } from "@/lib/types";
 
 export default function AdminProduitsPage() {
   const [produits, setProduits] = useState<ProduitClient[]>([]);
-  const [nouveau, setNouveau] = useState({ nom: "", prix: "", description: "", stock: "", image: "" });
+  const [nouveau, setNouveau] = useState({ nom: "", prix: "", description: "", stock: "", image: "", categorie: "" });
   const [message, setMessage] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -44,6 +45,7 @@ export default function AdminProduitsPage() {
         description: nouveau.description,
         stock: nouveau.stock.trim() === "" ? 0 : parseInt(nouveau.stock, 10),
         image: nouveau.image.trim(),
+        categorie: nouveau.categorie,
       }),
     });
     const data = await res.json();
@@ -51,7 +53,7 @@ export default function AdminProduitsPage() {
       setErreur(data.error || "Erreur.");
       return;
     }
-    setNouveau({ nom: "", prix: "", description: "", stock: "", image: "" });
+    setNouveau({ nom: "", prix: "", description: "", stock: "", image: "", categorie: "" });
     informer("Produit ajouté.");
     charger();
   }
@@ -122,6 +124,20 @@ export default function AdminProduitsPage() {
             placeholder="/images/bao.webp"
           />
         </label>
+        <label className="w-40 space-y-1">
+          <span className="text-sm text-muted">Catégorie</span>
+          <select
+            value={nouveau.categorie}
+            onChange={(e) => setNouveau({ ...nouveau, categorie: e.target.value })}
+            className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+          >
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </label>
         <button type="submit" className="bg-cesi-jaune text-black font-bold px-5 py-2 rounded-lg hover:bg-yellow-300">
           Ajouter
         </button>
@@ -153,6 +169,7 @@ function LigneProduit({
   const [description, setDescription] = useState(produit.description || "");
   const [stock, setStock] = useState(String(produit.stock ?? 0));
   const [image, setImage] = useState(produit.image || "");
+  const [categorie, setCategorie] = useState(produit.categorie || "");
 
   function sauver() {
     const prixNum = parseFloat(prix.replace(",", "."));
@@ -163,6 +180,7 @@ function LigneProduit({
       ...(Number.isInteger(stockNum) && stockNum >= 0 ? { stock: stockNum } : {}),
       description,
       image,
+      categorie,
     });
   }
 
@@ -185,15 +203,28 @@ function LigneProduit({
         placeholder="Description"
         className="flex-[2] min-w-[160px] bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
       />
-      <label className="flex items-center gap-2 text-sm text-muted">
-        <input
-          value={stock}
-          onChange={(e) => setStock(e.target.value)}
-          className="w-16 bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
-          inputMode="numeric"
-        />
-        en stock
-      </label>
+      {categorie !== "Menus" && (
+        <label className="flex items-center gap-2 text-sm text-muted">
+          <input
+            value={stock}
+            onChange={(e) => setStock(e.target.value)}
+            className="w-16 bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+            inputMode="numeric"
+          />
+          en stock
+        </label>
+      )}
+      <select
+        value={categorie}
+        onChange={(e) => setCategorie(e.target.value)}
+        className="w-32 bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
+      >
+        {CATEGORIES.map((c) => (
+          <option key={c} value={c}>
+            {c}
+          </option>
+        ))}
+      </select>
       <input
         value={image}
         onChange={(e) => setImage(e.target.value)}

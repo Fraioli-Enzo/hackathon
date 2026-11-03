@@ -36,7 +36,8 @@ export async function GET(req: NextRequest) {
       .map((p) => ({ ...p, total: Math.round(p.total * 100) / 100 }))
       .sort((a, b) => b.qte - a.qte);
 
-    const stockRestant = await Produit.find({ actif: true })
+    // Stock suivi uniquement sur les produits de base (pas les menus)
+    const stockRestant = await Produit.find({ actif: true, categorie: { $ne: "Menus" } })
       .select("nom stock image")
       .sort({ stock: 1, nom: 1 })
       .lean();

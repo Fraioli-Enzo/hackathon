@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import ImageProduit from "@/components/ImageProduit";
 import type { ProduitClient } from "@/lib/types";
+import { CATEGORIES } from "@/lib/types";
 
 export default function CommanderPage() {
   const router = useRouter();
@@ -12,6 +13,7 @@ export default function CommanderPage() {
   const [form, setForm] = useState({ prenom: "", nom: "", email: "", batiment: "Orion" });
   const [erreur, setErreur] = useState<string | null>(null);
   const [envoi, setEnvoi] = useState(false);
+  const [filtre, setFiltre] = useState("");
 
   useEffect(() => {
     fetch("/api/produits")
@@ -29,9 +31,12 @@ export default function CommanderPage() {
   );
   const total = panier.reduce((somme, l) => somme + l.produit.prix * l.qte, 0);
 
+  const categories = CATEGORIES.filter((c) => produits.some((p) => p.categorie === c));
+  const produitsFiltres = filtre ? produits.filter((p) => p.categorie === filtre) : produits;
+
   function majQte(id: string, delta: number) {
     const produit = produits.find((p) => p._id === id);
-    const max = Math.min(50, produit?.stock ?? 0);
+    const max = produit?.categorie === "Menus" ? 50 : Math.min(50, produit?.stock ?? 0);
     setQtes((q) => ({ ...q, [id]: Math.max(0, Math.min(max, (q[id] || 0) + delta)) }));
   }
 
@@ -116,9 +121,33 @@ export default function CommanderPage() {
           </div>
 
           <h2 className="text-xl font-bold pt-2">Produits</h2>
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrer les produits">
+            <button
+              type="button"
+              onClick={() => setFiltre("")}
+              className={`text-sm px-3 py-1.5 rounded-lg border transition-colors ${
+                filtre === "" ? "bg-cesi-jaune text-black border-cesi-jaune font-bold" : "border-line hover:border-cesi-jaune"
+              }`}
+            >
+              Tous
+            </button>
+            {categories.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setFiltre(c)}
+                className={`text-sm px-3 py-1.5 rounded-lg border transition-colors ${
+                  filtre === c ? "bg-cesi-jaune text-black border-cesi-jaune font-bold" : "border-line hover:border-cesi-jaune"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
           <div className="space-y-3">
             {produits.length === 0 && <p className="text-muted">Chargement…</p>}
-            {produits.map((p) => {
+            {produitsFiltres.map((p) => {
+              const menu = p.categorie === "Menus";
               const stock = p.stock ?? 0;
               return (
               <div key={p._id} className="flex items-center justify-between gap-4 border border-line rounded-xl p-4 bg-card">
@@ -126,20 +155,22 @@ export default function CommanderPage() {
                 <div className="flex-1">
                   <p className="font-bold">{p.nom}</p>
                   <p className="text-sm text-muted">{p.description || ""}</p>
-                  <p className="text-sm">
-                    {stock > 0 ? (
-                      <span className="text-muted">{stock} en stock</span>
-                    ) : (
-                      <span className="text-red-500 font-semibold">Rupture de stock</span>
-                    )}
-                  </p>
+                  {!menu && (
+                    <p className="text-sm">
+                      {stock > 0 ? (
+                        <span className="text-muted">{stock} en stock</span>
+                      ) : (
+                        <span className="text-red-500 font-semibold">Rupture de stock</span>
+                      )}
+                    </p>
+                  )}
                   <p className="text-cesi-jaune font-semibold">{p.prix.toFixed(2)} €</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
                     onClick={() => majQte(p._id, -1)}
-                    disabled={stock === 0}
+                    disabled={!menu && stock === 0}
                     className="w-9 h-9 rounded-lg border border-line font-bold hover:border-cesi-jaune disabled:opacity-40"
                   >
                     −
@@ -148,7 +179,7 @@ export default function CommanderPage() {
                   <button
                     type="button"
                     onClick={() => majQte(p._id, 1)}
-                    disabled={stock === 0 || (qtes[p._id] || 0) >= stock}
+                    disabled={!menu && (stock === 0 || (qtes[p._id] || 0) >= stock)}
                     className="w-9 h-9 rounded-lg bg-cesi-jaune text-black font-bold hover:bg-yellow-300 disabled:opacity-40"
                   >
                     +

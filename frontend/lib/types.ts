@@ -1,5 +1,8 @@
 // Types partagés entre pages client et API (sans dépendance à Mongoose).
 
+// Les menus ne sont pas soumis à la gestion de stock
+export const CATEGORIES = ["Banh Bao", "Nems", "Samoussa", "Desserts", "Menus"] as const;
+
 export type ProduitClient = {
   _id: string;
   nom: string;
@@ -8,6 +11,7 @@ export type ProduitClient = {
   actif?: boolean;
   stock?: number;
   image?: string;
+  categorie?: string;
 };
 
 export type LigneCommande = {

@@ -45,7 +45,7 @@ export default function ConfirmationPage() {
       <div className="space-y-2">
         <h1 className="text-3xl font-black">Commande enregistrée !</h1>
         <p className="text-muted">
-          Merci {commande.prenom} ! Ton ticket PDF a été téléchargé. Présente le QR code au retrait, paiement sur place (espèces / Lydia).
+          Merci {commande.prenom} ! Ton ticket PDF a été téléchargé. Présente le QR code au retrait, paiement sur place (espèces ou carte).
         </p>
       </div>
 
@@ -125,7 +125,7 @@ async function telechargerTicket(commande: CommandeClient) {
   doc.text(`Total : ${commande.total.toFixed(2)} EUR`, 14, y);
   doc.setFontSize(11);
   y += 10;
-  doc.text("Paiement sur place (especes / Lydia).", 14, y);
+  doc.text("Paiement sur place (especes ou carte).", 14, y);
   y += 8;
   doc.text("Presente ce QR code au retrait.", 14, y);
 

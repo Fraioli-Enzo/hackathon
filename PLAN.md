@@ -80,7 +80,7 @@ commandes  { prenom, nom, email, batiment: "Orion"|"Antares",
    - Validation → `POST /api/commandes` → redirection vers la confirmation
 3. **Confirmation** (`/confirmation`) :
    - Génération et téléchargement du **PDF ticket de caisse** : produits, quantités, prix, total, QR code unique
-   - Mention "paiement sur place" (espèces/Lydia à la cafet)
+   - Mention "paiement sur place" (espèces ou carte à la cafet)
 
 ### Côté admin
 1. **Login** (`/admin/login`) : email + mot de passe (hashé en BDD), session par cookie httpOnly.

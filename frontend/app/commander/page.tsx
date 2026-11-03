@@ -3,6 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import ImageProduit from "@/components/ImageProduit";
+import { Icon, addIcon } from "@iconify/react";
+import { phShoppingCartBold } from "@/lib/icons";
+
+addIcon("ph:shopping-cart-bold", phShoppingCartBold);
 import type { CompositionItem, ProduitClient } from "@/lib/types";
 import { CATEGORIES } from "@/lib/types";
 
@@ -51,6 +55,7 @@ export default function CommanderPage() {
   );
   const total = panier.reduce((somme, l) => somme + l.produit.prix * l.qte, 0);
 
+  const nbArticles = panier.reduce((somme, l) => somme + l.qte, 0);
   const categories = CATEGORIES.filter((c) => produits.some((p) => p.categorie === c));
   const produitsFiltres = filtre ? produits.filter((p) => p.categorie === filtre) : produits;
 
@@ -270,7 +275,7 @@ export default function CommanderPage() {
           </div>
         </div>
 
-        <aside className="border border-line rounded-xl p-5 bg-card lg:sticky lg:top-20 space-y-4">
+        <aside id="panier" className="border border-line rounded-xl p-5 bg-card lg:sticky lg:top-20 space-y-4 scroll-mt-20">
           <h2 className="text-lg font-bold">Panier</h2>
           {panier.length === 0 ? (
             <p className="text-muted text-sm">Aucun produit sélectionné.</p>
@@ -298,9 +303,22 @@ export default function CommanderPage() {
           >
             {envoi ? "Envoi…" : "Valider la commande"}
           </button>
-          <p className="text-xs text-muted text-center">Paiement sur place (espèces / Lydia).</p>
+          <p className="text-xs text-muted text-center">Paiement sur place (espèces ou carte).</p>
         </aside>
       </form>
+      <button
+        type="button"
+        onClick={() => document.getElementById("panier")?.scrollIntoView({ behavior: "smooth" })}
+        aria-label="Aller au panier"
+        className="lg:hidden fixed bottom-4 right-4 z-40 w-14 h-14 rounded-full bg-cesi-jaune text-black shadow-lg flex items-center justify-center hover:bg-yellow-300 transition-colors"
+      >
+        <Icon icon="ph:shopping-cart-bold" ssr className="w-7 h-7" />
+        {nbArticles > 0 && (
+          <span className="absolute -top-1 -right-1 bg-black text-cesi-jaune text-xs font-black w-5 h-5 rounded-full flex items-center justify-center">
+            {nbArticles}
+          </span>
+        )}
+      </button>
     </div>
   );
 }

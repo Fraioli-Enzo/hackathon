@@ -15,7 +15,6 @@ export async function GET(req: NextRequest) {
     const { start, end } = getWeekRange();
     const commandes = await Commande.find({ createdAt: { $gte: start, $lt: end } }).lean();
 
-    const parProduit = new Map<string, { nom: string; qte: number; total: number }>();
     let ca = 0;
     let enAttente = 0;
     let recuperees = 0;
@@ -24,28 +23,12 @@ export async function GET(req: NextRequest) {
       ca += commande.total;
       if (commande.statut === "recuperee") recuperees++;
       else enAttente++;
-      for (const item of commande.items) {
-        const existant = parProduit.get(item.nom) || { nom: item.nom, qte: 0, total: 0 };
-        existant.qte += item.qte;
-        existant.total += item.prix * item.qte;
-        parProduit.set(item.nom, existant);
-      }
     }
-
-    const produits = Array.from(parProduit.values())
-      .map((p) => ({ ...p, total: Math.round(p.total * 100) / 100 }))
-      .sort((a, b) => b.qte - a.qte);
 
     // Stock suivi uniquement sur les produits de base (pas les menus)
     const stockRestant = await Produit.find({ actif: true, categorie: { $ne: "Menus" } })
       .select("nom stock image")
       .sort({ stock: 1, nom: 1 })
-      .lean();
-
-    // Images de tous les produits actifs (pour illustrer les lignes « à acheter »,
-    // y compris les menus dont le libellé contient le détail des choix)
-    const imagesProduits = await Produit.find({ actif: true })
-      .select("nom image")
       .lean();
 
     return NextResponse.json({
@@ -55,9 +38,7 @@ export async function GET(req: NextRequest) {
       ca: Math.round(ca * 100) / 100,
       enAttente,
       recuperees,
-      produits,
       stockRestant,
-      imagesProduits,
     });
   } catch (e) {
     console.error("GET /api/admin/recap", e);

@@ -55,7 +55,7 @@ export default async function Accueil() {
             <span className="text-cesi-jaune font-bold">2.</span> Tu reçois un ticket PDF avec un QR code unique.
           </li>
           <li>
-            <span className="text-cesi-jaune font-bold">3.</span> Tu paies sur place (espèces / Lydia) et récupères ta commande en présentant le QR code.
+            <span className="text-cesi-jaune font-bold">3.</span> Tu paies sur place (espèces ou carte) et récupères ta commande en présentant le QR code.
           </li>
         </ol>
       </section>

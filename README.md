@@ -2,7 +2,7 @@
 
 Plateforme de commande de nourriture (banh bao, nems, mochis…) pour la cafétéria du CESI, avec regroupement automatique des commandes de la semaine pour les organisateurs.
 
-- **Élèves** : formulaire de commande, ticket PDF avec QR code, paiement sur place (espèces / Lydia).
+- **Élèves** : formulaire de commande, ticket PDF avec QR code, paiement sur place (espèces ou carte).
 - **Admin cafet** : panier de la semaine (quoi acheter), CRUD produits & prix, liste des commandes, scan QR pour valider les retraits.
 
 ## Stack

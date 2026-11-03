@@ -97,12 +97,26 @@ async function telechargerTicket(commande: CommandeClient) {
   const QR = (await import("qrcode")).default;
   const doc = new jsPDF();
 
-  doc.setFontSize(22);
-  doc.text("Cafet CESI", 105, 20, { align: "center" });
-  doc.setFontSize(11);
-  doc.text("Ticket de commande", 105, 28, { align: "center" });
+  // Logo CESI en haut du ticket
+  try {
+    const logo = await fetch("/images/logo-cesi-jaune.png");
+    const blob = await logo.blob();
+    const dataUrl = await new Promise<string>((resoudre) => {
+      const fr = new FileReader();
+      fr.onload = () => resoudre(String(fr.result));
+      fr.readAsDataURL(blob);
+    });
+    doc.addImage(dataUrl, "PNG", 93, 8, 24, 24);
+  } catch {
+    // logo indisponible : ticket sans image
+  }
 
-  let y = 40;
+  doc.setFontSize(22);
+  doc.text("Cafet CESI", 105, 40, { align: "center" });
+  doc.setFontSize(11);
+  doc.text("Ticket de commande", 105, 48, { align: "center" });
+
+  let y = 60;
   doc.text(`N° ${commande._id.slice(-8).toUpperCase()}`, 14, y);
   doc.text(new Date(commande.createdAt).toLocaleString("fr-FR"), 196, y, { align: "right" });
   y += 8;
@@ -128,7 +142,7 @@ async function telechargerTicket(commande: CommandeClient) {
   doc.text("Presente ce QR code au retrait.", 14, y);
 
   const qr = await QR.toDataURL(commande._id, { width: 220, margin: 1 });
-  doc.addImage(qr, "PNG", 146, 46, 50, 50);
+  doc.addImage(qr, "PNG", 146, 8, 50, 50);
 
   doc.save(`ticket-cafet-${commande._id.slice(-6)}.pdf`);
 }

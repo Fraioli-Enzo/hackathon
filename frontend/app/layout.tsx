@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import ThemeToggle from "@/components/ThemeToggle";
 import "./globals.css";
 
@@ -20,8 +21,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen flex flex-col">
         <header className="sticky top-0 z-10 border-b border-line bg-surface/90 backdrop-blur">
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-            <Link href="/" className="text-xl font-black tracking-tight">
-              <span className="text-cesi-jaune">CAFET</span> CESI
+            <Link href="/" className="flex items-center gap-2 text-xl font-black tracking-tight">
+              <Image src="/images/logo-cesi-jaune.png" alt="" width={32} height={32} className="logo-sombre w-8 h-8" />
+              <Image src="/images/logo-cesi-noir.png" alt="" width={32} height={32} className="logo-clair w-8 h-8" />
+              <span>
+                <span className="text-cesi-jaune">CAFET</span> CESI
+              </span>
             </Link>
             <nav className="flex items-center gap-5 text-sm font-medium">
               <Link href="/" className="hover:text-cesi-jaune transition-colors">Accueil</Link>

@@ -23,3 +23,16 @@
 body {
   @apply bg-surface text-content antialiased;
 }
+
+/* Logo du header : version jaune en thème sombre, noire en thème clair */
+.logo-clair {
+  display: none;
+}
+
+:root.light .logo-clair {
+  display: block;
+}
+
+:root.light .logo-sombre {
+  display: none;
+}

@@ -118,7 +118,7 @@ export default function AdminCommandesPage() {
                       </span>
                     )}
                   </td>
-                  <td className="px-3 py-3 text-right">
+                  <td className="px-3 py-3 text-right max-sm:flex max-sm:justify-end max-sm:py-1.5">
                     <button
                       onClick={() => setASupprimer(c)}
                       className="border border-red-500 text-red-500 font-bold px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white focus-visible:bg-red-500 focus-visible:text-white transition-colors max-sm:px-3 max-sm:py-1.5 max-sm:text-sm"

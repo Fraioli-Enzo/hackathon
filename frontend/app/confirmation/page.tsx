@@ -141,8 +141,8 @@ async function telechargerTicket(commande: CommandeClient) {
   y += 8;
   doc.text("Presente ce QR code au retrait.", 14, y);
 
-  const qr = await QR.toDataURL(commande._id, { width: 220, margin: 1 });
-  doc.addImage(qr, "PNG", 146, 8, 50, 50);
+  const qr = await QR.toDataURL(commande._id, { width: 420, margin: 1 });
+  doc.addImage(qr, "PNG", 134, 8, 62, 62);
 
   doc.save(`ticket-cafet-${commande._id.slice(-6)}.pdf`);
 }

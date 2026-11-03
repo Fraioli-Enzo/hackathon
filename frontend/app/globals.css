@@ -2,17 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Thème sombre (défaut) */
+/* Thème clair (défaut) */
 :root {
-  --surface: 10 10 10;
-  --card: 23 23 23;
-  --line: 64 64 64;
-  --content: 245 245 245;
-  --muted: 163 163 163;
-}
-
-/* Thème clair */
-:root.light {
   --surface: 250 250 250;
   --card: 255 255 255;
   --line: 212 212 212;
@@ -20,19 +11,32 @@
   --muted: 115 115 115;
 }
 
+/* Thème sombre */
+:root.dark {
+  --surface: 10 10 10;
+  --card: 23 23 23;
+  --line: 64 64 64;
+  --content: 245 245 245;
+  --muted: 163 163 163;
+}
+
 body {
   @apply bg-surface text-content antialiased;
 }
 
-/* Logo du header : version jaune en thème sombre, noire en thème clair */
+/* Logo du header : version jaune en thème sombre, noire en thème clair (clair par défaut) */
 .logo-clair {
-  display: none;
-}
-
-:root.light .logo-clair {
   display: block;
 }
 
-:root.light .logo-sombre {
+.logo-sombre {
+  display: none;
+}
+
+:root.dark .logo-sombre {
+  display: block;
+}
+
+:root.dark .logo-clair {
   display: none;
 }

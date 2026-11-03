@@ -10,7 +10,7 @@
 
 ## Thème
 
-- Ne jamais coder de couleurs Tailwind en dur (`bg-neutral-900`, etc.). Utiliser les couleurs sémantiques définies dans `frontend/app/globals.css` via variables CSS : `bg-surface`, `bg-card`, `border-line`, `text-content`, `text-muted`. Thème sombre par défaut, thème clair sous `:root.light`.
+- Ne jamais coder de couleurs Tailwind en dur (`bg-neutral-900`, etc.). Utiliser les couleurs sémantiques définies dans `frontend/app/globals.css` via variables CSS : `bg-surface`, `bg-card`, `border-line`, `text-content`, `text-muted`. Thème clair par défaut, thème sombre sous `:root.dark`.
 
 ## Développement
 

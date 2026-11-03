@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: "Commande ta nourriture pour la cafet du CESI : banh bao, nems, mochis.",
 };
 
-const SCRIPT_THEME = `try{if(localStorage.getItem("cafet-theme")==="light")document.documentElement.classList.add("light")}catch(e){}`;
+const SCRIPT_THEME = `try{if(localStorage.getItem("cafet-theme")==="dark")document.documentElement.classList.add("dark")}catch(e){}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

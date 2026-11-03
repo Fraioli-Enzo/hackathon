@@ -73,6 +73,38 @@ export default function AdminDashboard() {
           </table>
         </div>
       )}
+
+      <h2 className="text-xl font-bold mb-3 mt-8">Stock restant</h2>
+      {recap.stockRestant?.length ? (
+        <div className="border border-line rounded-xl overflow-hidden">
+          <table className="w-full text-left bg-card">
+            <thead className="border-b border-line text-muted text-sm">
+              <tr>
+                <th className="px-4 py-3">Produit</th>
+                <th className="px-4 py-3 text-right">Stock</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recap.stockRestant.map((p) => (
+                <tr key={p.nom} className="border-b border-line last:border-0">
+                  <td className="px-4 py-3 font-semibold">{p.nom}</td>
+                  <td className="px-4 py-3 text-right font-bold">
+                    {p.stock === 0 ? (
+                      <span className="text-red-500">Rupture</span>
+                    ) : p.stock <= 10 ? (
+                      <span className="text-orange-500">{p.stock}</span>
+                    ) : (
+                      p.stock
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p className="text-muted">Aucun produit actif.</p>
+      )}
     </div>
   );
 }

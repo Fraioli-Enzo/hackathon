@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { Commande } from "@/lib/models/Commande";
+import { Produit } from "@/lib/models/Produit";
 import { getAdminEmail } from "@/lib/auth";
 import { getWeekRange } from "@/lib/week";
 
@@ -35,6 +36,11 @@ export async function GET(req: NextRequest) {
       .map((p) => ({ ...p, total: Math.round(p.total * 100) / 100 }))
       .sort((a, b) => b.qte - a.qte);
 
+    const stockRestant = await Produit.find({ actif: true })
+      .select("nom stock")
+      .sort({ stock: 1, nom: 1 })
+      .lean();
+
     return NextResponse.json({
       debut: start.toISOString(),
       fin: end.toISOString(),
@@ -43,6 +49,7 @@ export async function GET(req: NextRequest) {
       enAttente,
       recuperees,
       produits,
+      stockRestant,
     });
   } catch (e) {
     console.error("GET /api/admin/recap", e);

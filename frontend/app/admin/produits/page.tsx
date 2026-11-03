@@ -11,7 +11,7 @@ import { phPlusBold } from "@/lib/icons";
 addIcon("ph:plus-bold", phPlusBold);
 import PopupConfirmation from "@/components/PopupConfirmation";
 import type { ProduitClient } from "@/lib/types";
-import { CATEGORIES } from "@/lib/types";
+import { CATEGORIES, IMAGES_PRODUITS } from "@/lib/types";
 
 export default function AdminProduitsPage() {
   const [produits, setProduits] = useState<ProduitClient[]>([]);
@@ -165,14 +165,20 @@ export default function AdminProduitsPage() {
             inputMode="numeric"
           />
         </label>
-        <label className="space-y-1 sm:col-span-2">
-          <span className="text-sm text-muted">Image (chemin)</span>
-          <input
+        <label className="space-y-1">
+          <span className="text-sm text-muted">Image</span>
+          <select
             value={nouveau.image}
             onChange={(e) => setNouveau({ ...nouveau, image: e.target.value })}
             className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
-            placeholder="/images/bao.webp"
-          />
+          >
+            <option value="">Aucune</option>
+            {Object.entries(IMAGES_PRODUITS).map(([cle, chemin]) => (
+              <option key={chemin} value={chemin}>
+                {cle}
+              </option>
+            ))}
+          </select>
         </label>
         <label className="space-y-1">
           <span className="text-sm text-muted">Catégorie</span>
@@ -330,12 +336,19 @@ function LigneProduit({
           </option>
         ))}
       </select>
-      <input
+      <select
         value={image}
         onChange={(e) => setImage(e.target.value)}
-        placeholder="Image (ex. /images/bao.webp)"
-        className="w-44 bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
-      />
+        className="w-36 bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
+        aria-label="Image"
+      >
+        <option value="">Aucune</option>
+        {Object.entries(IMAGES_PRODUITS).map(([cle, chemin]) => (
+          <option key={chemin} value={chemin}>
+            {cle}
+          </option>
+        ))}
+      </select>
       <label className="flex items-center gap-2 text-sm text-muted">
         <input type="checkbox" checked={produit.actif !== false} onChange={(e) => onModifier(produit._id, { actif: e.target.checked })} />
         Actif

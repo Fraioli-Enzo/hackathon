@@ -3,6 +3,16 @@
 // Les menus ne sont pas soumis à la gestion de stock
 export const CATEGORIES = ["Banh Bao", "Nems", "Samoussa", "Mochis", "Desserts", "Menus"] as const;
 
+// Images disponibles pour les produits (clé simple -> chemin)
+export const IMAGES_PRODUITS: Record<string, string> = {
+  Bao: "/images/bao.webp",
+  Nems: "/images/nems.webp",
+  Samoussa: "/images/samossa.jpg",
+  Mochis: "/images/mochi.webp",
+  Crêpe: "/images/crepes.jpg",
+  Cookie: "/images/coockies.jpg",
+};
+
 export type CompositionItem = {
   categorie?: string;
   nomProduit?: string;

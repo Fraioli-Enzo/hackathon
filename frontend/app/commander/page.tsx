@@ -14,7 +14,7 @@ export default function CommanderPage() {
   const router = useRouter();
   const [produits, setProduits] = useState<ProduitClient[]>([]);
   const [qtes, setQtes] = useState<Record<string, number>>({});
-  const [form, setForm] = useState({ prenom: "", nom: "", batiment: "Orion" });
+  const [form, setForm] = useState({ prenom: "", nom: "", batiment: "Orion", jour: "Lundi" });
   const [erreur, setErreur] = useState<string | null>(null);
   const [envoi, setEnvoi] = useState(false);
   const [filtre, setFiltre] = useState("");
@@ -316,15 +316,26 @@ export default function CommanderPage() {
                 required
               />
             </div>
-            <select
-              value={form.batiment}
-              onChange={(e) => setForm({ ...form, batiment: e.target.value })}
-              className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
-              aria-label="Bâtiment"
-            >
-              <option value="Orion">Bâtiment Orion</option>
-              <option value="Antares">Bâtiment Antares</option>
-            </select>
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                value={form.batiment}
+                onChange={(e) => setForm({ ...form, batiment: e.target.value })}
+                className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
+                aria-label="Bâtiment"
+              >
+                <option value="Orion">Bât. Orion</option>
+                <option value="Antares">Bât. Antares</option>
+              </select>
+              <select
+                value={form.jour}
+                onChange={(e) => setForm({ ...form, jour: e.target.value })}
+                className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
+                aria-label="Jour de retrait"
+              >
+                <option value="Lundi">Retrait lundi</option>
+                <option value="Mardi">Retrait mardi</option>
+              </select>
+            </div>
           </div>
           {erreur && <p className="text-red-500 text-sm">{erreur}</p>}
           <button

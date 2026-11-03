@@ -56,6 +56,7 @@ export type CommandeClient = {
   prenom: string;
   nom: string;
   batiment: string;
+  jour: string;
   items: LigneCommande[];
   total: number;
   statut: "en_attente" | "recuperee";

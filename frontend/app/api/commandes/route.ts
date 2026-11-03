@@ -8,13 +8,16 @@ import { getWeekRange } from "@/lib/week";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { prenom, nom, batiment, items } = body ?? {};
+    const { prenom, nom, batiment, jour, items } = body ?? {};
 
     if (typeof prenom !== "string" || !prenom.trim() || typeof nom !== "string" || !nom.trim()) {
       return NextResponse.json({ error: "Prénom et nom requis." }, { status: 400 });
     }
     if (batiment !== "Orion" && batiment !== "Antares") {
       return NextResponse.json({ error: "Bâtiment invalide (Orion ou Antares)." }, { status: 400 });
+    }
+    if (jour !== "Lundi" && jour !== "Mardi") {
+      return NextResponse.json({ error: "Choisis ton jour de retrait (lundi ou mardi)." }, { status: 400 });
     }
     if (!Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: "Au moins un produit est requis." }, { status: 400 });
@@ -110,6 +113,7 @@ export async function POST(req: NextRequest) {
       prenom: prenom.trim(),
       nom: nom.trim(),
       batiment,
+      jour,
       items: lignes,
       total,
     });

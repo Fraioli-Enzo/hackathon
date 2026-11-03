@@ -45,6 +45,7 @@ export default function AdminCommandesPage() {
                 <th className="px-3 py-3">Date</th>
                 <th className="px-3 py-3">Élève</th>
                 <th className="px-3 py-3">Bât.</th>
+                <th className="px-3 py-3">Jour</th>
                 <th className="px-3 py-3">Commande</th>
                 <th className="px-3 py-3 text-right">Total</th>
                 <th className="px-3 py-3">Statut</th>
@@ -63,6 +64,7 @@ export default function AdminCommandesPage() {
 
                   </td>
                   <td data-label="Bâtiment" className="px-3 py-3 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">{c.batiment}</td>
+                  <td data-label="Jour" className="px-3 py-3 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">{c.jour}</td>
                   <td data-label="Commande" className="px-3 py-3 max-sm:flex max-sm:flex-col max-sm:items-start max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">
                     <ul className="space-y-1.5">
                       {c.items.map((i, idx) => {

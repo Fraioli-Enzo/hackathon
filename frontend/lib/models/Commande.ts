@@ -11,6 +11,7 @@ export interface ICommande {
   prenom: string;
   nom: string;
   batiment: "Orion" | "Antares";
+  jour: "Lundi" | "Mardi";
   items: ILigneCommande[];
   total: number;
   statut: "en_attente" | "recuperee";
@@ -21,6 +22,7 @@ const CommandeSchema = new Schema<ICommande>({
   prenom: { type: String, required: true, trim: true },
   nom: { type: String, required: true, trim: true },
   batiment: { type: String, required: true, enum: ["Orion", "Antares"] },
+  jour: { type: String, required: true, enum: ["Lundi", "Mardi"] },
   items: [
     {
       produitId: { type: Schema.Types.ObjectId, required: true },

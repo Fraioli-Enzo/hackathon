@@ -214,11 +214,11 @@ export default function AdminStockPage() {
                     <ImageProduit src={p.image} alt={p.nom} className="w-10 h-10" width={60} height={60} />
                     <div className="min-w-0">
                       <p className="font-semibold leading-tight">{p.nom}</p>
-                      <p className="text-muted text-xs sm:hidden">{p.categorie}</p>
+                      <p className="text-muted text-xs sm:hidden">{p.categorie} · {p.prix.toFixed(2)} €</p>
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 max-sm:col-start-2 max-sm:row-start-1 max-sm:py-0 max-sm:text-right max-sm:font-bold max-sm:whitespace-nowrap">{p.prix.toFixed(2)} €</td>
+                <td className="px-4 py-3 max-sm:hidden">{p.prix.toFixed(2)} €</td>
                 <td className="px-4 py-3 max-sm:col-start-1 max-sm:row-start-2 max-sm:py-0 max-sm:justify-self-start">
                   {edition !== p._id ? (
                     <div className="flex items-center gap-2 font-bold sm:justify-center">
@@ -254,26 +254,26 @@ export default function AdminStockPage() {
                   )}
                 </td>
                 <td className="px-4 py-3 text-muted max-sm:hidden">{p.categorie}</td>
-                <td className="px-4 py-3 text-right max-sm:col-start-2 max-sm:row-start-2 max-sm:py-0 max-sm:justify-self-end">
-                  <div className="flex justify-end gap-2">
+                <td className="px-4 py-3 text-right max-sm:col-start-2 max-sm:row-start-1 max-sm:row-span-2 max-sm:self-center max-sm:justify-self-end max-sm:py-0">
+                  <div className="flex justify-end gap-2 max-sm:flex-col max-sm:items-end max-sm:gap-2">
                     {edition === p._id ? (
                       <button
                         onClick={() => setEdition(null)}
-                        className="bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors"
+                        className="bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors max-sm:px-3 max-sm:py-1.5 max-sm:text-sm"
                       >
                         Terminé
                       </button>
                     ) : (
                       <button
                         onClick={() => setEdition(p._id)}
-                        className="border border-line font-bold px-4 py-2 rounded-lg hover:border-cesi-jaune transition-colors"
+                        className="border border-line font-bold px-4 py-2 rounded-lg hover:border-cesi-jaune transition-colors max-sm:px-3 max-sm:py-1.5 max-sm:text-sm"
                       >
                         Modifier
                       </button>
                     )}
                     <button
                       onClick={() => setASupprimer(p)}
-                      className="border border-red-500 text-red-500 font-bold px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white focus-visible:bg-red-500 focus-visible:text-white transition-colors"
+                      className="border border-red-500 text-red-500 font-bold px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white focus-visible:bg-red-500 focus-visible:text-white transition-colors max-sm:px-3 max-sm:py-1.5 max-sm:text-sm"
                     >
                       Supprimer
                     </button>

@@ -77,6 +77,22 @@ export default function CommanderPage() {
     return r;
   }, [produits, qtes, choix]);
 
+  // Détail d'un menu pour le panier : variantes choisies + composants fixes
+  function detailMenu(menu: ProduitClient, choixMenu?: Record<number, string[]>): string {
+    const parties: string[] = [];
+    menu.composition?.forEach((c, i) => {
+      if (c.categorie) {
+        const noms = (choixMenu?.[i] || [])
+          .map((id) => produits.find((p) => p._id === id)?.nom)
+          .filter(Boolean);
+        if (noms.length) parties.push(noms.join(" + "));
+      } else if (c.nomProduit) {
+        parties.push(c.qte > 1 ? `${c.qte} × ${c.nomProduit}` : c.nomProduit);
+      }
+    });
+    return parties.join(" + ");
+  }
+
   function stockRestantDe(p: ProduitClient) {
     return Math.max(0, (p.stock ?? 0) - (reserves.get(p._id) || 0));
   }
@@ -285,14 +301,23 @@ export default function CommanderPage() {
             <p className="text-muted text-sm">Aucun produit sélectionné.</p>
           ) : (
             <ul className="space-y-2 text-sm">
-              {panier.map((l) => (
-                <li key={l.produit._id} className="flex justify-between">
-                  <span>
-                    {l.qte} × {l.produit.nom}
-                  </span>
-                  <span>{(l.qte * l.produit.prix).toFixed(2)} €</span>
-                </li>
-              ))}
+              {panier.map((l) => {
+                const detail =
+                  l.produit.categorie === "Menus" && l.produit.composition
+                    ? detailMenu(l.produit, choix[l.produit._id])
+                    : null;
+                return (
+                  <li key={l.produit._id} className="flex justify-between gap-2">
+                    <div className="min-w-0">
+                      <p>
+                        {l.qte} × {l.produit.nom}
+                      </p>
+                      {detail && <p className="text-muted text-xs leading-tight mt-0.5">{detail}</p>}
+                    </div>
+                    <span className="shrink-0">{(l.qte * l.produit.prix).toFixed(2)} €</span>
+                  </li>
+                );
+              })}
             </ul>
           )}
           <div className="flex justify-between font-black text-lg border-t border-line pt-3">

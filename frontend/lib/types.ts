@@ -18,6 +18,13 @@ export const IMAGES_PRODUITS: Record<string, string> = {
   "Mochi Framboise": "/images/mochi-framboise.webp",
   Cookie: "/images/coockies.jpg",
   Crêpe: "/images/crepes.webp",
+  "Menu Mini Cookie": "/images/menu-mini-cookie.webp",
+  "Menu Max Cookie": "/images/menu-max-cookie.webp",
+  "Menu Mini Mochi": "/images/menu-mini-mochi.webp",
+  "Menu Max Mochi": "/images/menu-max-mochi.webp",
+  "Menu Asia Cookie": "/images/menu-asia-cookie.webp",
+  "Menu Asia Mochi": "/images/menu-asia-mochi.webp",
+  "Menu Maxi Bao": "/images/menu-maxi-bao.webp",
 };
 
 export type CompositionItem = {

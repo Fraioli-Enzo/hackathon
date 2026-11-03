@@ -232,9 +232,11 @@ export default function CommanderPage() {
               {avecChoix && (qtes[p._id] || 0) > 0 && (
                 <div className="border border-line rounded-xl p-4 bg-card space-y-3">
                   <p className="text-sm font-bold">Composition de ton menu</p>
-                  {(p.composition || []).map((c, i) =>
-                    c.categorie ? (
-                      <div key={i} className="grid grid-cols-[auto,1fr] items-center gap-x-3 text-sm">
+                  <div className="divide-y divide-line">
+                  {(p.composition || []).map((c, i) => (
+                    <div key={i} className="py-2 first:pt-0 last:pb-0">
+                    {c.categorie ? (
+                      <div className="grid grid-cols-[auto,1fr] items-center gap-x-3 text-sm">
                         <span className="text-muted">{c.qte > 1 ? `${c.qte} × ` : ""}{c.categorie}</span>
                         <div className="flex flex-col gap-2">
                           {Array.from({ length: c.qte }).map((_, u) => (
@@ -264,11 +266,13 @@ export default function CommanderPage() {
                         </div>
                       </div>
                     ) : (
-                      <p key={i} className="text-sm text-muted">
+                      <p className="text-sm text-muted">
                         {c.qte > 1 ? `${c.qte} × ` : ""}{c.nomProduit}
                       </p>
-                    )
-                  )}
+                    )}
+                    </div>
+                  ))}
+                  </div>
                 </div>
               )}
               </div>

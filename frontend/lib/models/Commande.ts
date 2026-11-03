@@ -10,7 +10,6 @@ export interface ILigneCommande {
 export interface ICommande {
   prenom: string;
   nom: string;
-  email: string;
   batiment: "Orion" | "Antares";
   items: ILigneCommande[];
   total: number;
@@ -21,7 +20,6 @@ export interface ICommande {
 const CommandeSchema = new Schema<ICommande>({
   prenom: { type: String, required: true, trim: true },
   nom: { type: String, required: true, trim: true },
-  email: { type: String, required: true, lowercase: true, trim: true },
   batiment: { type: String, required: true, enum: ["Orion", "Antares"] },
   items: [
     {

@@ -107,8 +107,6 @@ async function telechargerTicket(commande: CommandeClient) {
   doc.text(new Date(commande.createdAt).toLocaleString("fr-FR"), 196, y, { align: "right" });
   y += 8;
   doc.text(`${commande.prenom} ${commande.nom} - bat. ${commande.batiment}`, 14, y);
-  y += 6;
-  doc.text(commande.email, 14, y);
   y += 8;
   doc.line(14, y, 196, y);
   y += 9;

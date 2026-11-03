@@ -31,7 +31,6 @@ export type CommandeClient = {
   _id: string;
   prenom: string;
   nom: string;
-  email: string;
   batiment: string;
   items: LigneCommande[];
   total: number;

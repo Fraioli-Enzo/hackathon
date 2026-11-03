@@ -14,7 +14,7 @@ export default function CommanderPage() {
   const router = useRouter();
   const [produits, setProduits] = useState<ProduitClient[]>([]);
   const [qtes, setQtes] = useState<Record<string, number>>({});
-  const [form, setForm] = useState({ prenom: "", nom: "", email: "", batiment: "Orion" });
+  const [form, setForm] = useState({ prenom: "", nom: "", batiment: "Orion" });
   const [erreur, setErreur] = useState<string | null>(null);
   const [envoi, setEnvoi] = useState(false);
   const [filtre, setFiltre] = useState("");
@@ -72,7 +72,7 @@ export default function CommanderPage() {
       setErreur("Ajoute au moins un produit à ta commande.");
       return;
     }
-    if (!form.prenom.trim() || !form.nom.trim() || !form.email.trim()) {
+    if (!form.prenom.trim() || !form.nom.trim()) {
       setErreur("Remplis tous les champs du formulaire.");
       return;
     }
@@ -93,7 +93,6 @@ export default function CommanderPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          email: form.email.trim(),
           items: panier.map((l) => {
             const item: { produitId: string; qte: number; choix?: string[][] } = { produitId: l.produit._id, qte: l.qte };
             if (l.produit.categorie === "Menus" && l.produit.composition?.some((c) => c.categorie)) {
@@ -119,48 +118,6 @@ export default function CommanderPage() {
 
       <form onSubmit={valider} className="grid lg:grid-cols-[1fr_320px] gap-6 items-start">
         <div className="space-y-4">
-          <div className="grid sm:grid-cols-2 gap-4">
-            <label className="block space-y-1">
-              <span className="text-sm text-muted">Prénom</span>
-              <input
-                value={form.prenom}
-                onChange={(e) => setForm({ ...form, prenom: e.target.value })}
-                className="w-full bg-card border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
-                required
-              />
-            </label>
-            <label className="block space-y-1">
-              <span className="text-sm text-muted">Nom</span>
-              <input
-                value={form.nom}
-                onChange={(e) => setForm({ ...form, nom: e.target.value })}
-                className="w-full bg-card border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
-                required
-              />
-            </label>
-            <label className="block space-y-1">
-              <span className="text-sm text-muted">Adresse mail</span>
-              <input
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full bg-card border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
-                required
-              />
-            </label>
-            <label className="block space-y-1">
-              <span className="text-sm text-muted">Bâtiment</span>
-              <select
-                value={form.batiment}
-                onChange={(e) => setForm({ ...form, batiment: e.target.value })}
-                className="w-full bg-card border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
-              >
-                <option value="Orion">Orion</option>
-                <option value="Antares">Antares</option>
-              </select>
-            </label>
-          </div>
-
           <h2 className="text-xl font-bold pt-2">Produits</h2>
           <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrer les produits">
             <button
@@ -300,6 +257,33 @@ export default function CommanderPage() {
           <div className="flex justify-between font-black text-lg border-t border-line pt-3">
             <span>Total</span>
             <span className="text-cesi-jaune">{total.toFixed(2)} €</span>
+          </div>
+          <div className="space-y-2 border-t border-line pt-3">
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                value={form.prenom}
+                onChange={(e) => setForm({ ...form, prenom: e.target.value })}
+                placeholder="Prénom"
+                className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
+                required
+              />
+              <input
+                value={form.nom}
+                onChange={(e) => setForm({ ...form, nom: e.target.value })}
+                placeholder="Nom"
+                className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
+                required
+              />
+            </div>
+            <select
+              value={form.batiment}
+              onChange={(e) => setForm({ ...form, batiment: e.target.value })}
+              className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
+              aria-label="Bâtiment"
+            >
+              <option value="Orion">Bâtiment Orion</option>
+              <option value="Antares">Bâtiment Antares</option>
+            </select>
           </div>
           {erreur && <p className="text-red-500 text-sm">{erreur}</p>}
           <button

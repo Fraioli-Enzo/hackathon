@@ -49,7 +49,7 @@ export default async function Accueil() {
         <h2 className="text-xl font-bold mb-4">Comment ça marche ?</h2>
         <ol className="space-y-3 text-muted">
           <li>
-            <span className="text-cesi-jaune font-bold">1.</span> Tu commandes en ligne avec ton nom, ton email et ton bâtiment.
+            <span className="text-cesi-jaune font-bold">1.</span> Tu commandes en ligne avec ton nom, ton prénom et ton bâtiment.
           </li>
           <li>
             <span className="text-cesi-jaune font-bold">2.</span> Tu reçois un ticket PDF avec un QR code unique.

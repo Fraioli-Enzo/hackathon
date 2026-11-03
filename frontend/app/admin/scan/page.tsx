@@ -11,7 +11,7 @@ export default function AdminScanPage() {
   const [scanning, setScanning] = useState(false);
   const [resultat, setResultat] = useState<ResultatScan | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
-  const [rechercheEmail, setRechercheEmail] = useState("");
+  const [rechercheNom, setRechercheNom] = useState("");
   const [resultats, setResultats] = useState<CommandeClient[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -89,11 +89,12 @@ export default function AdminScanPage() {
     }
   }
 
-  async function chercherEmail(e: React.FormEvent) {
+  async function chercherNom(e: React.FormEvent) {
     e.preventDefault();
-    const res = await fetch(`/api/commandes?email=${encodeURIComponent(rechercheEmail)}`);
+    const res = await fetch("/api/commandes");
     const data = await res.json();
-    setResultats(data.commandes || []);
+    const q = rechercheNom.trim().toLowerCase();
+    setResultats((data.commandes || []).filter((c: CommandeClient) => `${c.prenom} ${c.nom}`.toLowerCase().includes(q)));
   }
 
   return (
@@ -133,12 +134,11 @@ export default function AdminScanPage() {
 
       <div className="mt-8 border border-line rounded-xl bg-card p-6 space-y-4">
         <h2 className="text-lg font-bold">Recherche manuelle</h2>
-        <form onSubmit={chercherEmail} className="flex gap-3">
+        <form onSubmit={chercherNom} className="flex gap-3">
           <input
-            type="email"
-            value={rechercheEmail}
-            onChange={(e) => setRechercheEmail(e.target.value)}
-            placeholder="Email de l'élève…"
+            value={rechercheNom}
+            onChange={(e) => setRechercheNom(e.target.value)}
+            placeholder="Nom de l'élève…"
             className="flex-1 bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
           />
           <button type="submit" className="bg-cesi-jaune text-black font-bold px-5 py-2 rounded-lg hover:bg-yellow-300">

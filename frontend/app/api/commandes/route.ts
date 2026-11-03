@@ -5,18 +5,13 @@ import { Produit } from "@/lib/models/Produit";
 import { getAdminEmail } from "@/lib/auth";
 import { getWeekRange } from "@/lib/week";
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { prenom, nom, email, batiment, items } = body ?? {};
+    const { prenom, nom, batiment, items } = body ?? {};
 
     if (typeof prenom !== "string" || !prenom.trim() || typeof nom !== "string" || !nom.trim()) {
       return NextResponse.json({ error: "Prénom et nom requis." }, { status: 400 });
-    }
-    if (typeof email !== "string" || !EMAIL_RE.test(email)) {
-      return NextResponse.json({ error: "Adresse email invalide." }, { status: 400 });
     }
     if (batiment !== "Orion" && batiment !== "Antares") {
       return NextResponse.json({ error: "Bâtiment invalide (Orion ou Antares)." }, { status: 400 });
@@ -114,7 +109,6 @@ export async function POST(req: NextRequest) {
     const commande = await Commande.create({
       prenom: prenom.trim(),
       nom: nom.trim(),
-      email: email.trim().toLowerCase(),
       batiment,
       items: lignes,
       total,
@@ -134,15 +128,10 @@ export async function GET(req: NextRequest) {
   }
   try {
     await connectDB();
-    const url = new URL(req.url);
     const { start, end } = getWeekRange();
-    const filter: { createdAt: { $gte: Date; $lt: Date }; email?: string } = {
-      createdAt: { $gte: start, $lt: end },
-    };
-    const email = url.searchParams.get("email");
-    if (email) filter.email = email.trim().toLowerCase();
-
-    const commandes = await Commande.find(filter).sort({ createdAt: -1 }).lean();
+    const commandes = await Commande.find({ createdAt: { $gte: start, $lt: end } })
+      .sort({ createdAt: -1 })
+      .lean();
     return NextResponse.json({ commandes });
   } catch (e) {
     console.error("GET /api/commandes", e);

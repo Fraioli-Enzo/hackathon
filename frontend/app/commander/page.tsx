@@ -77,20 +77,20 @@ export default function CommanderPage() {
     return r;
   }, [produits, qtes, choix]);
 
-  // Détail d'un menu pour le panier : une ligne par sous-élément
+  // Détail d'un menu pour le panier : une ligne par sous-élément, avec x si doublons
   function detailMenu(menu: ProduitClient, choixMenu?: Record<number, string[]>): string[] {
-    const lignes: string[] = [];
+    const compte = new Map<string, number>();
     menu.composition?.forEach((c, i) => {
       if (c.categorie) {
         (choixMenu?.[i] || []).forEach((id) => {
           const nom = produits.find((p) => p._id === id)?.nom;
-          if (nom) lignes.push(nom);
+          if (nom) compte.set(nom, (compte.get(nom) || 0) + 1);
         });
       } else if (c.nomProduit) {
-        lignes.push(c.qte > 1 ? `${c.qte} × ${c.nomProduit}` : c.nomProduit);
+        compte.set(c.nomProduit, (compte.get(c.nomProduit) || 0) + c.qte);
       }
     });
-    return lignes;
+    return Array.from(compte.entries()).map(([nom, n]) => (n > 1 ? `${n} × ${nom}` : nom));
   }
 
   function stockRestantDe(p: ProduitClient) {

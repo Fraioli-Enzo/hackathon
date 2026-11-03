@@ -14,7 +14,7 @@ export default async function Accueil() {
         <h1 className="text-4xl sm:text-5xl font-black">
           Ta cafet, <span className="text-cesi-jaune">commandée en ligne</span>
         </h1>
-        <p className="text-neutral-400 max-w-2xl mx-auto">
+        <p className="text-muted max-w-2xl mx-auto">
           Banh bao, nems, mochis… Commande en quelques clics, reçois ton ticket avec QR code,
           et paie sur place à la cafet. Les commandes de la semaine sont regroupées pour les organisateurs.
         </p>
@@ -29,13 +29,13 @@ export default async function Accueil() {
       <section>
         <h2 className="text-2xl font-bold mb-5">Nos produits</h2>
         {produits.length === 0 ? (
-          <p className="text-neutral-400">Aucun produit disponible pour le moment.</p>
+          <p className="text-muted">Aucun produit disponible pour le moment.</p>
         ) : (
           <div className="grid sm:grid-cols-3 gap-4">
             {produits.map((p) => (
-              <div key={String(p._id)} className="flex flex-col gap-2 border border-neutral-800 rounded-xl p-5 bg-neutral-900">
+              <div key={String(p._id)} className="flex flex-col gap-2 border border-line rounded-xl p-5 bg-card">
                 <h3 className="font-bold text-lg">{p.nom}</h3>
-                <p className="text-neutral-400 text-sm flex-1">{p.description || "—"}</p>
+                <p className="text-muted text-sm flex-1">{p.description || "—"}</p>
                 <p className="text-cesi-jaune font-black text-xl">{p.prix.toFixed(2)} €</p>
               </div>
             ))}
@@ -43,9 +43,9 @@ export default async function Accueil() {
         )}
       </section>
 
-      <section className="border border-neutral-800 rounded-xl p-6 bg-neutral-900">
+      <section className="border border-line rounded-xl p-6 bg-card">
         <h2 className="text-xl font-bold mb-4">Comment ça marche ?</h2>
-        <ol className="space-y-3 text-neutral-300">
+        <ol className="space-y-3 text-muted">
           <li>
             <span className="text-cesi-jaune font-bold">1.</span> Tu commandes en ligne avec ton nom, ton email et ton bâtiment.
           </li>

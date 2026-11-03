@@ -1,3 +1,13 @@
+# Développement : source montée en volume par docker-compose, serveur dev avec hot reload
+FROM node:20-alpine AS dev
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+EXPOSE 3000
+CMD ["npm", "run", "dev"]
+
 # Dépendances
 FROM node:20-alpine AS deps
 WORKDIR /app

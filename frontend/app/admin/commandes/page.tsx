@@ -25,15 +25,15 @@ export default function AdminCommandesPage() {
         value={recherche}
         onChange={(e) => setRecherche(e.target.value)}
         placeholder="Rechercher par email…"
-        className="w-full sm:w-72 bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 mb-6 focus:border-cesi-jaune focus:outline-none"
+        className="w-full sm:w-72 bg-card border border-line rounded-lg px-3 py-2 mb-6 focus:border-cesi-jaune focus:outline-none"
       />
 
       {commandes.length === 0 ? (
-        <p className="text-neutral-400">Aucune commande trouvée.</p>
+        <p className="text-muted">Aucune commande trouvée.</p>
       ) : (
-        <div className="border border-neutral-800 rounded-xl overflow-x-auto">
-          <table className="w-full text-left bg-neutral-900 text-sm">
-            <thead className="border-b border-neutral-800 text-neutral-400">
+        <div className="border border-line rounded-xl overflow-x-auto">
+          <table className="w-full text-left bg-card text-sm">
+            <thead className="border-b border-line text-muted">
               <tr>
                 <th className="px-3 py-3">Date</th>
                 <th className="px-3 py-3">Élève</th>
@@ -45,7 +45,7 @@ export default function AdminCommandesPage() {
             </thead>
             <tbody>
               {commandes.map((c) => (
-                <tr key={c._id} className="border-b border-neutral-800 last:border-0">
+                <tr key={c._id} className="border-b border-line last:border-0">
                   <td className="px-3 py-3 whitespace-nowrap">
                     {new Date(c.createdAt).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })}
                   </td>
@@ -53,14 +53,14 @@ export default function AdminCommandesPage() {
                     <p className="font-semibold">
                       {c.prenom} {c.nom}
                     </p>
-                    <p className="text-neutral-500">{c.email}</p>
+                    <p className="text-muted">{c.email}</p>
                   </td>
                   <td className="px-3 py-3">{c.batiment}</td>
                   <td className="px-3 py-3">{c.items.map((i) => `${i.qte}×${i.nom}`).join(", ")}</td>
                   <td className="px-3 py-3 text-right font-semibold">{c.total.toFixed(2)} €</td>
                   <td className="px-3 py-3">
                     {c.statut === "recuperee" ? (
-                      <span className="text-green-400 font-semibold">Récupérée</span>
+                      <span className="text-green-600 font-semibold">Récupérée</span>
                     ) : (
                       <span className="text-cesi-jaune font-semibold">En attente</span>
                     )}

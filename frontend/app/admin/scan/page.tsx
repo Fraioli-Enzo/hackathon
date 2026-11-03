@@ -101,7 +101,7 @@ export default function AdminScanPage() {
       <AdminNav />
       <h1 className="text-3xl font-black mb-6">Scan des retraits</h1>
 
-      <div className="border border-neutral-800 rounded-xl bg-neutral-900 p-6 space-y-4">
+      <div className="border border-line rounded-xl bg-card p-6 space-y-4">
         {!scanning ? (
           <button onClick={() => setScanning(true)} className="bg-cesi-jaune text-black font-bold px-6 py-3 rounded-lg hover:bg-yellow-300">
             Démarrer la caméra
@@ -110,18 +110,18 @@ export default function AdminScanPage() {
           <div className="space-y-3">
             <video ref={videoRef} className="w-full max-w-md rounded-lg mx-auto" playsInline muted />
             <canvas ref={canvasRef} className="hidden" />
-            <button onClick={() => setScanning(false)} className="border border-neutral-700 font-bold px-6 py-3 rounded-lg hover:border-red-500">
+            <button onClick={() => setScanning(false)} className="border border-line font-bold px-6 py-3 rounded-lg hover:border-red-500">
               Arrêter
             </button>
           </div>
         )}
-        {erreur && <p className="text-red-400 text-sm">{erreur}</p>}
+        {erreur && <p className="text-red-500 text-sm">{erreur}</p>}
         {resultat && (
           <div className={`border rounded-lg p-4 ${resultat.dejaRecuperee ? "border-orange-500 bg-orange-500/10" : "border-green-500 bg-green-500/10"}`}>
             {resultat.dejaRecuperee ? (
-              <p className="font-bold text-orange-400">Commande déjà récupérée !</p>
+              <p className="font-bold text-orange-600">Commande déjà récupérée !</p>
             ) : (
-              <p className="font-bold text-green-400">Commande marquée récupérée.</p>
+              <p className="font-bold text-green-600">Commande marquée récupérée.</p>
             )}
             <p className="text-sm mt-1">
               {resultat.commande.prenom} {resultat.commande.nom} — {resultat.commande.items.map((i) => `${i.qte}×${i.nom}`).join(", ")} —{" "}
@@ -131,7 +131,7 @@ export default function AdminScanPage() {
         )}
       </div>
 
-      <div className="mt-8 border border-neutral-800 rounded-xl bg-neutral-900 p-6 space-y-4">
+      <div className="mt-8 border border-line rounded-xl bg-card p-6 space-y-4">
         <h2 className="text-lg font-bold">Recherche manuelle</h2>
         <form onSubmit={chercherEmail} className="flex gap-3">
           <input
@@ -139,7 +139,7 @@ export default function AdminScanPage() {
             value={rechercheEmail}
             onChange={(e) => setRechercheEmail(e.target.value)}
             placeholder="Email de l'élève…"
-            className="flex-1 bg-neutral-950 border border-neutral-700 rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+            className="flex-1 bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
           />
           <button type="submit" className="bg-cesi-jaune text-black font-bold px-5 py-2 rounded-lg hover:bg-yellow-300">
             Chercher
@@ -147,12 +147,12 @@ export default function AdminScanPage() {
         </form>
         <ul className="space-y-2">
           {resultats.map((c) => (
-            <li key={c._id} className="flex items-center justify-between gap-3 border border-neutral-800 rounded-lg p-3">
+            <li key={c._id} className="flex items-center justify-between gap-3 border border-line rounded-lg p-3">
               <div className="text-sm">
                 <p className="font-semibold">
                   {c.prenom} {c.nom} — {c.items.map((i) => `${i.qte}×${i.nom}`).join(", ")}
                 </p>
-                <p className="text-neutral-500">
+                <p className="text-muted">
                   {c.total.toFixed(2)} € — {c.statut === "recuperee" ? "Récupérée" : "En attente"}
                 </p>
               </div>

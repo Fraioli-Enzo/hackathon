@@ -70,44 +70,44 @@ export default function AdminProduitsPage() {
       <AdminNav />
       <h1 className="text-3xl font-black mb-6">Produits & prix</h1>
 
-      <form onSubmit={ajouter} className="flex flex-wrap gap-3 items-end mb-8 border border-neutral-800 rounded-xl bg-neutral-900 p-4">
+      <form onSubmit={ajouter} className="flex flex-wrap gap-3 items-end mb-8 border border-line rounded-xl bg-card p-4">
         <label className="flex-1 min-w-[160px] space-y-1">
-          <span className="text-sm text-neutral-400">Nom</span>
+          <span className="text-sm text-muted">Nom</span>
           <input
             value={nouveau.nom}
             onChange={(e) => setNouveau({ ...nouveau, nom: e.target.value })}
-            className="w-full bg-neutral-950 border border-neutral-700 rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+            className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
           />
         </label>
         <label className="w-28 space-y-1">
-          <span className="text-sm text-neutral-400">Prix (€)</span>
+          <span className="text-sm text-muted">Prix (€)</span>
           <input
             value={nouveau.prix}
             onChange={(e) => setNouveau({ ...nouveau, prix: e.target.value })}
-            className="w-full bg-neutral-950 border border-neutral-700 rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+            className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
             placeholder="2.50"
           />
         </label>
         <label className="flex-[2] min-w-[200px] space-y-1">
-          <span className="text-sm text-neutral-400">Description</span>
+          <span className="text-sm text-muted">Description</span>
           <input
             value={nouveau.description}
             onChange={(e) => setNouveau({ ...nouveau, description: e.target.value })}
-            className="w-full bg-neutral-950 border border-neutral-700 rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+            className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
           />
         </label>
         <button type="submit" className="bg-cesi-jaune text-black font-bold px-5 py-2 rounded-lg hover:bg-yellow-300">
           Ajouter
         </button>
       </form>
-      {erreur && <p className="text-red-400 mb-4">{erreur}</p>}
-      {message && <p className="text-green-400 mb-4">{message}</p>}
+      {erreur && <p className="text-red-500 mb-4">{erreur}</p>}
+      {message && <p className="text-green-600 mb-4">{message}</p>}
 
       <div className="space-y-3">
         {produits.map((p) => (
           <LigneProduit key={p._id} produit={p} onModifier={modifier} onSupprimer={supprimer} />
         ))}
-        {produits.length === 0 && <p className="text-neutral-400">Aucun produit.</p>}
+        {produits.length === 0 && <p className="text-muted">Aucun produit.</p>}
       </div>
     </div>
   );
@@ -136,24 +136,24 @@ function LigneProduit({
   }
 
   return (
-    <div className="border border-neutral-800 rounded-xl bg-neutral-900 p-4 flex flex-wrap items-center gap-3">
+    <div className="border border-line rounded-xl bg-card p-4 flex flex-wrap items-center gap-3">
       <input
         value={nom}
         onChange={(e) => setNom(e.target.value)}
-        className="flex-1 min-w-[120px] bg-neutral-950 border border-neutral-700 rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+        className="flex-1 min-w-[120px] bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
       />
       <input
         value={prix}
         onChange={(e) => setPrix(e.target.value)}
-        className="w-24 bg-neutral-950 border border-neutral-700 rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+        className="w-24 bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
       />
       <input
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Description"
-        className="flex-[2] min-w-[160px] bg-neutral-950 border border-neutral-700 rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+        className="flex-[2] min-w-[160px] bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
       />
-      <label className="flex items-center gap-2 text-sm text-neutral-400">
+      <label className="flex items-center gap-2 text-sm text-muted">
         <input type="checkbox" checked={produit.actif !== false} onChange={(e) => onModifier(produit._id, { actif: e.target.checked })} />
         Actif
       </label>
@@ -162,7 +162,7 @@ function LigneProduit({
       </button>
       <button
         onClick={() => onSupprimer(produit._id, produit.nom)}
-        className="border border-neutral-700 font-bold px-4 py-2 rounded-lg hover:border-red-500 hover:text-red-400"
+        className="border border-line font-bold px-4 py-2 rounded-lg hover:border-red-500 hover:text-red-500"
       >
         Supprimer
       </button>

@@ -33,28 +33,28 @@ export default function AdminLoginPage() {
   return (
     <div className="max-w-sm mx-auto py-12">
       <h1 className="text-3xl font-black mb-6 text-center">Espace cafet</h1>
-      <form onSubmit={valider} className="space-y-4 border border-neutral-800 rounded-xl bg-neutral-900 p-6">
+      <form onSubmit={valider} className="space-y-4 border border-line rounded-xl bg-card p-6">
         <label className="block space-y-1">
-          <span className="text-sm text-neutral-400">Email</span>
+          <span className="text-sm text-muted">Email</span>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-neutral-950 border border-neutral-700 rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+            className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
             required
           />
         </label>
         <label className="block space-y-1">
-          <span className="text-sm text-neutral-400">Mot de passe</span>
+          <span className="text-sm text-muted">Mot de passe</span>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-neutral-950 border border-neutral-700 rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+            className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
             required
           />
         </label>
-        {erreur && <p className="text-red-400 text-sm">{erreur}</p>}
+        {erreur && <p className="text-red-500 text-sm">{erreur}</p>}
         <button
           type="submit"
           disabled={envoi}

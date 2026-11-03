@@ -15,8 +15,8 @@ export default function AdminDashboard() {
       .catch((e) => setErreur(e.message));
   }, []);
 
-  if (erreur) return <p className="text-red-400">{erreur}</p>;
-  if (!recap) return <p className="text-neutral-400">Chargement…</p>;
+  if (erreur) return <p className="text-red-500">{erreur}</p>;
+  if (!recap) return <p className="text-muted">Chargement…</p>;
 
   const debut = new Date(recap.debut).toLocaleDateString("fr-FR");
   const fin = new Date(recap.fin).toLocaleDateString("fr-FR");
@@ -25,36 +25,36 @@ export default function AdminDashboard() {
     <div>
       <AdminNav />
       <h1 className="text-3xl font-black mb-2">Panier de la semaine</h1>
-      <p className="text-neutral-400 mb-6">
+      <p className="text-muted mb-6">
         Semaine du {debut} au {fin}
       </p>
 
       <div className="grid sm:grid-cols-4 gap-4 mb-8">
-        <div className="border border-neutral-800 rounded-xl bg-neutral-900 p-4">
-          <p className="text-sm text-neutral-400">Commandes</p>
+        <div className="border border-line rounded-xl bg-card p-4">
+          <p className="text-sm text-muted">Commandes</p>
           <p className="text-3xl font-black text-cesi-jaune">{recap.nbCommandes}</p>
         </div>
-        <div className="border border-neutral-800 rounded-xl bg-neutral-900 p-4">
-          <p className="text-sm text-neutral-400">CA de la semaine</p>
+        <div className="border border-line rounded-xl bg-card p-4">
+          <p className="text-sm text-muted">CA de la semaine</p>
           <p className="text-3xl font-black">{recap.ca.toFixed(2)} €</p>
         </div>
-        <div className="border border-neutral-800 rounded-xl bg-neutral-900 p-4">
-          <p className="text-sm text-neutral-400">En attente</p>
+        <div className="border border-line rounded-xl bg-card p-4">
+          <p className="text-sm text-muted">En attente</p>
           <p className="text-3xl font-black">{recap.enAttente}</p>
         </div>
-        <div className="border border-neutral-800 rounded-xl bg-neutral-900 p-4">
-          <p className="text-sm text-neutral-400">Récupérées</p>
+        <div className="border border-line rounded-xl bg-card p-4">
+          <p className="text-sm text-muted">Récupérées</p>
           <p className="text-3xl font-black">{recap.recuperees}</p>
         </div>
       </div>
 
       <h2 className="text-xl font-bold mb-3">À acheter</h2>
       {recap.produits.length === 0 ? (
-        <p className="text-neutral-400">Aucune commande cette semaine.</p>
+        <p className="text-muted">Aucune commande cette semaine.</p>
       ) : (
-        <div className="border border-neutral-800 rounded-xl overflow-hidden">
-          <table className="w-full text-left bg-neutral-900">
-            <thead className="border-b border-neutral-800 text-neutral-400 text-sm">
+        <div className="border border-line rounded-xl overflow-hidden">
+          <table className="w-full text-left bg-card">
+            <thead className="border-b border-line text-muted text-sm">
               <tr>
                 <th className="px-4 py-3">Produit</th>
                 <th className="px-4 py-3 text-right">Quantité</th>
@@ -63,7 +63,7 @@ export default function AdminDashboard() {
             </thead>
             <tbody>
               {recap.produits.map((p) => (
-                <tr key={p.nom} className="border-b border-neutral-800 last:border-0">
+                <tr key={p.nom} className="border-b border-line last:border-0">
                   <td className="px-4 py-3 font-semibold">{p.nom}</td>
                   <td className="px-4 py-3 text-right font-black text-cesi-jaune">{p.qte}</td>
                   <td className="px-4 py-3 text-right">{p.total.toFixed(2)} €</td>

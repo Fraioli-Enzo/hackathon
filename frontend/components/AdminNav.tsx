@@ -21,7 +21,7 @@ export default function AdminNav() {
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 mb-8 border-b border-neutral-800 pb-4">
+    <div className="flex flex-wrap items-center justify-between gap-3 mb-8 border-b border-line pb-4">
       <nav className="flex gap-4 text-sm font-medium">
         {LIENS.map((l) => (
           <Link
@@ -33,7 +33,7 @@ export default function AdminNav() {
           </Link>
         ))}
       </nav>
-      <button onClick={deconnexion} className="text-sm border border-neutral-700 px-3 py-1 rounded-lg hover:border-red-500 hover:text-red-400 transition-colors">
+      <button onClick={deconnexion} className="text-sm border border-line px-3 py-1 rounded-lg hover:border-red-500 hover:text-red-500 transition-colors">
         Déconnexion
       </button>
     </div>

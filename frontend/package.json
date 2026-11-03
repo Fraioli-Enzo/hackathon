@@ -9,6 +9,7 @@
     "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
+    "@iconify/react": "^6.0.4",
     "bcryptjs": "^2.4.3",
     "jspdf": "^2.5.2",
     "jsqr": "^1.4.0",

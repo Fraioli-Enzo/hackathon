@@ -32,7 +32,7 @@ export default function ConfirmationPage() {
     return (
       <div className="text-center space-y-4 py-16">
         <h1 className="text-3xl font-black">Aucune commande récente</h1>
-        <p className="text-neutral-400">Repasses une commande pour recevoir un ticket.</p>
+        <p className="text-muted">Repasses une commande pour recevoir un ticket.</p>
         <Link href="/commander" className="inline-block bg-cesi-jaune text-black font-bold px-6 py-3 rounded-lg hover:bg-yellow-300">
           Commander
         </Link>
@@ -44,13 +44,13 @@ export default function ConfirmationPage() {
     <div className="max-w-lg mx-auto space-y-6 text-center">
       <div className="space-y-2">
         <h1 className="text-3xl font-black">Commande enregistrée !</h1>
-        <p className="text-neutral-400">
+        <p className="text-muted">
           Merci {commande.prenom} ! Ton ticket PDF a été téléchargé. Présente le QR code au retrait, paiement sur place (espèces / Lydia).
         </p>
       </div>
 
-      <div className="border border-neutral-800 rounded-xl bg-neutral-900 p-6 space-y-4 text-left">
-        <div className="flex justify-between text-sm text-neutral-400">
+      <div className="border border-line rounded-xl bg-card p-6 space-y-4 text-left">
+        <div className="flex justify-between text-sm text-muted">
           <span>Ticket n° {commande._id.slice(-8).toUpperCase()}</span>
           <span>{new Date(commande.createdAt).toLocaleString("fr-FR")}</span>
         </div>
@@ -64,7 +64,7 @@ export default function ConfirmationPage() {
             </li>
           ))}
         </ul>
-        <div className="flex justify-between font-black text-lg border-t border-neutral-800 pt-3">
+        <div className="flex justify-between font-black text-lg border-t border-line pt-3">
           <span>Total</span>
           <span className="text-cesi-jaune">{commande.total.toFixed(2)} €</span>
         </div>
@@ -72,7 +72,7 @@ export default function ConfirmationPage() {
           <div className="flex flex-col items-center gap-2 pt-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={qrDataUrl} alt="QR code de retrait" className="w-40 h-40 bg-white rounded-lg p-1" />
-            <span className="text-xs text-neutral-500">Scanner par la cafet au retrait</span>
+            <span className="text-xs text-muted">Scanner par la cafet au retrait</span>
           </div>
         )}
       </div>
@@ -84,7 +84,7 @@ export default function ConfirmationPage() {
         >
           Re-télécharger le ticket
         </button>
-        <Link href="/" className="border border-neutral-700 font-bold px-6 py-3 rounded-lg hover:border-cesi-jaune">
+        <Link href="/" className="border border-line font-bold px-6 py-3 rounded-lg hover:border-cesi-jaune">
           Retour à l&apos;accueil
         </Link>
       </div>

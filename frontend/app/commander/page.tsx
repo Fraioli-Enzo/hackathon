@@ -72,39 +72,39 @@ export default function CommanderPage() {
         <div className="space-y-4">
           <div className="grid sm:grid-cols-2 gap-4">
             <label className="block space-y-1">
-              <span className="text-sm text-neutral-400">Prénom</span>
+              <span className="text-sm text-muted">Prénom</span>
               <input
                 value={form.prenom}
                 onChange={(e) => setForm({ ...form, prenom: e.target.value })}
-                className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+                className="w-full bg-card border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
                 required
               />
             </label>
             <label className="block space-y-1">
-              <span className="text-sm text-neutral-400">Nom</span>
+              <span className="text-sm text-muted">Nom</span>
               <input
                 value={form.nom}
                 onChange={(e) => setForm({ ...form, nom: e.target.value })}
-                className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+                className="w-full bg-card border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
                 required
               />
             </label>
             <label className="block space-y-1">
-              <span className="text-sm text-neutral-400">Adresse mail</span>
+              <span className="text-sm text-muted">Adresse mail</span>
               <input
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+                className="w-full bg-card border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
                 required
               />
             </label>
             <label className="block space-y-1">
-              <span className="text-sm text-neutral-400">Bâtiment</span>
+              <span className="text-sm text-muted">Bâtiment</span>
               <select
                 value={form.batiment}
                 onChange={(e) => setForm({ ...form, batiment: e.target.value })}
-                className="w-full bg-neutral-900 border border-neutral-700 rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+                className="w-full bg-card border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
               >
                 <option value="Orion">Orion</option>
                 <option value="Antares">Antares</option>
@@ -114,19 +114,19 @@ export default function CommanderPage() {
 
           <h2 className="text-xl font-bold pt-2">Produits</h2>
           <div className="space-y-3">
-            {produits.length === 0 && <p className="text-neutral-400">Chargement…</p>}
+            {produits.length === 0 && <p className="text-muted">Chargement…</p>}
             {produits.map((p) => (
-              <div key={p._id} className="flex items-center justify-between gap-4 border border-neutral-800 rounded-xl p-4 bg-neutral-900">
+              <div key={p._id} className="flex items-center justify-between gap-4 border border-line rounded-xl p-4 bg-card">
                 <div className="flex-1">
                   <p className="font-bold">{p.nom}</p>
-                  <p className="text-sm text-neutral-400">{p.description || ""}</p>
+                  <p className="text-sm text-muted">{p.description || ""}</p>
                   <p className="text-cesi-jaune font-semibold">{p.prix.toFixed(2)} €</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
                     onClick={() => majQte(p._id, -1)}
-                    className="w-9 h-9 rounded-lg border border-neutral-700 font-bold hover:border-cesi-jaune"
+                    className="w-9 h-9 rounded-lg border border-line font-bold hover:border-cesi-jaune"
                   >
                     −
                   </button>
@@ -144,10 +144,10 @@ export default function CommanderPage() {
           </div>
         </div>
 
-        <aside className="border border-neutral-800 rounded-xl p-5 bg-neutral-900 lg:sticky lg:top-20 space-y-4">
+        <aside className="border border-line rounded-xl p-5 bg-card lg:sticky lg:top-20 space-y-4">
           <h2 className="text-lg font-bold">Panier</h2>
           {panier.length === 0 ? (
-            <p className="text-neutral-400 text-sm">Aucun produit sélectionné.</p>
+            <p className="text-muted text-sm">Aucun produit sélectionné.</p>
           ) : (
             <ul className="space-y-2 text-sm">
               {panier.map((l) => (
@@ -160,11 +160,11 @@ export default function CommanderPage() {
               ))}
             </ul>
           )}
-          <div className="flex justify-between font-black text-lg border-t border-neutral-800 pt-3">
+          <div className="flex justify-between font-black text-lg border-t border-line pt-3">
             <span>Total</span>
             <span className="text-cesi-jaune">{total.toFixed(2)} €</span>
           </div>
-          {erreur && <p className="text-red-400 text-sm">{erreur}</p>}
+          {erreur && <p className="text-red-500 text-sm">{erreur}</p>}
           <button
             type="submit"
             disabled={envoi}
@@ -172,7 +172,7 @@ export default function CommanderPage() {
           >
             {envoi ? "Envoi…" : "Valider la commande"}
           </button>
-          <p className="text-xs text-neutral-500 text-center">Paiement sur place (espèces / Lydia).</p>
+          <p className="text-xs text-muted text-center">Paiement sur place (espèces / Lydia).</p>
         </aside>
       </form>
     </div>

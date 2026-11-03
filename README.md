@@ -7,7 +7,7 @@ Plateforme de commande de nourriture (banh bao, nems, mochis…) pour la cafét�
 
 ## Stack
 
-Next.js 14 (App Router) full-stack, Tailwind CSS (thème noir & jaune), MongoDB via Mongoose, PDF via `jspdf`, QR via `qrcode` + `jsqr`. Un seul service, dockerisable.
+Next.js 14 (App Router) full-stack, Tailwind CSS (thème noir & jaune par défaut, bascule clair/sombre ☀️/🌙 dans le header), icônes via Iconify (`@iconify/react`, embarquées dans `frontend/lib/icons.ts` — pas d'appel réseau), MongoDB via Mongoose, PDF via `jspdf`, QR via `qrcode` + `jsqr`. Un seul service, dockerisable.
 
 ## Structure
 
@@ -58,7 +58,7 @@ docker compose up -d --build
 ```
 
 - `mongo` : mongo:7, volume persistant `mongo-data`, port 27017
-- `app` : image Next.js, port 3000
+- `app` : Next.js en **mode dev** (hot reload, source montée en volume), port 3000. Pour du build de production : retirer `target: dev`, `command` et `volumes` du service `app` dans `docker-compose.yml` (le Dockerfile garde son stage `runner` de prod).
 
 ## Développement manuel
 

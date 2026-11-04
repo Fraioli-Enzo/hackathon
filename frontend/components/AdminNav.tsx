@@ -54,7 +54,7 @@ export default function AdminNav() {
   }
 
   return (
-    <div className="mb-8 border-b border-line pb-4">
+    <div className="relative mb-8 border-b border-line pb-4">
       {/* Barre mobile : burger + page active + déconnexion */}
       <div className="flex items-center justify-between gap-2 sm:hidden">
         <button
@@ -77,7 +77,7 @@ export default function AdminNav() {
 
       {/* Panneau burger mobile */}
       {ouvert && (
-        <nav className="sm:hidden mt-4 flex flex-col gap-2" aria-label="Navigation admin">
+        <nav className="sm:hidden absolute top-full left-0 right-0 z-40 mt-2 flex flex-col gap-2 bg-surface border border-line rounded-xl p-3 shadow-xl" aria-label="Navigation admin">
           {LIENS.map((l) => {
             const actif = pathname === l.href;
             return (

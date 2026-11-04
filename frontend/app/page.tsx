@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
+import QRCode from "qrcode";
 import ImageProduit from "@/components/ImageProduit";
 import { connectDB } from "@/lib/db";
 import { Produit } from "@/lib/models/Produit";
@@ -27,6 +28,13 @@ export default async function Accueil() {
     // cookie illisible : pas de commande affichée
   }
 
+  // QR code de retrait de chaque commande (encodage de l'id, comme sur le ticket PDF)
+  const qrUrls = await Promise.all(
+    mesCommandes.map((c) =>
+      QRCode.toDataURL(String(c._id), { width: 240, margin: 1 }).catch(() => null),
+    ),
+  );
+
   return (
     <div className="space-y-12">
       <section className="text-center space-y-5 py-10">
@@ -50,29 +58,39 @@ export default async function Accueil() {
           <h2 className="text-2xl font-bold">
               {mesCommandes.length > 1 ? "Tes commandes en cours" : "Ta commande en cours"}
             </h2>
-          {mesCommandes.map((c) => (
-            <div key={String(c._id)} className="border border-line rounded-xl bg-card p-5 space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="font-bold">Ticket n° {String(c._id).slice(-8).toUpperCase()}</p>
-                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-cesi-jaune/15 text-yellow-700">
-                  Retrait {String(c.jour).toLowerCase()}
-                </span>
+          {mesCommandes.map((c, i) => (
+            <div key={String(c._id)} className="flex gap-5 border border-line rounded-xl bg-card p-5">
+              {qrUrls[i] && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={qrUrls[i]}
+                  alt={`QR code du ticket n° ${String(c._id).slice(-8).toUpperCase()}`}
+                  className="w-28 h-28 sm:w-32 sm:h-32 shrink-0 bg-white rounded-lg p-1.5 self-center"
+                />
+              )}
+              <div className="flex-1 min-w-0 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="font-bold">Ticket n° {String(c._id).slice(-8).toUpperCase()}</p>
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-cesi-jaune/15 text-yellow-700">
+                    Retrait {String(c.jour).toLowerCase()}
+                  </span>
+                </div>
+                <ul className="space-y-1 text-sm">
+                  {c.items.map((item, j) => (
+                    <li key={j} className="flex justify-between gap-3">
+                      <span>{item.qte} × {item.nom}</span>
+                      <span className="text-muted">{(item.qte * item.prix).toFixed(2)} €</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="flex justify-between font-black border-t border-line pt-2">
+                  <span>Total</span>
+                  <span className="text-cesi-jaune">{Number(c.total).toFixed(2)} €</span>
+                </p>
+                <p className="text-muted text-xs">
+                  Présente le QR code de ton ticket au retrait, paiement sur place (espèces ou carte).
+                </p>
               </div>
-              <ul className="space-y-1 text-sm">
-                {c.items.map((item, i) => (
-                  <li key={i} className="flex justify-between gap-3">
-                    <span>{item.qte} × {item.nom}</span>
-                    <span className="text-muted">{(item.qte * item.prix).toFixed(2)} €</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="flex justify-between font-black border-t border-line pt-2">
-                <span>Total</span>
-                <span className="text-cesi-jaune">{Number(c.total).toFixed(2)} €</span>
-              </p>
-              <p className="text-muted text-xs">
-                Présente le QR code de ton ticket au retrait, paiement sur place (espèces ou carte).
-              </p>
             </div>
           ))}
         </section>

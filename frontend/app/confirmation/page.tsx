@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import type { CommandeClient } from "@/lib/types";
 
@@ -15,7 +15,6 @@ function separeComposition(nom: string): { base: string; composition: string | n
 export default function ConfirmationPage() {
   const [commande, setCommande] = useState<CommandeClient | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
-  const telecharge = useRef(false);
 
   useEffect(() => {
     try {
@@ -29,10 +28,6 @@ export default function ConfirmationPage() {
   useEffect(() => {
     if (!commande) return;
     QRCode.toDataURL(commande._id, { width: 240, margin: 1 }).then(setQrDataUrl).catch(() => {});
-    if (!telecharge.current) {
-      telecharge.current = true;
-      telechargerTicket(commande);
-    }
   }, [commande]);
 
   if (!commande) {
@@ -52,7 +47,7 @@ export default function ConfirmationPage() {
       <div className="space-y-2">
         <h1 className="text-3xl font-black">Commande enregistrée !</h1>
         <p className="text-muted">
-          Merci {commande.prenom} ! Ton ticket PDF a été téléchargé. Retrait le {commande.jour.toLowerCase()}, présente le QR code sur place, paiement en espèces ou carte.
+          Merci {commande.prenom} ! Ton ticket est prêt. Retrait le {commande.jour.toLowerCase()}, présente le QR code sur place, paiement en espèces ou carte.
         </p>
       </div>
 
@@ -106,7 +101,7 @@ export default function ConfirmationPage() {
           onClick={() => telechargerTicket(commande)}
           className="bg-cesi-jaune text-black font-bold px-6 py-3 rounded-lg hover:bg-yellow-300"
         >
-          Re-télécharger le ticket
+          Télécharger le ticket
         </button>
         <Link href="/" className="border border-line font-bold px-6 py-3 rounded-lg hover:border-cesi-jaune">
           Retour à l&apos;accueil

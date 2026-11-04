@@ -59,7 +59,7 @@ export default function AdminDashboard() {
                 <th className="px-4 py-3 text-right">Stock</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="max-sm:block">
               {recap.stockRestant.map((p) => (
                 <tr key={p.nom} className="max-sm:flex max-sm:items-center max-sm:gap-3 max-sm:mb-3 max-sm:rounded-xl max-sm:border max-sm:border-line max-sm:bg-card max-sm:p-4 sm:border-b sm:border-line sm:last:border-0">
                   <td data-label="Produit" className="px-4 py-3 font-semibold max-sm:flex-1 max-sm:flex max-sm:items-center max-sm:gap-3 max-sm:py-0 max-sm:before:hidden">

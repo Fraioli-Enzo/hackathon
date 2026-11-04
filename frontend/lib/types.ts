@@ -49,6 +49,7 @@ export type LigneCommande = {
   nom: string;
   prix: number;
   qte: number;
+  variantes?: { produitId: string; qte: number }[];
 };
 
 export type CommandeClient = {

@@ -233,7 +233,7 @@ export default function AdminStockPage() {
               <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="max-sm:block">
             {produitsAffiches.map((p) => (
               <tr key={p._id} className="max-sm:grid max-sm:grid-cols-[1fr,auto] max-sm:gap-x-3 max-sm:gap-y-3 max-sm:mb-3 max-sm:rounded-xl max-sm:border max-sm:border-line max-sm:bg-card max-sm:p-4 sm:border-b sm:border-line sm:last:border-0">
                 <td className="px-4 py-3 max-sm:col-start-1 max-sm:row-start-1 max-sm:py-0">

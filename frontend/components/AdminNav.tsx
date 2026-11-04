@@ -9,7 +9,6 @@ import {
   phForkKnifeBold,
   phPackageBold,
   phReceiptBold,
-  phQrCodeBold,
   phSignOutBold,
   phUsersBold,
   phListBold,
@@ -20,7 +19,6 @@ addIcon("ph:squares-four-bold", phSquaresFourBold);
 addIcon("ph:fork-knife-bold", phForkKnifeBold);
 addIcon("ph:package-bold", phPackageBold);
 addIcon("ph:receipt-bold", phReceiptBold);
-addIcon("ph:qr-code-bold", phQrCodeBold);
 addIcon("ph:sign-out-bold", phSignOutBold);
 addIcon("ph:users-bold", phUsersBold);
 addIcon("ph:list-bold", phListBold);
@@ -31,7 +29,6 @@ const LIENS = [
   { href: "/admin/produits", label: "Produits", icone: "ph:fork-knife-bold" },
   { href: "/admin/stock", label: "Stock", icone: "ph:package-bold" },
   { href: "/admin/commandes", label: "Commandes", icone: "ph:receipt-bold" },
-  { href: "/admin/scan", label: "Scan QR", icone: "ph:qr-code-bold" },
   { href: "/admin/comptes", label: "Comptes", icone: "ph:users-bold" },
 ];
 

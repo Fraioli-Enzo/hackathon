@@ -1,10 +1,17 @@
 import mongoose, { Schema } from "mongoose";
 
+export interface IVarianteConsomee {
+  produitId: mongoose.Types.ObjectId;
+  qte: number;
+}
+
 export interface ILigneCommande {
   produitId: mongoose.Types.ObjectId;
   nom: string;
   prix: number;
   qte: number;
+  // Variantes de base consommées par un menu (pour rendre le stock à la suppression)
+  variantes?: IVarianteConsomee[];
 }
 
 export interface ICommande {
@@ -29,6 +36,12 @@ const CommandeSchema = new Schema<ICommande>({
       nom: { type: String, required: true },
       prix: { type: Number, required: true, min: 0 },
       qte: { type: Number, required: true, min: 1 },
+      variantes: [
+        {
+          produitId: { type: Schema.Types.ObjectId, required: true },
+          qte: { type: Number, required: true, min: 1 },
+        },
+      ],
     },
   ],
   total: { type: Number, required: true, min: 0 },

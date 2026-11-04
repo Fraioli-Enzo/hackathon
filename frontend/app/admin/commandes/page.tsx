@@ -266,6 +266,13 @@ export default function AdminCommandesPage() {
             <div className="space-y-3">
               {produitsDirects.map((p) => {
                 const menu = p.categorie === "Menus";
+                const menuDispo =
+                  !menu ||
+                  (p.composition || []).every(
+                    (c) =>
+                      !c.categorie ||
+                      produits.some((v) => v.categorie === c.categorie && v.actif !== false && stockRestantDirect(v) > 0)
+                  );
                 return (
                   <div key={p._id} className="border border-line rounded-xl p-3 sm:p-4 bg-card">
                     <div className="flex gap-3">
@@ -276,6 +283,11 @@ export default function AdminCommandesPage() {
                           <p className="text-cesi-jaune font-bold shrink-0">{p.prix.toFixed(2)} €</p>
                         </div>
                         <p className="text-sm text-muted line-clamp-2 sm:line-clamp-none">{p.description || ""}</p>
+                        {menu && !menuDispo && (
+                          <span className="inline-block text-xs font-bold px-2.5 py-1 rounded-full bg-red-500/10 text-red-500 mt-1">
+                            Indisponible
+                          </span>
+                        )}
                         {!menu && (
                           <p
                             className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full mt-1 ${
@@ -302,7 +314,7 @@ export default function AdminCommandesPage() {
                         <button
                           onClick={() => majQte(p._id, 1)}
                           className="w-9 h-9 rounded-lg bg-cesi-jaune text-black font-bold hover:bg-yellow-300 disabled:opacity-40"
-                          disabled={!menu && (qtes[p._id] || 0) >= Math.min(50, stockRestantDirect(p))}
+                          disabled={(!menu && (qtes[p._id] || 0) >= Math.min(50, stockRestantDirect(p))) || (menu && !menuDispo)}
                           aria-label={`Ajouter un ${p.nom}`}
                         >
                           +

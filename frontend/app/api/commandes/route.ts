@@ -64,10 +64,12 @@ export async function POST(req: NextRequest) {
       }
 
       let nom = produit.nom;
+      let variantesLigne: { produitId: string; qte: number }[] | undefined;
 
       // Menu : résolution des choix de variantes + impact stock des produits de base
       if (produit.categorie === "Menus" && produit.composition?.length) {
         const detail: string[] = [];
+        const consommees = new Map<string, number>();
         for (let i = 0; i < produit.composition.length; i++) {
           const c = produit.composition[i];
           if (c.categorie) {
@@ -89,6 +91,7 @@ export async function POST(req: NextRequest) {
                 );
               }
               qtes.set(String(variante._id), (qtes.get(String(variante._id)) || 0) + item.qte);
+              consommees.set(String(variante._id), (consommees.get(String(variante._id)) || 0) + item.qte);
               noms.set(variante.nom, (noms.get(variante.nom) || 0) + 1);
             }
             for (const [nom, q] of Array.from(noms.entries())) {
@@ -97,18 +100,21 @@ export async function POST(req: NextRequest) {
           } else if (c.nomProduit) {
             const composant = parNom.get(c.nomProduit);
             if (composant) {
-              qtes.set(String(composant._id), (qtes.get(String(composant._id)) || 0) + item.qte * c.qte);
+              const qteConsommee = item.qte * c.qte;
+              qtes.set(String(composant._id), (qtes.get(String(composant._id)) || 0) + qteConsommee);
+              consommees.set(String(composant._id), (consommees.get(String(composant._id)) || 0) + qteConsommee);
             }
             detail.push(`${c.nomProduit}${c.qte > 1 ? ` ×${c.qte}` : ""}`);
           }
         }
+        variantesLigne = Array.from(consommees.entries()).map(([id, q]) => ({ produitId: id, qte: q }));
         if (detail.length) nom = `${produit.nom} (${detail.join(" + ")})`;
       } else if (produit.categorie !== "Menus") {
         // Stock géré uniquement sur les produits de base
         qtes.set(String(produit._id), (qtes.get(String(produit._id)) || 0) + item.qte);
       }
 
-      lignes.push({ produitId: produit._id, nom, prix: produit.prix, qte: item.qte });
+      lignes.push({ produitId: produit._id, nom, prix: produit.prix, qte: item.qte, ...(variantesLigne ? { variantes: variantesLigne } : {}) });
     }
 
     // Décrément du stock, avec remise en état si un produit manque

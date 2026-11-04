@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { Commande } from "@/lib/models/Commande";
+import { Produit } from "@/lib/models/Produit";
 import { getAdminEmail } from "@/lib/auth";
 
 type Params = { params: { id: string } };
@@ -12,10 +13,26 @@ export async function DELETE(req: NextRequest, { params }: Params) {
   }
   try {
     await connectDB();
-    const commande = await Commande.findByIdAndDelete(params.id).lean();
+    const commande = await Commande.findById(params.id).lean();
     if (!commande) {
       return NextResponse.json({ error: "Commande introuvable." }, { status: 404 });
     }
+    // Une commande en attente libère son stock ; une commande déjà récupérée
+    // a été physiquement consommée, on ne rend pas le stock
+    if (commande.statut !== "recuperee") {
+      for (const item of commande.items) {
+        if (item.variantes?.length) {
+          for (const v of item.variantes) {
+            await Produit.updateOne({ _id: v.produitId }, { $inc: { stock: v.qte } });
+          }
+        } else {
+          // produits simples ; les anciennes lignes de menu sans variantes ne
+          // portent pas assez d'information pour rendre les bons produits
+          await Produit.updateOne({ _id: item.produitId, categorie: { $ne: "Menus" } }, { $inc: { stock: item.qte } });
+        }
+      }
+    }
+    await Commande.findByIdAndDelete(params.id);
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("DELETE /api/commandes/[id]", e);

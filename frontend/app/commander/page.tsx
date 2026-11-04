@@ -191,6 +191,14 @@ export default function CommanderPage() {
             {produitsFiltres.map((p) => {
               const menu = p.categorie === "Menus";
               const stock = menu ? 0 : stockRestantDe(p);
+              // Un menu est indisponible si l'un de ses composants n'a plus de variante en stock
+              const menuDispo =
+                !menu ||
+                (p.composition || []).every(
+                  (c) =>
+                    !c.categorie ||
+                    produits.some((v) => v.categorie === c.categorie && v.actif !== false && stockRestantDe(v) > 0)
+                );
               const avecChoix = menu && (p.composition?.some((c) => c.categorie) ?? false);
               return (
               <div key={p._id} className="space-y-2">

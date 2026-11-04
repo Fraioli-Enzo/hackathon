@@ -88,3 +88,15 @@ export const phUsersBold: IconifyIcon = {
   height: 256,
   body: '<path fill="currentColor" d="M125.18 156.94a64 64 0 1 0-82.36 0a100.23 100.23 0 0 0-39.49 32a12 12 0 0 0 19.35 14.2a76 76 0 0 1 122.64 0a12 12 0 0 0 19.36-14.2a100.33 100.33 0 0 0-39.5-32M44 108a40 40 0 1 1 40 40a40 40 0 0 1-40-40m206.1 24h-8v-8a12 12 0 0 0-24 0v8h-8a12 12 0 0 0 0 24h8v8a12 12 0 0 0 24 0v-8h8a12 12 0 0 0 0-24"/>',
 };
+
+export const phListBold: IconifyIcon = {
+  width: 256,
+  height: 256,
+  body: '<path fill="currentColor" d="M228 128a12 12 0 0 1-12 12H40a12 12 0 0 1 0-24h176a12 12 0 0 1 12 12M40 76h176a12 12 0 0 0 0-24H40a12 12 0 0 0 0 24m176 104H40a12 12 0 0 0 0 24h176a12 12 0 0 0 0-24"/>',
+};
+
+export const phXBold: IconifyIcon = {
+  width: 256,
+  height: 256,
+  body: '<path fill="currentColor" d="M208.49 191.51a12 12 0 0 1-17 17L128 145l-63.51 63.49a12 12 0 0 1-17-17L111 128L47.51 64.49a12 12 0 0 1 17-17L128 111l63.51-63.52a12 12 0 0 1 17 17L145 128Z"/>',
+};

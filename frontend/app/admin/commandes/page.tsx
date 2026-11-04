@@ -25,6 +25,7 @@ export default function AdminCommandesPage() {
   const [filtreDirect, setFiltreDirect] = useState("");
   const [rechercheDirect, setRechercheDirect] = useState("");
   const [triDirect, setTriDirect] = useState("nom-asc");
+  const [choixDirect, setChoixDirect] = useState<Record<string, Record<number, string[]>>>({});
 
   async function ouvrirAjout() {
     setQtes({});
@@ -34,11 +35,26 @@ export default function AdminCommandesPage() {
     setFormDirect({ prenom: "", nom: "", batiment: "Orion", jour: "Lundi" });
     const res = await fetch("/api/produits");
     const data = await res.json();
-    if (res.ok) setProduits((data.produits || []).filter((p: ProduitClient) => p.categorie !== "Menus"));
+    if (res.ok) {
+      const ps: ProduitClient[] = data.produits || [];
+      setProduits(ps);
+      // pré-sélection de la première variante pour chaque menu
+      const defauts: Record<string, Record<number, string[]>> = {};
+      for (const menu of ps) {
+        if (menu.categorie !== "Menus" || !menu.composition) continue;
+        defauts[menu._id] = {};
+        menu.composition.forEach((c, i) => {
+          if (!c.categorie) return;
+          const variante = ps.find((v) => v.categorie === c.categorie && v.actif !== false);
+          if (variante) defauts[menu._id][i] = Array(c.qte).fill(variante._id);
+        });
+      }
+      setChoixDirect(defauts);
+    }
     setAjoutOuvert(true);
   }
 
-  const categoriesDirect = CATEGORIES.filter((c) => c !== "Menus" && produits.some((p) => p.categorie === c));
+  const categoriesDirect = CATEGORIES.filter((c) => produits.some((p) => p.categorie === c));
   const produitsDirects = produits
     .filter((p) => (!filtreDirect || p.categorie === filtreDirect) && p.nom.toLowerCase().includes(rechercheDirect.trim().toLowerCase()))
     .sort((a, b) => {
@@ -61,7 +77,7 @@ export default function AdminCommandesPage() {
   function majQte(id: string, delta: number) {
     setQtes((q) => {
       const produit = produits.find((p) => p._id === id);
-      const max = Math.min(50, produit?.stock ?? 0);
+      const max = produit?.categorie === "Menus" ? 50 : Math.min(50, produit?.stock ?? 0);
       return { ...q, [id]: Math.max(0, Math.min(max, (q[id] || 0) + delta)) };
     });
   }
@@ -77,12 +93,28 @@ export default function AdminCommandesPage() {
       setErreur("Ajoute au moins un produit.");
       return;
     }
+    for (const l of panierDirect) {
+      if (l.produit.categorie !== "Menus" || !l.produit.composition) continue;
+      const incomplet = l.produit.composition.some(
+        (c, i) => c.categorie && (!choixDirect[l.produit._id]?.[i] || choixDirect[l.produit._id][i].length !== c.qte || choixDirect[l.produit._id][i].some((v) => !v))
+      );
+      if (incomplet) {
+        setErreur(`Choisis le type pour chaque produit du « ${l.produit.nom} ».`);
+        return;
+      }
+    }
     const res = await fetch("/api/commandes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...formDirect,
-        items: panierDirect.map((l) => ({ produitId: l.produit._id, qte: l.qte })),
+        items: panierDirect.map((l) => {
+          const item: { produitId: string; qte: number; choix?: string[][] } = { produitId: l.produit._id, qte: l.qte };
+          if (l.produit.categorie === "Menus" && l.produit.composition?.some((c) => c.categorie)) {
+            item.choix = l.produit.composition.map((c, i) => (c.categorie ? choixDirect[l.produit._id]?.[i] || [] : []));
+          }
+          return item;
+        }),
       }),
     });
     const data = await res.json();
@@ -256,7 +288,7 @@ export default function AdminCommandesPage() {
             </select>
 
             <div className="col-span-1 sm:col-span-2 border-t border-line pt-3 space-y-3">
-              <p className="text-xs text-muted">Produits (les menus se composent avec les produits individuels)</p>
+              <p className="text-xs text-muted">Produits</p>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <input
                   value={rechercheDirect}
@@ -301,10 +333,12 @@ export default function AdminCommandesPage() {
               </div>
               <div className="space-y-2 max-h-64 overflow-y-auto">
               {produitsDirects.map((p) => (
-                <div key={p._id} className="flex items-center justify-between gap-3 text-sm">
+                <div key={p._id} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-sm">
                   <div className="min-w-0">
                     <p className="font-semibold leading-tight">{p.nom}</p>
-                    <p className="text-muted text-xs">{p.prix.toFixed(2)} € - {p.stock ?? 0} en stock</p>
+                    <p className="text-muted text-xs">
+                      {p.categorie === "Menus" ? p.description : `${p.prix.toFixed(2)} € - ${p.stock ?? 0} en stock`}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <button
@@ -320,12 +354,55 @@ export default function AdminCommandesPage() {
                       type="button"
                       onClick={() => majQte(p._id, 1)}
                       className="w-8 h-8 rounded-lg bg-cesi-jaune text-black font-bold hover:bg-yellow-300 disabled:opacity-40"
-                      disabled={(qtes[p._id] || 0) >= Math.min(50, p.stock ?? 0)}
+                      disabled={p.categorie !== "Menus" && (qtes[p._id] || 0) >= Math.min(50, p.stock ?? 0)}
                       aria-label={`Ajouter un ${p.nom}`}
                     >
                       +
                     </button>
                   </div>
+
+                  {p.categorie === "Menus" && (qtes[p._id] || 0) > 0 && p.composition?.some((c) => c.categorie) && (
+                    <div className="w-full border border-line rounded-lg p-3 space-y-2 bg-surface">
+                      <p className="text-xs font-bold">Composition du menu</p>
+                      {(p.composition || []).map((c, i) =>
+                        c.categorie ? (
+                          <div key={i} className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                            <span className="text-muted">{c.qte > 1 ? `${c.qte} × ` : ""}{c.categorie}</span>
+                            <div className="flex flex-wrap gap-1">
+                              {Array.from({ length: c.qte }).map((_, u) => (
+                                <select
+                                  key={u}
+                                  value={choixDirect[p._id]?.[i]?.[u] || ""}
+                                  onChange={(e) =>
+                                    setChoixDirect((ch) => {
+                                      const actuel = ch[p._id]?.[i] || Array(c.qte).fill("");
+                                      const copie = [...actuel];
+                                      copie[u] = e.target.value;
+                                      return { ...ch, [p._id]: { ...(ch[p._id] || {}), [i]: copie } };
+                                    })
+                                  }
+                                  className="bg-card border border-line rounded-lg px-2 py-1 focus:border-cesi-jaune focus:outline-none"
+                                  aria-label={`${c.categorie} n°${u + 1}`}
+                                >
+                                  {produits
+                                    .filter((v) => v.categorie === c.categorie && v.actif !== false)
+                                    .map((v) => (
+                                      <option key={v._id} value={v._id}>
+                                        {v.nom}
+                                      </option>
+                                    ))}
+                                </select>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <p key={i} className="text-xs text-muted">
+                            {c.qte > 1 ? `${c.qte} × ` : ""}{c.nomProduit}
+                          </p>
+                        )
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
               </div>

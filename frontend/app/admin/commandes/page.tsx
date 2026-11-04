@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import jsQR from "jsqr";
 import { Icon, addIcon } from "@iconify/react";
 import { phShoppingCartBold } from "@/lib/icons";
 
@@ -23,6 +24,11 @@ export default function AdminCommandesPage() {
   const [recherche, setRecherche] = useState("");
   const [aSupprimer, setASupprimer] = useState<CommandeClient | null>(null);
   const [modeDirect, setModeDirect] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [resultat, setResultat] = useState<{ commande: CommandeClient; dejaRecuperee: boolean } | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const scanEnCours = useRef(false);
   const [produits, setProduits] = useState<ProduitClient[]>([]);
   const [qtes, setQtes] = useState<Record<string, number>>({});
   const [formDirect, setFormDirect] = useState({ prenom: "", nom: "", batiment: "Orion", jour: "Lundi" });
@@ -208,6 +214,85 @@ export default function AdminCommandesPage() {
   useEffect(() => {
     charger();
   }, [charger]);
+
+  useEffect(() => {
+    if (!scanning) return;
+    let annule = false;
+    let stream: MediaStream | null = null;
+    let rafId = 0;
+
+    async function demarrer() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        const video = videoRef.current;
+        if (!video || annule) return;
+        video.srcObject = stream;
+        await video.play();
+        boucle();
+      } catch {
+        setErreur("Accès caméra impossible. Utilise le bouton Valider dans le tableau.");
+        setScanning(false);
+      }
+    }
+
+    function boucle() {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      if (!video || !canvas || annule || video.readyState !== video.HAVE_ENOUGH_DATA) {
+        rafId = requestAnimationFrame(boucle);
+        return;
+      }
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      if (!ctx) return;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+      const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(image.data, image.width, image.height);
+      if (code?.data && !scanEnCours.current) {
+        scanEnCours.current = true;
+        traiterCode(code.data);
+      } else {
+        rafId = requestAnimationFrame(boucle);
+      }
+    }
+
+    demarrer();
+
+    return () => {
+      annule = true;
+      cancelAnimationFrame(rafId);
+      stream?.getTracks().forEach((t) => t.stop());
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scanning]);
+
+  async function traiterCode(code: string) {
+    try {
+      const res = await fetch("/api/admin/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erreur de scan.");
+      setResultat(data);
+      setErreur(null);
+      setMessage(
+        data.dejaRecuperee
+          ? "Commande déjà récupérée."
+          : `Commande de ${data.commande.prenom} marquée récupérée.`
+      );
+      setTimeout(() => setMessage(null), 3000);
+      charger();
+    } catch (err) {
+      setErreur(err instanceof Error ? err.message : "Erreur inconnue.");
+    } finally {
+      setTimeout(() => {
+        scanEnCours.current = false;
+      }, 2000);
+    }
+  }
 
   const filtrees = commandeFiltrees(commandes, recherche);
 
@@ -443,7 +528,7 @@ export default function AdminCommandesPage() {
                   aria-label="Bâtiment"
                 >
                   <option value="Orion">Bât. Orion</option>
-                  <option value="Antares">Bât. Antares</option>
+                  {/* <option value="Antares">Bât. Antares</option> */}
                 </select>
                 <select
                   value={formDirect.jour}
@@ -498,6 +583,57 @@ export default function AdminCommandesPage() {
         >
           Ajouter
         </button>
+      </div>
+
+      <div className="border border-line rounded-xl bg-card p-5 space-y-4 mb-4">
+        {!scanning ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-muted text-sm">
+              {commandes.filter((c) => c.statut !== "recuperee").length > 0
+                ? `${commandes.filter((c) => c.statut !== "recuperee").length} commande(s) en attente de retrait.`
+                : "Aucune commande en attente."}
+            </p>
+            <button
+              onClick={() => setScanning(true)}
+              className="bg-cesi-jaune text-black font-bold px-5 py-2.5 rounded-lg hover:bg-yellow-300 transition-colors"
+            >
+              Scanner un ticket
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <video ref={videoRef} className="w-full max-w-md rounded-lg mx-auto" playsInline muted />
+            <canvas ref={canvasRef} className="hidden" />
+            <button
+              onClick={() => setScanning(false)}
+              className="border border-line font-bold px-5 py-2.5 rounded-lg hover:border-red-500 hover:text-red-500 transition-colors"
+            >
+              Arrêter la caméra
+            </button>
+          </div>
+        )}
+        {erreur && (
+          <p className="text-red-500 border border-red-500 bg-red-500/10 rounded-lg px-4 py-2 font-semibold">{erreur}</p>
+        )}
+        {resultat && (
+          <div
+            className={`border rounded-lg p-4 ${
+              resultat.dejaRecuperee
+                ? "border-orange-500 bg-orange-500/10"
+                : "border-green-500 bg-green-500/10"
+            }`}
+          >
+            {resultat.dejaRecuperee ? (
+              <p className="font-bold text-orange-600">Commande déjà récupérée !</p>
+            ) : (
+              <p className="font-bold text-green-600">Commande marquée récupérée.</p>
+            )}
+            <p className="text-sm mt-1">
+              {resultat.commande.prenom} {resultat.commande.nom} - retrait {resultat.commande.jour.toLowerCase()} -{" "}
+              {resultat.commande.total.toFixed(2)} €
+            </p>
+          </div>
+        )}
       </div>
 
       <input
@@ -565,7 +701,16 @@ export default function AdminCommandesPage() {
                       </span>
                     )}
                   </td>
-                  <td className="px-3 py-3 text-right max-sm:flex max-sm:justify-end max-sm:py-1.5">
+                  <td className="px-3 py-3 text-right max-sm:flex max-sm:justify-end max-sm:gap-2 max-sm:py-1.5">
+                    {c.statut !== "recuperee" && (
+                      <button
+                        onClick={() => traiterCode(c._id)}
+                        className="bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors max-sm:px-3 max-sm:py-1.5 max-sm:text-sm"
+                      >
+                        Valider
+                      </button>
+                    )}
+                    {" "}
                     <button
                       onClick={() => setASupprimer(c)}
                       className="border border-red-500 text-red-500 font-bold px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white focus-visible:bg-red-500 focus-visible:text-white transition-colors max-sm:px-3 max-sm:py-1.5 max-sm:text-sm"

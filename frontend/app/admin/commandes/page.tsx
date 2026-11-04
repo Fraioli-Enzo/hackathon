@@ -209,8 +209,7 @@ export default function AdminCommandesPage() {
         <AdminNav />
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-black">Nouvelle commande (sur place)</h1>
-            <p className="text-muted text-sm mt-1">Pour les personnes qui commandent directement au comptoir.</p>
+            <h1 className="text-3xl font-black">Commande (sur place)</h1>
           </div>
           <button
             onClick={() => setModeDirect(false)}

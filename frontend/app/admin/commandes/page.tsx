@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import AdminNav from "@/components/AdminNav";
 import type { CommandeClient, ProduitClient } from "@/lib/types";
+import { CATEGORIES } from "@/lib/types";
 import Popup from "@/components/Popup";
 import Banniere from "@/components/Banniere";
 import PopupConfirmation from "@/components/PopupConfirmation";
@@ -21,9 +22,15 @@ export default function AdminCommandesPage() {
   const [produits, setProduits] = useState<ProduitClient[]>([]);
   const [qtes, setQtes] = useState<Record<string, number>>({});
   const [formDirect, setFormDirect] = useState({ prenom: "", nom: "", batiment: "Orion", jour: "Lundi" });
+  const [filtreDirect, setFiltreDirect] = useState("");
+  const [rechercheDirect, setRechercheDirect] = useState("");
+  const [triDirect, setTriDirect] = useState("nom-asc");
 
   async function ouvrirAjout() {
     setQtes({});
+    setFiltreDirect("");
+    setRechercheDirect("");
+    setTriDirect("nom-asc");
     setFormDirect({ prenom: "", nom: "", batiment: "Orion", jour: "Lundi" });
     const res = await fetch("/api/produits");
     const data = await res.json();
@@ -31,6 +38,21 @@ export default function AdminCommandesPage() {
     setAjoutOuvert(true);
   }
 
+  const categoriesDirect = CATEGORIES.filter((c) => c !== "Menus" && produits.some((p) => p.categorie === c));
+  const produitsDirects = produits
+    .filter((p) => (!filtreDirect || p.categorie === filtreDirect) && p.nom.toLowerCase().includes(rechercheDirect.trim().toLowerCase()))
+    .sort((a, b) => {
+      switch (triDirect) {
+        case "nom-desc":
+          return b.nom.localeCompare(a.nom);
+        case "prix-asc":
+          return a.prix - b.prix;
+        case "prix-desc":
+          return b.prix - a.prix;
+        default:
+          return a.nom.localeCompare(b.nom);
+      }
+    });
   const panierDirect = produits
     .filter((p) => (qtes[p._id] || 0) > 0)
     .map((p) => ({ produit: p, qte: qtes[p._id] }));
@@ -233,9 +255,52 @@ export default function AdminCommandesPage() {
               <option value="Mardi">Retrait mardi</option>
             </select>
 
-            <div className="col-span-1 sm:col-span-2 border-t border-line pt-3 space-y-2 max-h-64 overflow-y-auto">
+            <div className="col-span-1 sm:col-span-2 border-t border-line pt-3 space-y-3">
               <p className="text-xs text-muted">Produits (les menus se composent avec les produits individuels)</p>
-              {produits.map((p) => (
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <input
+                  value={rechercheDirect}
+                  onChange={(e) => setRechercheDirect(e.target.value)}
+                  placeholder="Rechercher un produit…"
+                  className="flex-1 min-w-[140px] bg-surface border border-line rounded-lg px-3 py-1.5 focus:border-cesi-jaune focus:outline-none text-sm"
+                />
+                <select
+                  value={triDirect}
+                  onChange={(e) => setTriDirect(e.target.value)}
+                  className="bg-surface border border-line rounded-lg px-3 py-1.5 focus:border-cesi-jaune focus:outline-none text-sm"
+                  aria-label="Trier les produits"
+                >
+                  <option value="nom-asc">Nom (A à Z)</option>
+                  <option value="nom-desc">Nom (Z à A)</option>
+                  <option value="prix-asc">Prix croissant</option>
+                  <option value="prix-desc">Prix décroissant</option>
+                </select>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setFiltreDirect("")}
+                  className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${
+                    filtreDirect === "" ? "bg-cesi-jaune text-black border-cesi-jaune font-bold" : "border-line hover:border-cesi-jaune"
+                  }`}
+                >
+                  Tous
+                </button>
+                {categoriesDirect.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setFiltreDirect(c)}
+                    className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${
+                      filtreDirect === c ? "bg-cesi-jaune text-black border-cesi-jaune font-bold" : "border-line hover:border-cesi-jaune"
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+              {produitsDirects.map((p) => (
                 <div key={p._id} className="flex items-center justify-between gap-3 text-sm">
                   <div className="min-w-0">
                     <p className="font-semibold leading-tight">{p.nom}</p>
@@ -263,6 +328,7 @@ export default function AdminCommandesPage() {
                   </div>
                 </div>
               ))}
+              </div>
             </div>
 
             <div className="col-span-1 sm:col-span-2 flex items-center justify-between border-t border-line pt-3 font-black">

@@ -10,6 +10,12 @@ addIcon("ph:shopping-cart-bold", phShoppingCartBold);
 import type { CompositionItem, ProduitClient } from "@/lib/types";
 import { CATEGORIES } from "@/lib/types";
 
+function lireCookie(nom: string): string | null {
+  if (typeof document === "undefined") return null;
+  const entree = document.cookie.split("; ").find((c) => c.startsWith(nom + "="));
+  return entree ? decodeURIComponent(entree.slice(nom.length + 1)) : null;
+}
+
 export default function CommanderPage() {
   const router = useRouter();
   const [produits, setProduits] = useState<ProduitClient[]>([]);
@@ -180,6 +186,19 @@ export default function CommanderPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erreur lors de l'enregistrement.");
       sessionStorage.setItem("cafet-commande", JSON.stringify(data.commande));
+      // mémorise la commande pour l'afficher sur l'accueil (retrait en attente)
+      try {
+        const ids: string[] = JSON.parse(lireCookie("cafet-commandes") || "[]");
+        ids.push(data.commande._id);
+        document.cookie =
+          "cafet-commandes=" +
+          encodeURIComponent(JSON.stringify(ids.slice(-20))) +
+          "; path=/; max-age=" +
+          60 * 60 * 24 * 30 +
+          "; samesite=lax";
+      } catch {
+        // cookie illisible : on continue sans
+      }
       router.push("/confirmation");
     } catch (err) {
       setErreur(err instanceof Error ? err.message : "Erreur inconnue.");

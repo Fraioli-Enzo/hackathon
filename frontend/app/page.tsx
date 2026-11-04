@@ -47,7 +47,9 @@ export default async function Accueil() {
 
       {mesCommandes.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-2xl font-bold">Ta commande en cours</h2>
+          <h2 className="text-2xl font-bold">
+              {mesCommandes.length > 1 ? "Tes commandes en cours" : "Ta commande en cours"}
+            </h2>
           {mesCommandes.map((c) => (
             <div key={String(c._id)} className="border border-line rounded-xl bg-card p-5 space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">

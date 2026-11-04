@@ -660,7 +660,7 @@ export default function AdminCommandesPage() {
                 <th className="px-3 py-3 text-right">Action</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="max-sm:block">
               {filtrees.map((c) => (
                 <tr key={c._id} className="max-sm:block max-sm:mb-3 max-sm:rounded-xl max-sm:border max-sm:border-line max-sm:bg-card max-sm:p-4 sm:border-b sm:border-line sm:last:border-0">
                   <td data-label="Date" className="px-3 py-3 whitespace-nowrap max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">

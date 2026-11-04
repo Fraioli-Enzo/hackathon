@@ -14,6 +14,7 @@
 
 ## Développement
 
+- Next.js : rester sur la dernière **14.2.x** (`14.2.35` actuellement, déjà la plus récente de la branche 14). NE PAS migrer vers Next 15/16 pendant le projet : c'est une migration majeure (React 19, défauts de cache, params async des routes dynamiques, middleware, `next/image`). Le bandeau « Next.js is outdated » de l'overlay d'erreur dev s'affiche parce que les versions 15/16 existent : l'ignorer, ce n'est pas une erreur. Migration à envisager uniquement après la hackathon, dans une session dédiée avec re-test complet.
 - Le projet se lance avec `./start.sh` (mode dev, `npm run dev`).
 - NE PAS lancer `npm run build` pendant qu'un serveur dev tourne : le build écrit dans le même `.next` et casse les chunks du serveur (erreurs 404 dans le navigateur). Vérifier le typage avec `npx tsc --noEmit` à la place.
 - UN SEUL serveur dev à la fois. Si un serveur tourne déjà (souvent celui de l'utilisateur sur le port 3000), faire les tests dessus s'il répond, sinon lancer le sien sur un autre port et LE COUPER SYSTÉMATIQUEMENT après les tests. Deux serveurs sur le même projet se corrompent mutuellement le `.next`.

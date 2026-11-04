@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import AdminNav from "@/components/AdminNav";
-import type { CommandeClient } from "@/lib/types";
+import type { CommandeClient, ProduitClient } from "@/lib/types";
+import Popup from "@/components/Popup";
 import Banniere from "@/components/Banniere";
 import PopupConfirmation from "@/components/PopupConfirmation";
 
@@ -16,6 +17,62 @@ export default function AdminCommandesPage() {
   const [commandes, setCommandes] = useState<CommandeClient[]>([]);
   const [recherche, setRecherche] = useState("");
   const [aSupprimer, setASupprimer] = useState<CommandeClient | null>(null);
+  const [ajoutOuvert, setAjoutOuvert] = useState(false);
+  const [produits, setProduits] = useState<ProduitClient[]>([]);
+  const [qtes, setQtes] = useState<Record<string, number>>({});
+  const [formDirect, setFormDirect] = useState({ prenom: "", nom: "", batiment: "Orion", jour: "Lundi" });
+
+  async function ouvrirAjout() {
+    setQtes({});
+    setFormDirect({ prenom: "", nom: "", batiment: "Orion", jour: "Lundi" });
+    const res = await fetch("/api/produits");
+    const data = await res.json();
+    if (res.ok) setProduits((data.produits || []).filter((p: ProduitClient) => p.categorie !== "Menus"));
+    setAjoutOuvert(true);
+  }
+
+  const panierDirect = produits
+    .filter((p) => (qtes[p._id] || 0) > 0)
+    .map((p) => ({ produit: p, qte: qtes[p._id] }));
+  const totalDirect = panierDirect.reduce((somme, l) => somme + l.produit.prix * l.qte, 0);
+
+  function majQte(id: string, delta: number) {
+    setQtes((q) => {
+      const produit = produits.find((p) => p._id === id);
+      const max = Math.min(50, produit?.stock ?? 0);
+      return { ...q, [id]: Math.max(0, Math.min(max, (q[id] || 0) + delta)) };
+    });
+  }
+
+  async function creerCommande(e: React.FormEvent) {
+    e.preventDefault();
+    setErreur(null);
+    if (!formDirect.prenom.trim() || !formDirect.nom.trim()) {
+      setErreur("Prénom et nom requis.");
+      return;
+    }
+    if (panierDirect.length === 0) {
+      setErreur("Ajoute au moins un produit.");
+      return;
+    }
+    const res = await fetch("/api/commandes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...formDirect,
+        items: panierDirect.map((l) => ({ produitId: l.produit._id, qte: l.qte })),
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      setErreur(data.error || "Erreur.");
+      return;
+    }
+    setAjoutOuvert(false);
+    setMessage(`Commande de ${formDirect.prenom} enregistrée (${totalDirect.toFixed(2)} €).`);
+    setTimeout(() => setMessage(null), 3000);
+    charger();
+  }
   const [message, setMessage] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -51,7 +108,15 @@ export default function AdminCommandesPage() {
   return (
     <div>
       <AdminNav />
-      <h1 className="text-3xl font-black mb-6">Commandes de la semaine</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-black">Commandes de la semaine</h1>
+        <button
+          onClick={ouvrirAjout}
+          className="inline-flex items-center gap-1.5 bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors"
+        >
+          Ajouter
+        </button>
+      </div>
 
       <input
         value={recherche}
@@ -132,6 +197,104 @@ export default function AdminCommandesPage() {
           </table>
         </div>
       )}
+      {ajoutOuvert && (
+        <Popup titre="Nouvelle commande (sur place)" onFermer={() => setAjoutOuvert(false)}>
+          <form onSubmit={creerCommande} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input
+              value={formDirect.prenom}
+              onChange={(e) => setFormDirect({ ...formDirect, prenom: e.target.value })}
+              placeholder="Prénom"
+              className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
+              required
+            />
+            <input
+              value={formDirect.nom}
+              onChange={(e) => setFormDirect({ ...formDirect, nom: e.target.value })}
+              placeholder="Nom"
+              className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
+              required
+            />
+            <select
+              value={formDirect.batiment}
+              onChange={(e) => setFormDirect({ ...formDirect, batiment: e.target.value })}
+              className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
+              aria-label="Bâtiment"
+            >
+              <option value="Orion">Bât. Orion</option>
+              <option value="Antares">Bât. Antares</option>
+            </select>
+            <select
+              value={formDirect.jour}
+              onChange={(e) => setFormDirect({ ...formDirect, jour: e.target.value })}
+              className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
+              aria-label="Jour de retrait"
+            >
+              <option value="Lundi">Retrait lundi</option>
+              <option value="Mardi">Retrait mardi</option>
+            </select>
+
+            <div className="col-span-1 sm:col-span-2 border-t border-line pt-3 space-y-2 max-h-64 overflow-y-auto">
+              <p className="text-xs text-muted">Produits (les menus se composent avec les produits individuels)</p>
+              {produits.map((p) => (
+                <div key={p._id} className="flex items-center justify-between gap-3 text-sm">
+                  <div className="min-w-0">
+                    <p className="font-semibold leading-tight">{p.nom}</p>
+                    <p className="text-muted text-xs">{p.prix.toFixed(2)} € - {p.stock ?? 0} en stock</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => majQte(p._id, -1)}
+                      className="w-8 h-8 rounded-lg border border-line font-bold hover:border-cesi-jaune"
+                      aria-label={`Retirer un ${p.nom}`}
+                    >
+                      -
+                    </button>
+                    <span className="w-6 text-center font-bold">{qtes[p._id] || 0}</span>
+                    <button
+                      type="button"
+                      onClick={() => majQte(p._id, 1)}
+                      className="w-8 h-8 rounded-lg bg-cesi-jaune text-black font-bold hover:bg-yellow-300 disabled:opacity-40"
+                      disabled={(qtes[p._id] || 0) >= Math.min(50, p.stock ?? 0)}
+                      aria-label={`Ajouter un ${p.nom}`}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="col-span-1 sm:col-span-2 flex items-center justify-between border-t border-line pt-3 font-black">
+              <span>Total</span>
+              <span className="text-cesi-jaune">{totalDirect.toFixed(2)} €</span>
+            </div>
+
+            {erreur && (
+              <p className="col-span-1 sm:col-span-2 text-red-500 border border-red-500 bg-red-500/10 rounded-lg px-4 py-2">
+                {erreur}
+              </p>
+            )}
+
+            <div className="col-span-1 sm:col-span-2 flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setAjoutOuvert(false)}
+                className="border border-line font-bold px-4 py-2 rounded-lg hover:border-cesi-jaune transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                type="submit"
+                className="bg-cesi-jaune text-black font-bold px-5 py-2 rounded-lg hover:bg-yellow-300"
+              >
+                Enregistrer
+              </button>
+            </div>
+          </form>
+        </Popup>
+      )}
+
       {aSupprimer && (
         <PopupConfirmation
           titre="Supprimer la commande ?"

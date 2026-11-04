@@ -26,6 +26,55 @@ import PopupConfirmation from "@/components/PopupConfirmation";
 import type { ProduitClient } from "@/lib/types";
 import { CATEGORIES, IMAGES_PRODUITS } from "@/lib/types";
 
+// Redimensionne l'image importée à 512 px max (JPEG, fond blanc) avant l'envoi
+function redimensionnerFichier(fichier: File, max = 512): Promise<string> {
+  return new Promise((resoudre, rejeter) => {
+    const url = URL.createObjectURL(fichier);
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const echelle = Math.min(1, max / Math.max(img.width, img.height));
+        const w = Math.max(1, Math.round(img.width * echelle));
+        const h = Math.max(1, Math.round(img.height * echelle));
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) throw new Error("Canvas indisponible.");
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        resoudre(canvas.toDataURL("image/jpeg", 0.85));
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      rejeter(new Error("Image illisible."));
+    };
+    img.src = url;
+  });
+}
+
+// Compresse puis envoie la photo au serveur, renvoie le chemin stocké (/api/images/<id>)
+async function envoyerPhoto(fichier: File): Promise<string> {
+  if (!fichier.type.startsWith("image/")) {
+    throw new Error("Choisis un fichier image (JPEG, PNG ou WebP).");
+  }
+  const data = await redimensionnerFichier(fichier);
+  const res = await fetch("/api/admin/image", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ data }),
+  });
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.error || "Import impossible.");
+  }
+  return json.image;
+}
+
 export default function AdminProduitsPage() {
   const [produits, setProduits] = useState<ProduitClient[]>([]);
   const [nouveau, setNouveau] = useState({ nom: "", prix: "", description: "", stock: "", image: "", categorie: "" });
@@ -71,62 +120,17 @@ export default function AdminProduitsPage() {
     setTimeout(() => setMessage(null), 3000);
   }
 
-  // Redimensionne l'image importée à 512 px max (JPEG, fond blanc) avant l'envoi
-  function redimensionnerFichier(fichier: File, max = 512): Promise<string> {
-    return new Promise((resoudre, rejeter) => {
-      const url = URL.createObjectURL(fichier);
-      const img = new Image();
-      img.onload = () => {
-        try {
-          const echelle = Math.min(1, max / Math.max(img.width, img.height));
-          const w = Math.max(1, Math.round(img.width * echelle));
-          const h = Math.max(1, Math.round(img.height * echelle));
-          const canvas = document.createElement("canvas");
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext("2d");
-          if (!ctx) throw new Error("Canvas indisponible.");
-          ctx.fillStyle = "#fff";
-          ctx.fillRect(0, 0, w, h);
-          ctx.drawImage(img, 0, 0, w, h);
-          resoudre(canvas.toDataURL("image/jpeg", 0.85));
-        } finally {
-          URL.revokeObjectURL(url);
-        }
-      };
-      img.onerror = () => {
-        URL.revokeObjectURL(url);
-        rejeter(new Error("Image illisible."));
-      };
-      img.src = url;
-    });
-  }
-
   async function importerPhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const fichier = e.target.files?.[0];
     e.target.value = ""; // permettre de re-sélectionner le même fichier
     if (!fichier) return;
     setErreur(null);
-    if (!fichier.type.startsWith("image/")) {
-      setErreur("Choisis un fichier image (JPEG, PNG ou WebP).");
-      return;
-    }
     setEnvoiImage(true);
     try {
-      const data = await redimensionnerFichier(fichier);
-      const res = await fetch("/api/admin/image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data }),
-      });
-      const json = await res.json();
-      if (!res.ok) {
-        setErreur(json.error || "Import impossible.");
-        return;
-      }
-      setNouveau((n) => ({ ...n, image: json.image }));
-    } catch {
-      setErreur("Image illisible.");
+      const image = await envoyerPhoto(fichier);
+      setNouveau((n) => ({ ...n, image }));
+    } catch (err) {
+      setErreur(err instanceof Error ? err.message : "Image illisible.");
     } finally {
       setEnvoiImage(false);
     }
@@ -375,7 +379,13 @@ export default function AdminProduitsPage() {
 
       <div className="space-y-3">
         {produitsAffiches.map((p) => (
-          <LigneProduit key={p._id} produit={p} onModifier={modifier} onSupprimer={(id, nom) => setASupprimer({ id, nom })} />
+          <LigneProduit
+            key={p._id}
+            produit={p}
+            onModifier={modifier}
+            onSupprimer={(id, nom) => setASupprimer({ id, nom })}
+            onErreur={setErreur}
+          />
         ))}
         {produitsAffiches.length === 0 && (
           <div className="text-center py-12 border border-dashed border-line rounded-xl">
@@ -405,10 +415,12 @@ function LigneProduit({
   produit,
   onModifier,
   onSupprimer,
+  onErreur,
 }: {
   produit: ProduitClient;
   onModifier: (id: string, maj: Partial<ProduitClient>) => void;
   onSupprimer: (id: string, nom: string) => void;
+  onErreur: (message: string) => void;
 }) {
   const [form, setForm] = useState({
     nom: produit.nom,
@@ -418,6 +430,7 @@ function LigneProduit({
     image: produit.image || "",
     categorie: produit.categorie || "",
   });
+  const [envoiImage, setEnvoiImage] = useState(false);
 
   const prixNum = parseFloat(form.prix.replace(",", "."));
   const stockNum = parseInt(form.stock, 10);
@@ -443,6 +456,21 @@ function LigneProduit({
 
   function maj(partial: Partial<typeof form>) {
     setForm((f) => ({ ...f, ...partial }));
+  }
+
+  async function importerPhotoCarte(e: React.ChangeEvent<HTMLInputElement>) {
+    const fichier = e.target.files?.[0];
+    e.target.value = ""; // permettre de re-sélectionner le même fichier
+    if (!fichier) return;
+    setEnvoiImage(true);
+    try {
+      const image = await envoyerPhoto(fichier);
+      maj({ image });
+    } catch (err) {
+      onErreur(err instanceof Error ? err.message : "Image illisible.");
+    } finally {
+      setEnvoiImage(false);
+    }
   }
 
   function pasStock(delta: number) {
@@ -600,24 +628,42 @@ function LigneProduit({
             ))}
           </select>
         </label>
-        <label className="space-y-1 min-w-0">
+        <div className="space-y-1 min-w-0">
           <span className="block text-xs font-semibold text-muted">Photo</span>
-          <select
-            value={form.image}
-            onChange={(e) => maj({ image: e.target.value })}
-            className={`${champClasse} text-sm`}
-          >
-            <option value="">Aucune</option>
-            {form.image && !Object.values(IMAGES_PRODUITS).includes(form.image) && (
-              <option value={form.image}>Photo importée</option>
-            )}
-            {Object.entries(IMAGES_PRODUITS).map(([cle, chemin]) => (
-              <option key={chemin} value={chemin}>
-                {cle}
-              </option>
-            ))}
-          </select>
-        </label>
+          <div className="flex items-center gap-2">
+            <select
+              value={form.image}
+              onChange={(e) => maj({ image: e.target.value })}
+              className={`${champClasse} text-sm flex-1 min-w-0`}
+            >
+              <option value="">Aucune</option>
+              {form.image && !Object.values(IMAGES_PRODUITS).includes(form.image) && (
+                <option value={form.image}>Photo importée</option>
+              )}
+              {Object.entries(IMAGES_PRODUITS).map(([cle, chemin]) => (
+                <option key={chemin} value={chemin}>
+                  {cle}
+                </option>
+              ))}
+            </select>
+            <label
+              title="Importer une photo"
+              className={`shrink-0 inline-flex items-center justify-center border border-line rounded-lg px-2.5 py-2 cursor-pointer transition-colors hover:border-cesi-jaune ${
+                envoiImage ? "opacity-50 pointer-events-none" : ""
+              }`}
+            >
+              <Icon icon="ph:upload-simple-bold" ssr aria-hidden="true" className="w-4 h-4" />
+              <span className="sr-only">{envoiImage ? "Envoi en cours" : "Importer une photo"}</span>
+              <input
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={importerPhotoCarte}
+                disabled={envoiImage}
+              />
+            </label>
+          </div>
+        </div>
       </div>
 
       {/* État et actions */}

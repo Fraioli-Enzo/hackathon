@@ -56,7 +56,7 @@ export default function AdminNav() {
   return (
     <div className="relative mb-8 border-b border-line pb-4">
       {/* Barre mobile : burger + page active + déconnexion */}
-      <div className="flex items-center justify-between gap-2 sm:hidden">
+      <div className="flex items-center justify-between gap-2 lg:hidden">
         <button
           onClick={() => setOuvert((o) => !o)}
           className="inline-flex items-center gap-2 border border-line px-3 py-1.5 rounded-lg font-bold text-sm transition-colors hover:border-cesi-jaune"
@@ -77,7 +77,7 @@ export default function AdminNav() {
 
       {/* Panneau burger mobile */}
       {ouvert && (
-        <nav className="sm:hidden absolute top-full left-0 right-0 z-40 mt-2 flex flex-col gap-2 bg-surface border border-line rounded-xl p-3 shadow-xl" aria-label="Navigation admin">
+        <nav className="lg:hidden absolute top-full left-0 right-0 z-40 mt-2 flex flex-col gap-2 bg-surface border border-line rounded-xl p-3 shadow-xl" aria-label="Navigation admin">
           {LIENS.map((l) => {
             const actif = pathname === l.href;
             return (
@@ -100,7 +100,7 @@ export default function AdminNav() {
       )}
 
       {/* Barre desktop */}
-      <div className="hidden sm:flex items-center justify-between gap-2">
+      <div className="hidden lg:flex items-center justify-between gap-2">
         <nav className="flex flex-wrap gap-1.5" aria-label="Navigation admin">
           {LIENS.map((l) => {
             const actif = pathname === l.href;

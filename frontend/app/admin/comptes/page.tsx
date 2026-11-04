@@ -91,10 +91,6 @@ export default function AdminComptesPage() {
         </button>
       </div>
 
-      <p className="text-muted text-sm mb-4">
-        Le compte admin principal ({principal}) est défini dans <code>.env.local</code> et ne peut pas être supprimé.
-      </p>
-
       {erreur && (
         <p className="text-red-500 border border-red-500 bg-red-500/10 rounded-lg px-4 py-2 mb-4">{erreur}</p>
       )}

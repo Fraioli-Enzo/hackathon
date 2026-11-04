@@ -10,6 +10,7 @@ import {
   phReceiptBold,
   phQrCodeBold,
   phSignOutBold,
+  phUsersBold,
 } from "@/lib/icons";
 
 addIcon("ph:squares-four-bold", phSquaresFourBold);
@@ -18,6 +19,7 @@ addIcon("ph:package-bold", phPackageBold);
 addIcon("ph:receipt-bold", phReceiptBold);
 addIcon("ph:qr-code-bold", phQrCodeBold);
 addIcon("ph:sign-out-bold", phSignOutBold);
+addIcon("ph:users-bold", phUsersBold);
 
 const LIENS = [
   { href: "/admin", label: "Dashboard", icone: "ph:squares-four-bold" },
@@ -25,6 +27,7 @@ const LIENS = [
   { href: "/admin/stock", label: "Stock", icone: "ph:package-bold" },
   { href: "/admin/commandes", label: "Commandes", icone: "ph:receipt-bold" },
   { href: "/admin/scan", label: "Scan QR", icone: "ph:qr-code-bold" },
+  { href: "/admin/comptes", label: "Comptes", icone: "ph:users-bold" },
 ];
 
 export default function AdminNav() {

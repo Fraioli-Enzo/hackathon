@@ -68,10 +68,14 @@ export default function CommanderPage() {
       const qteMenu = qtes[menu._id] || 0;
       if (!qteMenu) continue;
       menu.composition.forEach((c, i) => {
-        if (!c.categorie) return;
-        (choix[menu._id]?.[i] || []).forEach((idVariante) => {
-          if (idVariante) r.set(idVariante, (r.get(idVariante) || 0) + qteMenu);
-        });
+        if (c.categorie) {
+          (choix[menu._id]?.[i] || []).forEach((idVariante) => {
+            if (idVariante) r.set(idVariante, (r.get(idVariante) || 0) + qteMenu);
+          });
+        } else if (c.nomProduit) {
+          const idComposant = produits.find((p) => p.nom === c.nomProduit)?._id;
+          if (idComposant) r.set(idComposant, (r.get(idComposant) || 0) + qteMenu * c.qte);
+        }
       });
     }
     return r;

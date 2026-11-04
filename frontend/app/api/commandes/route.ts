@@ -36,6 +36,23 @@ export async function POST(req: NextRequest) {
     ]);
     const produits = await Produit.find({ _id: { $in: idsItems }, actif: true }).lean();
     const parId = new Map(produits.map((p) => [String(p._id), p]));
+    const parNom = new Map<string, (typeof produits)[number]>();
+
+    // Composants des menus référencés par nom (ex. Cookie) : impact stock eux aussi
+    const nomsComposants = items.flatMap((i: { produitId: string }) => {
+      const produit = produits.find((p) => String(p._id) === String(i.produitId));
+      if (produit?.categorie !== "Menus") return [];
+      return (produit.composition || [])
+        .map((c: { nomProduit?: string }) => c.nomProduit)
+        .filter((n): n is string => Boolean(n));
+    });
+    if (nomsComposants.length) {
+      const composants = await Produit.find({ nom: { $in: nomsComposants }, actif: true, categorie: { $ne: "Menus" } }).lean();
+      for (const c of composants) {
+        parId.set(String(c._id), c);
+        parNom.set(c.nom, c);
+      }
+    }
 
     // Fusion des quantités par produit (au cas où un produit apparait plusieurs fois)
     const qtes = new Map<string, number>();
@@ -78,6 +95,10 @@ export async function POST(req: NextRequest) {
               detail.push(`${nom}${q > 1 ? ` ×${q}` : ""}`);
             }
           } else if (c.nomProduit) {
+            const composant = parNom.get(c.nomProduit);
+            if (composant) {
+              qtes.set(String(composant._id), (qtes.get(String(composant._id)) || 0) + item.qte * c.qte);
+            }
             detail.push(`${c.nomProduit}${c.qte > 1 ? ` ×${c.qte}` : ""}`);
           }
         }

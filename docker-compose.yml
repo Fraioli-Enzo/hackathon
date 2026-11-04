@@ -1,0 +1,33 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: cafet-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  app:
+    build:
+      context: ./frontend
+      # dev = serveur de développement avec hot reload (source montée en volume).
+      # Retirer ces lignes pour lancer le build de production (stage final du Dockerfile).
+      target: dev
+    container_name: cafet-app
+    restart: unless-stopped
+    command: npm run dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/cafet
+      SESSION_SECRET: ${SESSION_SECRET:-cafet-secret-a-changer-en-prod}
+    depends_on:
+      - mongo
+
+volumes:
+  mongo-data:

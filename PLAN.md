@@ -127,3 +127,7 @@ Options : `--seed-only`, `--no-start`.
 - `.env.local` jamais commité (`.gitignore`), `MONGODB_URI` en variable d'env
 - Mots de passe admin hashés (bcrypt), cookie de session httpOnly
 - Validation des entrées côté serveur (email, bâtiment, quantités > 0)
+
+## 🗓️ Backlog après la hackathon
+
+- **Migrer Next.js vers 15 puis 16** : Turbopack par défaut, React 19, builds plus rapides. C'est une migration majeure, prévoir une session dédiée : params async des routes dynamiques (`app/api/**/[id]`), nouveaux défauts de cache (vérifier les pages `force-dynamic`), `middleware.ts`, `next/image`, puis re-test complet du parcours (commande, ticket PDF, scan QR, admin). En attendant : rester en 14.2.x à jour (14.2.35) et ignorer le bandeau « outdated » de l'overlay dev.

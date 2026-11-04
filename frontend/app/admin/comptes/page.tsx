@@ -5,6 +5,7 @@ import AdminNav from "@/components/AdminNav";
 import Banniere from "@/components/Banniere";
 import Popup from "@/components/Popup";
 import PopupConfirmation from "@/components/PopupConfirmation";
+import BoutonRafraichir from "@/components/BoutonRafraichir";
 
 type CompteAdmin = { _id: string; email: string };
 
@@ -81,14 +82,17 @@ export default function AdminComptesPage() {
   return (
     <div>
       <AdminNav />
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between gap-3 mb-6 max-sm:flex-col max-sm:items-stretch">
         <h1 className="text-3xl font-black">Comptes admin</h1>
-        <button
-          onClick={() => setAjoutOuvert(true)}
-          className="inline-flex items-center gap-1.5 bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors"
-        >
-          Ajouter
-        </button>
+        <div className="flex items-center gap-2">
+          <BoutonRafraichir onClick={charger} className="max-sm:flex-1 max-sm:justify-center" />
+          <button
+            onClick={() => setAjoutOuvert(true)}
+            className="inline-flex items-center justify-center gap-1.5 bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors max-sm:flex-1"
+          >
+            Ajouter
+          </button>
+        </div>
       </div>
 
       {erreur && (

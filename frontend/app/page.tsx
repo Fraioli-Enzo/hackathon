@@ -13,7 +13,7 @@ export default async function Accueil() {
   const produits = await Produit.find({ actif: true }).sort({ nom: 1 }).lean();
 
   // Commandes en attente de retrait mémorisées dans le navigateur (cookie)
-  let mesCommandes: { _id: unknown; jour: string; total: number; items: { nom: string; prix: number; qte: number }[] }[] = [];
+  let mesCommandes: { _id: unknown; jour?: string; total: number; items: { nom: string; prix: number; qte: number }[] }[] = [];
   try {
     const brut = cookies().get("cafet-commandes")?.value;
     if (brut) {
@@ -71,9 +71,11 @@ export default async function Accueil() {
               <div className="flex-1 min-w-0 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="font-bold">Ticket n° {String(c._id).slice(-8).toUpperCase()}</p>
-                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-cesi-jaune/15 text-yellow-700">
-                    Retrait {String(c.jour).toLowerCase()}
-                  </span>
+                  {c.jour && (
+                    <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-cesi-jaune/15 text-yellow-700">
+                      Retrait {c.jour.toLowerCase()}
+                    </span>
+                  )}
                 </div>
                 <ul className="space-y-1 text-sm">
                   {c.items.map((item, j) => (

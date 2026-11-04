@@ -47,7 +47,8 @@ export default function ConfirmationPage() {
       <div className="space-y-2">
         <h1 className="text-3xl font-black">Commande enregistrée !</h1>
         <p className="text-muted">
-          Merci {commande.prenom} ! Ton ticket est prêt. Retrait le {commande.jour.toLowerCase()}, présente le QR code sur place, paiement en espèces ou carte.
+          Merci {commande.prenom} ! Ton ticket est prêt.
+          {commande.jour ? ` Retrait le ${commande.jour.toLowerCase()}, présente le QR code sur place, paiement en espèces ou carte.` : " Présente le QR code sur place, paiement en espèces ou carte."}
         </p>
       </div>
 
@@ -139,7 +140,7 @@ async function telechargerTicket(commande: CommandeClient) {
   doc.text(`N° ${commande._id.slice(-8).toUpperCase()}`, 14, y);
   doc.text(new Date(commande.createdAt).toLocaleString("fr-FR"), 196, y, { align: "right" });
   y += 8;
-  doc.text(`${commande.prenom} ${commande.nom} - bat. ${commande.batiment} - retrait ${commande.jour.toLowerCase()}`, 14, y);
+  doc.text(`${commande.prenom} ${commande.nom} - bat. ${commande.batiment}${commande.jour ? ` - retrait ${commande.jour.toLowerCase()}` : ""}`, 14, y);
   y += 8;
   doc.line(14, y, 196, y);
   y += 9;

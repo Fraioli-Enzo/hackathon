@@ -1,33 +1,25 @@
+# Prod : deploye par Coolify depuis la branche prod.
+# - app Next.js en mode production (stage runner du Dockerfile, contexte ./frontend)
+# - MongoDB mutualise : mongodb-global (alias DNS sur msi-shared-net), pas de mongo local
+#   (le port 27017 de l'hote est deja pris par mongodb-global)
+# - port publie sur 127.0.0.1 uniquement : l'acces externe passe par tunnel Cloudflare -> Traefik
+# - secrets injectes via l'onglet Environment de Coolify :
+#   MONGODB_URI, SESSION_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD
 services:
-  mongo:
-    image: mongo:7
-    container_name: cafet-mongo
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
-
   app:
     build:
       context: ./frontend
-      # dev = serveur de développement avec hot reload (source montée en volume).
-      # Retirer ces lignes pour lancer le build de production (stage final du Dockerfile).
-      target: dev
-    container_name: cafet-app
     restart: unless-stopped
-    command: npm run dev
     ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
+      - "127.0.0.1:3000:3000"
     environment:
-      MONGODB_URI: mongodb://mongo:27017/cafet
-      SESSION_SECRET: ${SESSION_SECRET:-cafet-secret-a-changer-en-prod}
-    depends_on:
-      - mongo
+      MONGODB_URI: ${MONGODB_URI}
+      SESSION_SECRET: ${SESSION_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    networks:
+      - msi-shared-net
 
-volumes:
-  mongo-data:
+networks:
+  msi-shared-net:
+    external: true

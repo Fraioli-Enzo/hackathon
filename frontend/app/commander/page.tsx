@@ -25,7 +25,22 @@ export default function CommanderPage() {
       .then((r) => r.json())
       .then((d) => {
         const ps = d.produits || [];
-        setProduits(ps);
+        // Tri par disponibilité au chargement uniquement (l'ordre ne bouge plus ensuite)
+        const dispoAuChargement = (p: ProduitClient) =>
+          p.categorie !== "Menus"
+            ? (p.stock ?? 0) > 0
+            : (p.composition || []).every(
+                (c) =>
+                  !c.categorie ||
+                  ps.some((v: ProduitClient) => v.categorie === c.categorie && v.actif !== false && (v.stock ?? 0) > 0)
+              );
+        setProduits(
+          [...ps].sort((a, b) => {
+            const da = dispoAuChargement(a) ? 0 : 1;
+            const db = dispoAuChargement(b) ? 0 : 1;
+            return da - db;
+          })
+        );
         // Pré-sélection de la première variante pour chaque composant au choix des menus
         const defauts: Record<string, Record<number, string[]>> = {};
         for (const menu of ps) {

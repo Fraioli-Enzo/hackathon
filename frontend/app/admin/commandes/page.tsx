@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import AdminNav from "@/components/AdminNav";
 import type { CommandeClient, ProduitClient } from "@/lib/types";
 import { CATEGORIES } from "@/lib/types";
@@ -69,6 +69,30 @@ export default function AdminCommandesPage() {
           return a.nom.localeCompare(b.nom);
       }
     });
+  // Stock dynamique : ce que la sélection en cours consomme (panier + choix des menus)
+  const reservesDirect = useMemo(() => {
+    const r = new Map<string, number>();
+    for (const [id, q] of Object.entries(qtes)) {
+      if (q > 0) r.set(id, (r.get(id) || 0) + q);
+    }
+    for (const menu of produits) {
+      if (menu.categorie !== "Menus" || !menu.composition) continue;
+      const qteMenu = qtes[menu._id] || 0;
+      if (!qteMenu) continue;
+      menu.composition.forEach((c, i) => {
+        if (!c.categorie) return;
+        (choixDirect[menu._id]?.[i] || []).forEach((idVariante) => {
+          if (idVariante) r.set(idVariante, (r.get(idVariante) || 0) + qteMenu);
+        });
+      });
+    }
+    return r;
+  }, [produits, qtes, choixDirect]);
+
+  function stockRestantDirect(p: ProduitClient) {
+    return Math.max(0, (p.stock ?? 0) - (reservesDirect.get(p._id) || 0));
+  }
+
   function detailDirect(menu: ProduitClient): string[] {
     const compte = new Map<string, number>();
     menu.composition?.forEach((c, i) => {
@@ -92,7 +116,7 @@ export default function AdminCommandesPage() {
   function majQte(id: string, delta: number) {
     setQtes((q) => {
       const produit = produits.find((p) => p._id === id);
-      const max = produit?.categorie === "Menus" ? 50 : Math.min(50, produit?.stock ?? 0);
+      const max = produit?.categorie === "Menus" ? 50 : Math.min(50, produit ? stockRestantDirect(produit) : 0);
       return { ...q, [id]: Math.max(0, Math.min(max, (q[id] || 0) + delta)) };
     });
   }
@@ -251,10 +275,10 @@ export default function AdminCommandesPage() {
                         {!menu && (
                           <p
                             className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full mt-1 ${
-                              (p.stock ?? 0) > 0 ? "bg-surface text-muted" : "bg-red-500/10 text-red-500"
+                              stockRestantDirect(p) > 0 ? "bg-surface text-muted" : "bg-red-500/10 text-red-500"
                             }`}
                           >
-                            {(p.stock ?? 0) > 0 ? `${p.stock} en stock` : "Rupture de stock"}
+                            {stockRestantDirect(p) > 0 ? `${stockRestantDirect(p)} en stock` : "Rupture de stock"}
                           </p>
                         )}
                       </div>
@@ -274,7 +298,7 @@ export default function AdminCommandesPage() {
                         <button
                           onClick={() => majQte(p._id, 1)}
                           className="w-9 h-9 rounded-lg bg-cesi-jaune text-black font-bold hover:bg-yellow-300 disabled:opacity-40"
-                          disabled={!menu && (qtes[p._id] || 0) >= Math.min(50, p.stock ?? 0)}
+                          disabled={!menu && (qtes[p._id] || 0) >= Math.min(50, stockRestantDirect(p))}
                           aria-label={`Ajouter un ${p.nom}`}
                         >
                           +
@@ -308,11 +332,15 @@ export default function AdminCommandesPage() {
                                     >
                                       {produits
                                         .filter((v) => v.categorie === c.categorie && v.actif !== false)
-                                        .map((v) => (
-                                          <option key={v._id} value={v._id}>
-                                            {v.nom}
-                                          </option>
-                                        ))}
+                                        .map((v) => {
+                                          const reserveUnite = choixDirect[p._id]?.[i]?.[u] === v._id ? 1 : 0;
+                                          const dispo = Math.max(0, (v.stock ?? 0) - ((reservesDirect.get(v._id) || 0) - reserveUnite));
+                                          return (
+                                            <option key={v._id} value={v._id}>
+                                              {v.nom} ({dispo} restant)
+                                            </option>
+                                          );
+                                        })}
                                     </select>
                                   ))}
                                 </div>

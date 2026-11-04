@@ -5,6 +5,13 @@ import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import type { CommandeClient } from "@/lib/types";
 
+// « Menu Asia Cookie (Bao au Boeuf + ...) » -> nom du produit + composition
+function separeComposition(nom: string): { base: string; composition: string | null } {
+  const i = nom.indexOf(" (");
+  if (i === -1) return { base: nom, composition: null };
+  return { base: nom.slice(0, i), composition: nom.slice(i + 2).replace(/\)$/, "") };
+}
+
 export default function ConfirmationPage() {
   const [commande, setCommande] = useState<CommandeClient | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
@@ -49,30 +56,47 @@ export default function ConfirmationPage() {
         </p>
       </div>
 
-      <div className="border border-line rounded-xl bg-card p-6 space-y-4 text-left">
-        <div className="flex justify-between text-sm text-muted">
-          <span>Ticket n° {commande._id.slice(-8).toUpperCase()}</span>
-          <span>{new Date(commande.createdAt).toLocaleString("fr-FR")}</span>
+      <div className="border border-line rounded-xl bg-card text-left overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-line">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-muted">Ticket</p>
+            <p className="text-lg font-black">n° {commande._id.slice(-8).toUpperCase()}</p>
+          </div>
+          <p className="text-xs text-muted">{new Date(commande.createdAt).toLocaleString("fr-FR")}</p>
         </div>
-        <ul className="space-y-1">
-          {commande.items.map((item, i) => (
-            <li key={i} className="flex justify-between">
-              <span>
-                {item.qte} × {item.nom}
-              </span>
-              <span>{(item.qte * item.prix).toFixed(2)} €</span>
-            </li>
-          ))}
+
+        <ul className="divide-y divide-line">
+          {commande.items.map((item, i) => {
+            const { base, composition } = separeComposition(item.nom);
+            return (
+              <li key={i} className="flex items-start gap-3 px-6 py-4">
+                <span className="flex h-7 min-w-7 items-center justify-center rounded-md bg-cesi-jaune/15 text-cesi-jaune font-black text-sm px-1 shrink-0">
+                  {item.qte}×
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold leading-snug">{base}</p>
+                  {composition && <p className="text-xs text-muted mt-0.5">{composition}</p>}
+                  {item.qte > 1 && <p className="text-xs text-muted">{item.prix.toFixed(2)} € l&apos;unité</p>}
+                </div>
+                <span className="font-bold whitespace-nowrap">{(item.qte * item.prix).toFixed(2)} €</span>
+              </li>
+            );
+          })}
         </ul>
-        <div className="flex justify-between font-black text-lg border-t border-line pt-3">
-          <span>Total</span>
-          <span className="text-cesi-jaune">{commande.total.toFixed(2)} €</span>
+
+        <div className="flex items-end justify-between px-6 py-4 border-t border-line bg-surface">
+          <div>
+            <p className="font-bold">Total</p>
+            <p className="text-xs text-muted">à payer sur place (espèces ou carte)</p>
+          </div>
+          <span className="text-2xl font-black text-cesi-jaune">{commande.total.toFixed(2)} €</span>
         </div>
+
         {qrDataUrl && (
-          <div className="flex flex-col items-center gap-2 pt-2">
+          <div className="flex flex-col items-center gap-2 px-6 py-6 border-t border-line">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={qrDataUrl} alt="QR code de retrait" className="w-40 h-40 bg-white rounded-lg p-1" />
-            <span className="text-xs text-muted">Scanner par la cafet au retrait</span>
+            <img src={qrDataUrl} alt="QR code de retrait" className="w-40 h-40 bg-white rounded-lg p-2" />
+            <p className="text-xs text-muted">Scanné par la cafet au retrait</p>
           </div>
         )}
       </div>

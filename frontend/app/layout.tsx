@@ -37,8 +37,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </header>
         <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-8">{children}</main>
-        <footer className="border-t border-line py-4 text-center text-xs text-muted">
-          Hackathon CESI - paiement sur place (espèces ou carte)
+        <footer className="border-t border-line py-4">
+          <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col items-center gap-2">
+            <p className="text-xs text-muted">Hackathon CESI - paiement sur place (espèces ou carte)</p>
+            <Link href="/">
+              <Image src="/images/logo-cesi-jaune.png" alt="CESI" width={200} height={200} className="logo-sombre w-48 h-48" />
+              <Image src="/images/logo-cesi-noir.png" alt="CESI" width={200} height={200} className="logo-clair w-48 h-48" />
+            </Link>
+          </div>
         </footer>
       </body>
     </html>

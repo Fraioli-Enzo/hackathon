@@ -415,7 +415,7 @@ export default function CommanderPage() {
                 aria-label="Bâtiment"
               >
                 <option value="Orion">Bât. Orion</option>
-                <option value="Antares">Bât. Antares</option>
+                {/* <option value="Antares">Bât. Antares</option> */}
               </select>
               <select
                 value={form.jour}

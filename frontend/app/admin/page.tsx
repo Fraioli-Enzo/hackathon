@@ -1,22 +1,38 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ImageProduit from "@/components/ImageProduit";
 import AdminNav from "@/components/AdminNav";
+import BoutonRafraichir from "@/components/BoutonRafraichir";
 import type { Recap } from "@/lib/types";
 
 export default function AdminDashboard() {
   const [recap, setRecap] = useState<Recap | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetch("/api/admin/recap")
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("Erreur de chargement"))))
-      .then(setRecap)
-      .catch((e) => setErreur(e.message));
+  const charger = useCallback(async () => {
+    setErreur(null);
+    try {
+      const r = await fetch("/api/admin/recap");
+      if (!r.ok) throw new Error("Erreur de chargement");
+      setRecap(await r.json());
+    } catch (e) {
+      setErreur(e instanceof Error ? e.message : "Erreur de chargement");
+    }
   }, []);
 
-  if (erreur) return <p className="text-red-500">{erreur}</p>;
+  useEffect(() => {
+    charger();
+  }, [charger]);
+
+  if (erreur) {
+    return (
+      <div className="space-y-4">
+        <p className="text-red-500">{erreur}</p>
+        <BoutonRafraichir onClick={charger} label="Réessayer" />
+      </div>
+    );
+  }
   if (!recap) return <p className="text-muted">Chargement…</p>;
 
   const debut = new Date(recap.debut).toLocaleDateString("fr-FR");
@@ -25,7 +41,10 @@ export default function AdminDashboard() {
   return (
     <div>
       <AdminNav />
-      <h1 className="text-3xl font-black mb-2">Panier de la semaine</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+        <h1 className="text-3xl font-black">Panier de la semaine</h1>
+        <BoutonRafraichir onClick={charger} />
+      </div>
       <p className="text-muted mb-6">
         Semaine du {debut} au {fin}
       </p>

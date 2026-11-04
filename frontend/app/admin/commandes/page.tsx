@@ -12,6 +12,7 @@ import { CATEGORIES } from "@/lib/types";
 import ImageProduit from "@/components/ImageProduit";
 import Banniere from "@/components/Banniere";
 import PopupConfirmation from "@/components/PopupConfirmation";
+import BoutonRafraichir from "@/components/BoutonRafraichir";
 
 function commandeFiltrees(commandes: CommandeClient[], recherche: string, statut: string) {
   const q = recherche.trim().toLowerCase();
@@ -599,12 +600,15 @@ export default function AdminCommandesPage() {
       <AdminNav />
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-black">Commandes de la semaine</h1>
-        <button
-          onClick={ouvrirDirect}
-          className="inline-flex items-center gap-1.5 bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors"
-        >
-          Ajouter
-        </button>
+        <div className="flex items-center gap-2">
+          <BoutonRafraichir onClick={charger} />
+          <button
+            onClick={ouvrirDirect}
+            className="inline-flex items-center gap-1.5 bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors"
+          >
+            Ajouter
+          </button>
+        </div>
       </div>
 
       <div className="border border-line rounded-xl bg-card p-5 space-y-4 mb-4">

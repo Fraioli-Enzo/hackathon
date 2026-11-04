@@ -12,6 +12,7 @@ import Banniere from "@/components/Banniere";
 import Popup from "@/components/Popup";
 import PopupConfirmation from "@/components/PopupConfirmation";
 import ImageProduit from "@/components/ImageProduit";
+import BoutonRafraichir from "@/components/BoutonRafraichir";
 import type { ProduitClient } from "@/lib/types";
 import { CATEGORIES } from "@/lib/types";
 
@@ -112,13 +113,16 @@ export default function AdminStockPage() {
 
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-black">Stock</h1>
-        <button
-          onClick={() => setAjoutOuvert(true)}
-          className="inline-flex items-center gap-1.5 bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors"
-        >
-          <Icon icon="ph:plus-bold" ssr className="w-4 h-4" />
-          Ajouter
-        </button>
+        <div className="flex items-center gap-2">
+          <BoutonRafraichir onClick={charger} />
+          <button
+            onClick={() => setAjoutOuvert(true)}
+            className="inline-flex items-center gap-1.5 bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors"
+          >
+            <Icon icon="ph:plus-bold" ssr className="w-4 h-4" />
+            Ajouter
+          </button>
+        </div>
       </div>
 
       {ajoutOuvert && (

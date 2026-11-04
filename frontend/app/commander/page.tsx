@@ -230,6 +230,11 @@ export default function CommanderPage() {
                       {stock > 0 ? `${stock} en stock` : "Rupture de stock"}
                     </p>
                   )}
+                  {menu && !menuDispo && (
+                    <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-red-500/10 text-red-500">
+                      Indisponible
+                    </span>
+                  )}
                   <div className="flex items-center gap-3 ml-auto">
                   <button
                     type="button"
@@ -243,7 +248,7 @@ export default function CommanderPage() {
                   <button
                     type="button"
                     onClick={() => majQte(p._id, 1)}
-                    disabled={!menu && (stock === 0 || (qtes[p._id] || 0) >= stock)}
+                    disabled={(!menu && (stock === 0 || (qtes[p._id] || 0) >= stock)) || (menu && !menuDispo)}
                     className="w-9 h-9 rounded-lg bg-cesi-jaune text-black font-bold hover:bg-yellow-300 disabled:opacity-40"
                   >
                     +

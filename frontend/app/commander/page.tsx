@@ -101,6 +101,13 @@ export default function CommanderPage() {
     return Math.max(0, (p.stock ?? 0) - (reserves.get(p._id) || 0));
   }
 
+  // Quantité maximale sélectionnable pour un produit : stock total moins
+  // les réservations externes (choix des menus), sans compter sa propre quantité
+  function stockSelectionnable(p: ProduitClient) {
+    const reserveExterne = (reserves.get(p._id) || 0) - (qtes[p._id] || 0);
+    return Math.max(0, Math.min(50, (p.stock ?? 0) - reserveExterne));
+  }
+
   // Un menu est indisponible si l'un de ses composants au choix n'a plus de variante en stock
   function menuEstDisponible(p: ProduitClient) {
     if (p.categorie !== "Menus") return true;
@@ -120,7 +127,7 @@ export default function CommanderPage() {
 
   function majQte(id: string, delta: number) {
     const produit = produits.find((p) => p._id === id);
-    const max = produit?.categorie === "Menus" ? 50 : Math.min(50, produit ? stockRestantDe(produit) : 0);
+    const max = produit?.categorie === "Menus" ? 50 : produit ? stockSelectionnable(produit) : 0;
     setQtes((q) => ({ ...q, [id]: Math.max(0, Math.min(max, (q[id] || 0) + delta)) }));
   }
 
@@ -247,7 +254,7 @@ export default function CommanderPage() {
                   <button
                     type="button"
                     onClick={() => majQte(p._id, -1)}
-                    disabled={!menu && stock === 0}
+                    disabled={!menu && (qtes[p._id] || 0) === 0}
                     className="w-9 h-9 rounded-lg border border-line font-bold hover:border-cesi-jaune disabled:opacity-40"
                   >
                     −
@@ -256,7 +263,7 @@ export default function CommanderPage() {
                   <button
                     type="button"
                     onClick={() => majQte(p._id, 1)}
-                    disabled={(!menu && (stock === 0 || (qtes[p._id] || 0) >= stock)) || (menu && !menuDispo)}
+                    disabled={(!menu && (qtes[p._id] || 0) >= stockSelectionnable(p)) || (menu && !menuDispo)}
                     className="w-9 h-9 rounded-lg bg-cesi-jaune text-black font-bold hover:bg-yellow-300 disabled:opacity-40"
                   >
                     +

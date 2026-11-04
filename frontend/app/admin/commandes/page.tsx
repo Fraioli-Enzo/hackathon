@@ -97,6 +97,14 @@ export default function AdminCommandesPage() {
     return Math.max(0, (p.stock ?? 0) - (reservesDirect.get(p._id) || 0));
   }
 
+  // Quantité maximale sélectionnable : stock moins les réservations
+  // externes (choix des menus), sans compter sa propre quantité
+  function stockSelectionnableDirect(p: ProduitClient) {
+    const reserveExterne = (reservesDirect.get(p._id) || 0) - (qtes[p._id] || 0);
+    return Math.max(0, Math.min(50, (p.stock ?? 0) - reserveExterne));
+  }
+
+
   function detailDirect(menu: ProduitClient): string[] {
     const compte = new Map<string, number>();
     menu.composition?.forEach((c, i) => {
@@ -121,7 +129,7 @@ export default function AdminCommandesPage() {
   function majQte(id: string, delta: number) {
     setQtes((q) => {
       const produit = produits.find((p) => p._id === id);
-      const max = produit?.categorie === "Menus" ? 50 : Math.min(50, produit ? stockRestantDirect(produit) : 0);
+      const max = produit?.categorie === "Menus" ? 50 : produit ? stockSelectionnableDirect(produit) : 0;
       return { ...q, [id]: Math.max(0, Math.min(max, (q[id] || 0) + delta)) };
     });
   }
@@ -305,7 +313,8 @@ export default function AdminCommandesPage() {
                       <div className="flex items-center gap-3 ml-auto">
                         <button
                           onClick={() => majQte(p._id, -1)}
-                          className="w-9 h-9 rounded-lg border border-line font-bold hover:border-cesi-jaune"
+                          disabled={!menu && (qtes[p._id] || 0) === 0}
+                          className="w-9 h-9 rounded-lg border border-line font-bold hover:border-cesi-jaune disabled:opacity-40"
                           aria-label={`Retirer un ${p.nom}`}
                         >
                           -
@@ -314,7 +323,7 @@ export default function AdminCommandesPage() {
                         <button
                           onClick={() => majQte(p._id, 1)}
                           className="w-9 h-9 rounded-lg bg-cesi-jaune text-black font-bold hover:bg-yellow-300 disabled:opacity-40"
-                          disabled={(!menu && (qtes[p._id] || 0) >= Math.min(50, stockRestantDirect(p))) || (menu && !menuDispo)}
+                          disabled={(!menu && (qtes[p._id] || 0) >= stockSelectionnableDirect(p)) || (menu && !menuDispo)}
                           aria-label={`Ajouter un ${p.nom}`}
                         >
                           +

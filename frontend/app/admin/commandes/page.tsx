@@ -13,15 +13,19 @@ import ImageProduit from "@/components/ImageProduit";
 import Banniere from "@/components/Banniere";
 import PopupConfirmation from "@/components/PopupConfirmation";
 
-function commandeFiltrees(commandes: CommandeClient[], recherche: string) {
+function commandeFiltrees(commandes: CommandeClient[], recherche: string, statut: string) {
   const q = recherche.trim().toLowerCase();
-  if (!q) return commandes;
-  return commandes.filter((c) => `${c.prenom} ${c.nom}`.toLowerCase().includes(q));
+  return commandes.filter(
+    (c) =>
+      (!statut || c.statut === statut) &&
+      (!q || `${c.prenom} ${c.nom}`.toLowerCase().includes(q))
+  );
 }
 
 export default function AdminCommandesPage() {
   const [commandes, setCommandes] = useState<CommandeClient[]>([]);
   const [recherche, setRecherche] = useState("");
+  const [filtreStatut, setFiltreStatut] = useState("");
   const [aSupprimer, setASupprimer] = useState<CommandeClient | null>(null);
   const [modeDirect, setModeDirect] = useState(false);
   const [scanning, setScanning] = useState(false);
@@ -29,6 +33,8 @@ export default function AdminCommandesPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scanEnCours = useRef(false);
+  const minuteurSucces = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const minuteurErreur = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [produits, setProduits] = useState<ProduitClient[]>([]);
   const [qtes, setQtes] = useState<Record<string, number>>({});
   const [formDirect, setFormDirect] = useState({ prenom: "", nom: "", batiment: "Orion", jour: "Lundi" });
@@ -181,12 +187,25 @@ export default function AdminCommandesPage() {
       return;
     }
     setModeDirect(false);
-    setMessage(`Commande de ${formDirect.prenom} enregistrée (${totalDirect.toFixed(2)} €).`);
-    setTimeout(() => setMessage(null), 3000);
+    informer(`Commande de ${formDirect.prenom} enregistrée (${totalDirect.toFixed(2)} €).`);
     charger();
   }
   const [message, setMessage] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
+
+  // Pastille de succes : un seul minuteur, relance a chaque validation
+  function informer(texte: string) {
+    setMessage(texte);
+    if (minuteurSucces.current) clearTimeout(minuteurSucces.current);
+    minuteurSucces.current = setTimeout(() => setMessage(null), 3000);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (minuteurSucces.current) clearTimeout(minuteurSucces.current);
+      if (minuteurErreur.current) clearTimeout(minuteurErreur.current);
+    };
+  }, []);
 
   const charger = useCallback(async () => {
     try {
@@ -203,8 +222,8 @@ export default function AdminCommandesPage() {
     const res = await fetch(`/api/commandes/${aSupprimer._id}`, { method: "DELETE" });
     setASupprimer(null);
     if (res.ok) {
-      setMessage("Commande supprimée.");
       setErreur(null);
+      informer("Commande supprimée.");
       charger();
     } else {
       setErreur("Suppression impossible.");
@@ -230,6 +249,7 @@ export default function AdminCommandesPage() {
         await video.play();
         boucle();
       } catch {
+        if (minuteurErreur.current) clearTimeout(minuteurErreur.current);
         setErreur("Accès caméra impossible. Utilise le bouton Valider dans le tableau.");
         setScanning(false);
       }
@@ -278,15 +298,17 @@ export default function AdminCommandesPage() {
       if (!res.ok) throw new Error(data.error || "Erreur de scan.");
       setResultat(data);
       setErreur(null);
-      setMessage(
+      informer(
         data.dejaRecuperee
           ? "Commande déjà récupérée."
           : `Commande de ${data.commande.prenom} marquée récupérée.`
       );
-      setTimeout(() => setMessage(null), 3000);
       charger();
     } catch (err) {
-      setErreur(err instanceof Error ? err.message : "Erreur inconnue.");
+      const texte = err instanceof Error ? err.message : "Erreur inconnue.";
+      setErreur(texte);
+      if (minuteurErreur.current) clearTimeout(minuteurErreur.current);
+      minuteurErreur.current = setTimeout(() => setErreur(null), 3000);
     } finally {
       setTimeout(() => {
         scanEnCours.current = false;
@@ -294,7 +316,7 @@ export default function AdminCommandesPage() {
     }
   }
 
-  const filtrees = commandeFiltrees(commandes, recherche);
+  const filtrees = commandeFiltrees(commandes, recherche, filtreStatut);
 
   if (modeDirect) {
     return (
@@ -636,12 +658,34 @@ export default function AdminCommandesPage() {
         )}
       </div>
 
-      <input
-        value={recherche}
-        onChange={(e) => setRecherche(e.target.value)}
-        placeholder="Rechercher par nom…"
-        className="w-full sm:w-72 bg-card border border-line rounded-lg px-3 py-2 mb-6 focus:border-cesi-jaune focus:outline-none"
-      />
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrer par statut">
+          {[
+            { valeur: "", libelle: "Toutes" },
+            { valeur: "en_attente", libelle: "En attente" },
+            { valeur: "recuperee", libelle: "Récupérées" },
+          ].map(({ valeur, libelle }) => (
+            <button
+              key={valeur || "toutes"}
+              onClick={() => setFiltreStatut(valeur)}
+              className={`text-sm px-3 py-1.5 rounded-lg border transition-colors ${
+                filtreStatut === valeur
+                  ? "bg-cesi-jaune text-black border-cesi-jaune font-bold"
+                  : "border-line hover:border-cesi-jaune"
+              }`}
+            >
+              {libelle}
+            </button>
+          ))}
+        </div>
+        <input
+          value={recherche}
+          onChange={(e) => setRecherche(e.target.value)}
+          placeholder="Rechercher par nom…"
+          aria-label="Rechercher une commande par nom"
+          className="w-full sm:w-72 sm:ml-auto bg-card border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+        />
+      </div>
 
       {filtrees.length === 0 ? (
         <p className="text-muted">Aucune commande trouvée.</p>

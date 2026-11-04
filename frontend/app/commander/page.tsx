@@ -306,7 +306,7 @@ export default function CommanderPage() {
                       </div>
                     ) : (
                       <p className="text-sm text-muted">
-                        {c.qte > 1 ? `${c.qte} × ` : ""}{c.nomProduit}
+                        {c.qte > 1 ? `${c.qte} × ` : ""}{c.nomProduit} ({stockRestantDe(parNom.get(c.nomProduit || "") ?? p)} restant)
                       </p>
                     )}
                     </div>

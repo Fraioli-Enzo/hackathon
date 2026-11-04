@@ -1,6 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Icon, addIcon } from "@iconify/react";
+import { phShoppingCartBold } from "@/lib/icons";
+
+addIcon("ph:shopping-cart-bold", phShoppingCartBold);
 import AdminNav from "@/components/AdminNav";
 import type { CommandeClient, ProduitClient } from "@/lib/types";
 import { CATEGORIES } from "@/lib/types";
@@ -112,6 +116,7 @@ export default function AdminCommandesPage() {
     .filter((p) => (qtes[p._id] || 0) > 0)
     .map((p) => ({ produit: p, qte: qtes[p._id] }));
   const totalDirect = panierDirect.reduce((somme, l) => somme + l.produit.prix * l.qte, 0);
+  const nbArticlesDirect = panierDirect.reduce((somme, l) => somme + l.qte, 0);
 
   function majQte(id: string, delta: number) {
     setQtes((q) => {
@@ -360,7 +365,7 @@ export default function AdminCommandesPage() {
             </div>
           </div>
 
-          <aside className="border border-line rounded-xl p-5 bg-card lg:sticky lg:top-20 space-y-4">
+          <aside id="panier-direct" className="border border-line rounded-xl p-5 bg-card lg:sticky lg:top-20 space-y-4 scroll-mt-20">
             <h2 className="text-lg font-bold">Panier</h2>
             {panierDirect.length === 0 ? (
               <p className="text-muted text-sm">Aucun produit sélectionné.</p>
@@ -442,6 +447,20 @@ export default function AdminCommandesPage() {
             <p className="text-xs text-muted text-center">Paiement sur place (espèces ou carte).</p>
           </aside>
         </div>
+
+        {nbArticlesDirect > 0 && (
+          <button
+            type="button"
+            onClick={() => document.getElementById("panier-direct")?.scrollIntoView({ behavior: "smooth" })}
+            aria-label="Aller au panier"
+            className="lg:hidden fixed bottom-4 right-4 z-40 w-14 h-14 rounded-full bg-cesi-jaune text-black shadow-lg flex items-center justify-center hover:bg-yellow-300 transition-colors"
+          >
+            <Icon icon="ph:shopping-cart-bold" ssr className="w-7 h-7" />
+            <span className="absolute -top-1 -right-1 bg-black text-cesi-jaune text-xs font-black w-5 h-5 rounded-full flex items-center justify-center">
+              {nbArticlesDirect}
+            </span>
+          </button>
+        )}
 
         <Banniere texte={erreur} type="erreur" />
       </div>

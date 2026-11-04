@@ -598,13 +598,13 @@ export default function AdminCommandesPage() {
   return (
     <div>
       <AdminNav />
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between gap-3 mb-6 max-sm:flex-col max-sm:items-stretch">
         <h1 className="text-3xl font-black">Commandes de la semaine</h1>
         <div className="flex items-center gap-2">
-          <BoutonRafraichir onClick={charger} />
+          <BoutonRafraichir onClick={charger} className="max-sm:flex-1 max-sm:justify-center" />
           <button
             onClick={ouvrirDirect}
-            className="inline-flex items-center gap-1.5 bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors"
+            className="inline-flex items-center justify-center gap-1.5 bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors max-sm:flex-1"
           >
             Ajouter
           </button>
@@ -655,7 +655,8 @@ export default function AdminCommandesPage() {
               <p className="font-bold text-green-600">Commande marquée récupérée.</p>
             )}
             <p className="text-sm mt-1">
-              {resultat.commande.prenom} {resultat.commande.nom} - retrait {resultat.commande.jour.toLowerCase()} -{" "}
+              {resultat.commande.prenom} {resultat.commande.nom}
+            {resultat.commande.jour ? ` - retrait ${resultat.commande.jour.toLowerCase()}` : ""} -{" "}
               {resultat.commande.total.toFixed(2)} €
             </p>
           </div>
@@ -694,83 +695,106 @@ export default function AdminCommandesPage() {
       {filtrees.length === 0 ? (
         <p className="text-muted">Aucune commande trouvée.</p>
       ) : (
-        <div className="border border-line rounded-xl overflow-x-auto max-sm:border-0 max-sm:rounded-none max-sm:overflow-visible">
-          <table className="w-full text-left bg-card text-sm max-sm:block max-sm:bg-transparent">
-            <thead className="border-b border-line text-muted max-sm:hidden">
-              <tr>
-                <th className="px-3 py-3">Date</th>
-                <th className="px-3 py-3">Élève</th>
-                <th className="px-3 py-3">Bât.</th>
-                <th className="px-3 py-3">Jour</th>
-                <th className="px-3 py-3">Commande</th>
-                <th className="px-3 py-3 text-right">Total</th>
-                <th className="px-3 py-3">Statut</th>
-                <th className="px-3 py-3 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="max-sm:block">
-              {filtrees.map((c) => (
-                <tr key={c._id} className="max-sm:block max-sm:mb-3 max-sm:rounded-xl max-sm:border max-sm:border-line max-sm:bg-card max-sm:p-4 sm:border-b sm:border-line sm:last:border-0">
-                  <td data-label="Date" className="px-3 py-3 whitespace-nowrap max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">
-                    {new Date(c.createdAt).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })}
-                  </td>
-                  <td data-label="Élève" className="px-3 py-3 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">
-                    <p className="font-semibold">
+        <>
+          {/* Mobile : cartes empilées */}
+          <div className="sm:hidden space-y-3">
+            {filtrees.map((c) => (
+              <div key={c._id} className="border border-line rounded-xl bg-card p-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-bold truncate">
                       {c.prenom} {c.nom}
                     </p>
-
-                  </td>
-                  <td data-label="Bâtiment" className="px-3 py-3 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">{c.batiment}</td>
-                  <td data-label="Jour" className="px-3 py-3 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">{c.jour}</td>
-                  <td data-label="Commande" className="px-3 py-3 max-sm:flex max-sm:flex-col max-sm:items-start max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">
-                    <ul className="space-y-1.5">
-                      {c.items.map((i, idx) => {
-                        const sep = i.nom.indexOf(" (");
-                        const nom = sep > 0 ? i.nom.slice(0, sep) : i.nom;
-                        const detail = sep > 0 ? i.nom.slice(sep + 2, -1).split(" + ").join(" · ") : null;
-                        return (
-                          <li key={idx}>
-                            <p><span className="font-bold">{i.qte}×</span> {nom}</p>
-                            {detail && <p className="text-muted text-xs">{detail}</p>}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </td>
-                  <td data-label="Total" className="px-3 py-3 text-right font-semibold max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">{c.total.toFixed(2)} €</td>
-                  <td data-label="Statut" className="px-3 py-3 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">
-                    {c.statut === "recuperee" ? (
-                      <span className="inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-600">
-                        Récupérée
-                      </span>
-                    ) : (
-                      <span className="inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-orange-500/10 text-orange-600">
-                        En attente
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-3 py-3 text-right max-sm:flex max-sm:justify-end max-sm:gap-2 max-sm:py-1.5">
-                    {c.statut !== "recuperee" && (
-                      <button
-                        onClick={() => traiterCode(c._id)}
-                        className="bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors max-sm:px-3 max-sm:py-1.5 max-sm:text-sm"
-                      >
-                        Valider
-                      </button>
-                    )}
-                    {" "}
+                    <p className="text-xs text-muted mt-0.5">
+                      {new Date(c.createdAt).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })}
+                    </p>
+                  </div>
+                  {badgeStatutCommande(c)}
+                </div>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {c.jour && (
+                    <span className="px-2 py-1 rounded-md bg-surface border border-line font-semibold">
+                      Retrait {c.jour.toLowerCase()}
+                    </span>
+                  )}
+                  <span className="px-2 py-1 rounded-md bg-surface border border-line">Bât. {c.batiment}</span>
+                </div>
+                {itemsListeCommande(c)}
+                <p className="flex items-center justify-between border-t border-line pt-2">
+                  <span className="text-xs text-muted">Total</span>
+                  <span className="font-black text-cesi-jaune">{c.total.toFixed(2)} €</span>
+                </p>
+                <div className="flex gap-2">
+                  {c.statut !== "recuperee" && (
                     <button
-                      onClick={() => setASupprimer(c)}
-                      className="border border-red-500 text-red-500 font-bold px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white focus-visible:bg-red-500 focus-visible:text-white transition-colors max-sm:px-3 max-sm:py-1.5 max-sm:text-sm"
+                      onClick={() => traiterCode(c._id)}
+                      className="flex-1 bg-cesi-jaune text-black font-bold px-4 py-3 rounded-lg hover:bg-yellow-300 transition-colors"
                     >
-                      Supprimer
+                      Valider
                     </button>
-                  </td>
+                  )}
+                  <button
+                    onClick={() => setASupprimer(c)}
+                    className="flex-1 border border-red-500 text-red-500 font-bold px-4 py-3 rounded-lg hover:bg-red-500 hover:text-white focus-visible:bg-red-500 focus-visible:text-white transition-colors"
+                  >
+                    Supprimer
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Bureau : tableau */}
+          <div className="hidden sm:block border border-line rounded-xl overflow-x-auto">
+            <table className="w-full text-left bg-card text-sm">
+              <thead className="border-b border-line text-muted">
+                <tr>
+                  <th className="px-3 py-3">Date</th>
+                  <th className="px-3 py-3">Élève</th>
+                  <th className="px-3 py-3">Bât.</th>
+                  <th className="px-3 py-3">Jour</th>
+                  <th className="px-3 py-3">Commande</th>
+                  <th className="px-3 py-3 text-right">Total</th>
+                  <th className="px-3 py-3">Statut</th>
+                  <th className="px-3 py-3 text-right">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filtrees.map((c) => (
+                  <tr key={c._id} className="border-b border-line last:border-0">
+                    <td className="px-3 py-3 whitespace-nowrap">
+                      {new Date(c.createdAt).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })}
+                    </td>
+                    <td className="px-3 py-3 font-semibold">
+                      {c.prenom} {c.nom}
+                    </td>
+                    <td className="px-3 py-3">{c.batiment}</td>
+                    <td className="px-3 py-3">{c.jour}</td>
+                    <td className="px-3 py-3">{itemsListeCommande(c)}</td>
+                    <td className="px-3 py-3 text-right font-semibold">{c.total.toFixed(2)} €</td>
+                    <td className="px-3 py-3">{badgeStatutCommande(c)}</td>
+                    <td className="px-3 py-3 text-right">
+                      {c.statut !== "recuperee" && (
+                        <button
+                          onClick={() => traiterCode(c._id)}
+                          className="bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors"
+                        >
+                          Valider
+                        </button>
+                      )}{" "}
+                      <button
+                        onClick={() => setASupprimer(c)}
+                        className="border border-red-500 text-red-500 font-bold px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white focus-visible:bg-red-500 focus-visible:text-white transition-colors"
+                      >
+                        Supprimer
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
       {aSupprimer && (
         <PopupConfirmation
@@ -784,5 +808,35 @@ export default function AdminCommandesPage() {
       <Banniere texte={message} type="succes" />
       <Banniere texte={erreur} type="erreur" />
     </div>
+  );
+}
+
+function badgeStatutCommande(c: CommandeClient) {
+  return c.statut === "recuperee" ? (
+    <span className="shrink-0 inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-600">
+      Récupérée
+    </span>
+  ) : (
+    <span className="shrink-0 inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-orange-500/10 text-orange-600">
+      En attente
+    </span>
+  );
+}
+
+function itemsListeCommande(c: CommandeClient) {
+  return (
+    <ul className="space-y-1.5">
+      {c.items.map((i, idx) => {
+        const sep = i.nom.indexOf(" (");
+        const nom = sep > 0 ? i.nom.slice(0, sep) : i.nom;
+        const detail = sep > 0 ? i.nom.slice(sep + 2, -1).split(" + ").join(" · ") : null;
+        return (
+          <li key={idx}>
+            <p><span className="font-bold">{i.qte}×</span> {nom}</p>
+            {detail && <p className="text-muted text-xs">{detail}</p>}
+          </li>
+        );
+      })}
+    </ul>
   );
 }

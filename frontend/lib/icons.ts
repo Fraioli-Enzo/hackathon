@@ -100,3 +100,27 @@ export const phXBold: IconifyIcon = {
   height: 256,
   body: '<path fill="currentColor" d="M208.49 191.51a12 12 0 0 1-17 17L128 145l-63.51 63.49a12 12 0 0 1-17-17L111 128L47.51 64.49a12 12 0 0 1 17-17L128 111l63.51-63.52a12 12 0 0 1 17 17L145 128Z"/>',
 };
+
+export const phCheckBold: IconifyIcon = {
+  width: 256,
+  height: 256,
+  body: '<path fill="currentColor" d="m232.49 80.49l-128 128a12 12 0 0 1-17 0l-56-56a12 12 0 1 1 17-17L96 183L215.51 63.51a12 12 0 0 1 17 17Z"/>',
+};
+
+export const phMinusBold: IconifyIcon = {
+  width: 256,
+  height: 256,
+  body: '<path fill="currentColor" d="M228 128a12 12 0 0 1-12 12H40a12 12 0 0 1 0-24h176a12 12 0 0 1 12 12"/>',
+};
+
+export const phMagnifyingGlassBold: IconifyIcon = {
+  width: 256,
+  height: 256,
+  body: '<path fill="currentColor" d="M232.49 215.51L185 168a92.12 92.12 0 1 0-17 17l47.53 47.54a12 12 0 0 0 17-17ZM44 112a68 68 0 1 1 68 68a68.07 68.07 0 0 1-68-68"/>',
+};
+
+export const phUploadSimpleBold: IconifyIcon = {
+  width: 256,
+  height: 256,
+  body: '<path fill="currentColor" d="M228 144v64a12 12 0 0 1-12 12H40a12 12 0 0 1-12-12v-64a12 12 0 0 1 24 0v52h152v-52a12 12 0 0 1 24 0M96.49 80.49L116 61v83a12 12 0 0 0 24 0V61l19.51 19.52a12 12 0 1 0 17-17l-40-40a12 12 0 0 0-17 0l-40 40a12 12 0 1 0 17 17Z"/>',
+};

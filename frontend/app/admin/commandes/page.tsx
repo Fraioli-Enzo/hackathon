@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import AdminNav from "@/components/AdminNav";
 import type { CommandeClient, ProduitClient } from "@/lib/types";
 import { CATEGORIES } from "@/lib/types";
-import Popup from "@/components/Popup";
+import ImageProduit from "@/components/ImageProduit";
 import Banniere from "@/components/Banniere";
 import PopupConfirmation from "@/components/PopupConfirmation";
 
@@ -18,7 +18,7 @@ export default function AdminCommandesPage() {
   const [commandes, setCommandes] = useState<CommandeClient[]>([]);
   const [recherche, setRecherche] = useState("");
   const [aSupprimer, setASupprimer] = useState<CommandeClient | null>(null);
-  const [ajoutOuvert, setAjoutOuvert] = useState(false);
+  const [modeDirect, setModeDirect] = useState(false);
   const [produits, setProduits] = useState<ProduitClient[]>([]);
   const [qtes, setQtes] = useState<Record<string, number>>({});
   const [formDirect, setFormDirect] = useState({ prenom: "", nom: "", batiment: "Orion", jour: "Lundi" });
@@ -27,7 +27,7 @@ export default function AdminCommandesPage() {
   const [triDirect, setTriDirect] = useState("nom-asc");
   const [choixDirect, setChoixDirect] = useState<Record<string, Record<number, string[]>>>({});
 
-  async function ouvrirAjout() {
+  async function ouvrirDirect() {
     setQtes({});
     setFiltreDirect("");
     setRechercheDirect("");
@@ -51,7 +51,7 @@ export default function AdminCommandesPage() {
       }
       setChoixDirect(defauts);
     }
-    setAjoutOuvert(true);
+    setModeDirect(true);
   }
 
   const categoriesDirect = CATEGORIES.filter((c) => produits.some((p) => p.categorie === c));
@@ -69,6 +69,21 @@ export default function AdminCommandesPage() {
           return a.nom.localeCompare(b.nom);
       }
     });
+  function detailDirect(menu: ProduitClient): string[] {
+    const compte = new Map<string, number>();
+    menu.composition?.forEach((c, i) => {
+      if (c.categorie) {
+        (choixDirect[menu._id]?.[i] || []).forEach((id) => {
+          const nom = produits.find((p) => p._id === id)?.nom;
+          if (nom) compte.set(nom, (compte.get(nom) || 0) + 1);
+        });
+      } else if (c.nomProduit) {
+        compte.set(c.nomProduit, (compte.get(c.nomProduit) || 0) + c.qte);
+      }
+    });
+    return Array.from(compte.entries()).map(([nom, n]) => (n > 1 ? `${n} × ${nom}` : nom));
+  }
+
   const panierDirect = produits
     .filter((p) => (qtes[p._id] || 0) > 0)
     .map((p) => ({ produit: p, qte: qtes[p._id] }));
@@ -122,7 +137,7 @@ export default function AdminCommandesPage() {
       setErreur(data.error || "Erreur.");
       return;
     }
-    setAjoutOuvert(false);
+    setModeDirect(false);
     setMessage(`Commande de ${formDirect.prenom} enregistrée (${totalDirect.toFixed(2)} €).`);
     setTimeout(() => setMessage(null), 3000);
     charger();
@@ -159,13 +174,259 @@ export default function AdminCommandesPage() {
 
   const filtrees = commandeFiltrees(commandes, recherche);
 
+  if (modeDirect) {
+    return (
+      <div>
+        <AdminNav />
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-black">Nouvelle commande (sur place)</h1>
+            <p className="text-muted text-sm mt-1">Pour les personnes qui commandent directement au comptoir.</p>
+          </div>
+          <button
+            onClick={() => setModeDirect(false)}
+            className="border border-line font-bold px-4 py-2 rounded-lg hover:border-cesi-jaune transition-colors"
+          >
+            Retour
+          </button>
+        </div>
+
+        <div className="grid lg:grid-cols-[1fr_320px] gap-6 items-start">
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <input
+                value={rechercheDirect}
+                onChange={(e) => setRechercheDirect(e.target.value)}
+                placeholder="Rechercher un produit…"
+                className="flex-1 min-w-[180px] bg-card border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
+              />
+              <select
+                value={triDirect}
+                onChange={(e) => setTriDirect(e.target.value)}
+                className="bg-card border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
+                aria-label="Trier les produits"
+              >
+                <option value="nom-asc">Nom (A à Z)</option>
+                <option value="nom-desc">Nom (Z à A)</option>
+                <option value="prix-asc">Prix croissant</option>
+                <option value="prix-desc">Prix décroissant</option>
+              </select>
+            </div>
+
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrer les produits">
+              <button
+                onClick={() => setFiltreDirect("")}
+                className={`text-sm px-3 py-1.5 rounded-lg border transition-colors ${
+                  filtreDirect === "" ? "bg-cesi-jaune text-black border-cesi-jaune font-bold" : "border-line hover:border-cesi-jaune"
+                }`}
+              >
+                Tous
+              </button>
+              {categoriesDirect.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setFiltreDirect(c)}
+                  className={`text-sm px-3 py-1.5 rounded-lg border transition-colors ${
+                    filtreDirect === c ? "bg-cesi-jaune text-black border-cesi-jaune font-bold" : "border-line hover:border-cesi-jaune"
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+
+            <div className="space-y-3">
+              {produitsDirects.map((p) => {
+                const menu = p.categorie === "Menus";
+                return (
+                  <div key={p._id} className="border border-line rounded-xl p-3 sm:p-4 bg-card">
+                    <div className="flex gap-3">
+                      <ImageProduit src={p.image} alt={p.nom} className="w-16 h-16 sm:w-20 sm:h-20 shrink-0" width={96} height={96} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="font-bold leading-tight">{p.nom}</p>
+                          <p className="text-cesi-jaune font-bold shrink-0">{p.prix.toFixed(2)} €</p>
+                        </div>
+                        <p className="text-sm text-muted line-clamp-2 sm:line-clamp-none">{p.description || ""}</p>
+                        {!menu && (
+                          <p
+                            className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full mt-1 ${
+                              (p.stock ?? 0) > 0 ? "bg-surface text-muted" : "bg-red-500/10 text-red-500"
+                            }`}
+                          >
+                            {(p.stock ?? 0) > 0 ? `${p.stock} en stock` : "Rupture de stock"}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between gap-3">
+                      {!menu && <span className="text-xs text-muted">{p.categorie}</span>}
+                      {!menu && <div className="flex-1" />}
+                      <div className="flex items-center gap-3 ml-auto">
+                        <button
+                          onClick={() => majQte(p._id, -1)}
+                          className="w-9 h-9 rounded-lg border border-line font-bold hover:border-cesi-jaune"
+                          aria-label={`Retirer un ${p.nom}`}
+                        >
+                          -
+                        </button>
+                        <span className="w-8 text-center font-bold">{qtes[p._id] || 0}</span>
+                        <button
+                          onClick={() => majQte(p._id, 1)}
+                          className="w-9 h-9 rounded-lg bg-cesi-jaune text-black font-bold hover:bg-yellow-300 disabled:opacity-40"
+                          disabled={!menu && (qtes[p._id] || 0) >= Math.min(50, p.stock ?? 0)}
+                          aria-label={`Ajouter un ${p.nom}`}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    {menu && (qtes[p._id] || 0) > 0 && p.composition?.some((c) => c.categorie) && (
+                      <div className="mt-3 border border-line rounded-xl p-4 bg-surface space-y-3">
+                        <p className="text-sm font-bold">Composition du menu</p>
+                        <div className="divide-y divide-line">
+                          {(p.composition || []).map((c, i) =>
+                            c.categorie ? (
+                              <div key={i} className="grid grid-cols-[auto,1fr] items-center gap-x-3 py-2 first:pt-0 last:pb-0">
+                                <span className="text-muted text-sm">{c.qte > 1 ? `${c.qte} × ` : ""}{c.categorie}</span>
+                                <div className="flex flex-col gap-2 justify-self-stretch">
+                                  {Array.from({ length: c.qte }).map((_, u) => (
+                                    <select
+                                      key={u}
+                                      value={choixDirect[p._id]?.[i]?.[u] || ""}
+                                      onChange={(e) =>
+                                        setChoixDirect((ch) => {
+                                          const actuel = ch[p._id]?.[i] || Array(c.qte).fill("");
+                                          const copie = [...actuel];
+                                          copie[u] = e.target.value;
+                                          return { ...ch, [p._id]: { ...(ch[p._id] || {}), [i]: copie } };
+                                        })
+                                      }
+                                      className="w-full bg-card border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
+                                      aria-label={`${c.categorie} n°${u + 1}`}
+                                    >
+                                      {produits
+                                        .filter((v) => v.categorie === c.categorie && v.actif !== false)
+                                        .map((v) => (
+                                          <option key={v._id} value={v._id}>
+                                            {v.nom}
+                                          </option>
+                                        ))}
+                                    </select>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : (
+                              <p key={i} className="text-sm text-muted py-2 first:pt-0 last:pb-0">
+                                {c.qte > 1 ? `${c.qte} × ` : ""}{c.nomProduit}
+                              </p>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <aside className="border border-line rounded-xl p-5 bg-card lg:sticky lg:top-20 space-y-4">
+            <h2 className="text-lg font-bold">Panier</h2>
+            {panierDirect.length === 0 ? (
+              <p className="text-muted text-sm">Aucun produit sélectionné.</p>
+            ) : (
+              <ul className="space-y-2 text-sm">
+                {panierDirect.map((l) => {
+                  const detail = l.produit.categorie === "Menus" && l.produit.composition ? detailDirect(l.produit) : [];
+                  return (
+                    <li key={l.produit._id} className="flex justify-between gap-2">
+                      <div className="min-w-0">
+                        <p>
+                          {l.qte} × {l.produit.nom}
+                        </p>
+                        {detail.length > 0 && (
+                          <ul className="text-muted text-xs leading-snug mt-0.5 list-disc list-inside">
+                            {detail.map((d, idx) => (
+                              <li key={idx}>{d}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                      <span className="shrink-0">{(l.qte * l.produit.prix).toFixed(2)} €</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            <div className="flex justify-between font-black text-lg border-t border-line pt-3">
+              <span>Total</span>
+              <span className="text-cesi-jaune">{totalDirect.toFixed(2)} €</span>
+            </div>
+
+            <div className="space-y-2 border-t border-line pt-3">
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  value={formDirect.prenom}
+                  onChange={(e) => setFormDirect({ ...formDirect, prenom: e.target.value })}
+                  placeholder="Prénom"
+                  className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
+                  required
+                />
+                <input
+                  value={formDirect.nom}
+                  onChange={(e) => setFormDirect({ ...formDirect, nom: e.target.value })}
+                  placeholder="Nom"
+                  className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <select
+                  value={formDirect.batiment}
+                  onChange={(e) => setFormDirect({ ...formDirect, batiment: e.target.value })}
+                  className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
+                  aria-label="Bâtiment"
+                >
+                  <option value="Orion">Bât. Orion</option>
+                  <option value="Antares">Bât. Antares</option>
+                </select>
+                <select
+                  value={formDirect.jour}
+                  onChange={(e) => setFormDirect({ ...formDirect, jour: e.target.value })}
+                  className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
+                  aria-label="Jour de retrait"
+                >
+                  <option value="Lundi">Retrait lundi</option>
+                  <option value="Mardi">Retrait mardi</option>
+                </select>
+              </div>
+            </div>
+
+            {erreur && <p className="text-red-500 text-sm">{erreur}</p>}
+            <button
+              onClick={(e) => creerCommande(e as unknown as React.FormEvent)}
+              className="w-full bg-cesi-jaune text-black font-bold py-3 rounded-lg hover:bg-yellow-300 transition-colors"
+            >
+              Enregistrer la commande
+            </button>
+            <p className="text-xs text-muted text-center">Paiement sur place (espèces ou carte).</p>
+          </aside>
+        </div>
+
+        <Banniere texte={erreur} type="erreur" />
+      </div>
+    );
+  }
+
   return (
     <div>
       <AdminNav />
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-black">Commandes de la semaine</h1>
         <button
-          onClick={ouvrirAjout}
+          onClick={ouvrirDirect}
           className="inline-flex items-center gap-1.5 bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors"
         >
           Ajouter
@@ -251,193 +512,6 @@ export default function AdminCommandesPage() {
           </table>
         </div>
       )}
-      {ajoutOuvert && (
-        <Popup titre="Nouvelle commande (sur place)" onFermer={() => setAjoutOuvert(false)}>
-          <form onSubmit={creerCommande} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <input
-              value={formDirect.prenom}
-              onChange={(e) => setFormDirect({ ...formDirect, prenom: e.target.value })}
-              placeholder="Prénom"
-              className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
-              required
-            />
-            <input
-              value={formDirect.nom}
-              onChange={(e) => setFormDirect({ ...formDirect, nom: e.target.value })}
-              placeholder="Nom"
-              className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
-              required
-            />
-            <select
-              value={formDirect.batiment}
-              onChange={(e) => setFormDirect({ ...formDirect, batiment: e.target.value })}
-              className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
-              aria-label="Bâtiment"
-            >
-              <option value="Orion">Bât. Orion</option>
-              <option value="Antares">Bât. Antares</option>
-            </select>
-            <select
-              value={formDirect.jour}
-              onChange={(e) => setFormDirect({ ...formDirect, jour: e.target.value })}
-              className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
-              aria-label="Jour de retrait"
-            >
-              <option value="Lundi">Retrait lundi</option>
-              <option value="Mardi">Retrait mardi</option>
-            </select>
-
-            <div className="col-span-1 sm:col-span-2 border-t border-line pt-3 space-y-3">
-              <p className="text-xs text-muted">Produits</p>
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <input
-                  value={rechercheDirect}
-                  onChange={(e) => setRechercheDirect(e.target.value)}
-                  placeholder="Rechercher un produit…"
-                  className="flex-1 min-w-[140px] bg-surface border border-line rounded-lg px-3 py-1.5 focus:border-cesi-jaune focus:outline-none text-sm"
-                />
-                <select
-                  value={triDirect}
-                  onChange={(e) => setTriDirect(e.target.value)}
-                  className="bg-surface border border-line rounded-lg px-3 py-1.5 focus:border-cesi-jaune focus:outline-none text-sm"
-                  aria-label="Trier les produits"
-                >
-                  <option value="nom-asc">Nom (A à Z)</option>
-                  <option value="nom-desc">Nom (Z à A)</option>
-                  <option value="prix-asc">Prix croissant</option>
-                  <option value="prix-desc">Prix décroissant</option>
-                </select>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setFiltreDirect("")}
-                  className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${
-                    filtreDirect === "" ? "bg-cesi-jaune text-black border-cesi-jaune font-bold" : "border-line hover:border-cesi-jaune"
-                  }`}
-                >
-                  Tous
-                </button>
-                {categoriesDirect.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setFiltreDirect(c)}
-                    className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${
-                      filtreDirect === c ? "bg-cesi-jaune text-black border-cesi-jaune font-bold" : "border-line hover:border-cesi-jaune"
-                    }`}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-              {produitsDirects.map((p) => (
-                <div key={p._id} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-sm">
-                  <div className="min-w-0">
-                    <p className="font-semibold leading-tight">{p.nom}</p>
-                    <p className="text-muted text-xs">
-                      {p.categorie === "Menus" ? p.description : `${p.prix.toFixed(2)} € - ${p.stock ?? 0} en stock`}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => majQte(p._id, -1)}
-                      className="w-8 h-8 rounded-lg border border-line font-bold hover:border-cesi-jaune"
-                      aria-label={`Retirer un ${p.nom}`}
-                    >
-                      -
-                    </button>
-                    <span className="w-6 text-center font-bold">{qtes[p._id] || 0}</span>
-                    <button
-                      type="button"
-                      onClick={() => majQte(p._id, 1)}
-                      className="w-8 h-8 rounded-lg bg-cesi-jaune text-black font-bold hover:bg-yellow-300 disabled:opacity-40"
-                      disabled={p.categorie !== "Menus" && (qtes[p._id] || 0) >= Math.min(50, p.stock ?? 0)}
-                      aria-label={`Ajouter un ${p.nom}`}
-                    >
-                      +
-                    </button>
-                  </div>
-
-                  {p.categorie === "Menus" && (qtes[p._id] || 0) > 0 && p.composition?.some((c) => c.categorie) && (
-                    <div className="w-full border border-line rounded-lg p-3 space-y-2 bg-surface">
-                      <p className="text-xs font-bold">Composition du menu</p>
-                      {(p.composition || []).map((c, i) =>
-                        c.categorie ? (
-                          <div key={i} className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                            <span className="text-muted">{c.qte > 1 ? `${c.qte} × ` : ""}{c.categorie}</span>
-                            <div className="flex flex-wrap gap-1">
-                              {Array.from({ length: c.qte }).map((_, u) => (
-                                <select
-                                  key={u}
-                                  value={choixDirect[p._id]?.[i]?.[u] || ""}
-                                  onChange={(e) =>
-                                    setChoixDirect((ch) => {
-                                      const actuel = ch[p._id]?.[i] || Array(c.qte).fill("");
-                                      const copie = [...actuel];
-                                      copie[u] = e.target.value;
-                                      return { ...ch, [p._id]: { ...(ch[p._id] || {}), [i]: copie } };
-                                    })
-                                  }
-                                  className="bg-card border border-line rounded-lg px-2 py-1 focus:border-cesi-jaune focus:outline-none"
-                                  aria-label={`${c.categorie} n°${u + 1}`}
-                                >
-                                  {produits
-                                    .filter((v) => v.categorie === c.categorie && v.actif !== false)
-                                    .map((v) => (
-                                      <option key={v._id} value={v._id}>
-                                        {v.nom}
-                                      </option>
-                                    ))}
-                                </select>
-                              ))}
-                            </div>
-                          </div>
-                        ) : (
-                          <p key={i} className="text-xs text-muted">
-                            {c.qte > 1 ? `${c.qte} × ` : ""}{c.nomProduit}
-                          </p>
-                        )
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-              </div>
-            </div>
-
-            <div className="col-span-1 sm:col-span-2 flex items-center justify-between border-t border-line pt-3 font-black">
-              <span>Total</span>
-              <span className="text-cesi-jaune">{totalDirect.toFixed(2)} €</span>
-            </div>
-
-            {erreur && (
-              <p className="col-span-1 sm:col-span-2 text-red-500 border border-red-500 bg-red-500/10 rounded-lg px-4 py-2">
-                {erreur}
-              </p>
-            )}
-
-            <div className="col-span-1 sm:col-span-2 flex justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setAjoutOuvert(false)}
-                className="border border-line font-bold px-4 py-2 rounded-lg hover:border-cesi-jaune transition-colors"
-              >
-                Annuler
-              </button>
-              <button
-                type="submit"
-                className="bg-cesi-jaune text-black font-bold px-5 py-2 rounded-lg hover:bg-yellow-300"
-              >
-                Enregistrer
-              </button>
-            </div>
-          </form>
-        </Popup>
-      )}
-
       {aSupprimer && (
         <PopupConfirmation
           titre="Supprimer la commande ?"

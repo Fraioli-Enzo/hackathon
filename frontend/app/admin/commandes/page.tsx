@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import jsQR from "jsqr";
 import { Icon, addIcon } from "@iconify/react";
 import { phShoppingCartBold } from "@/lib/icons";
 
@@ -23,6 +24,11 @@ export default function AdminCommandesPage() {
   const [recherche, setRecherche] = useState("");
   const [aSupprimer, setASupprimer] = useState<CommandeClient | null>(null);
   const [modeDirect, setModeDirect] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [resultat, setResultat] = useState<{ commande: CommandeClient; dejaRecuperee: boolean } | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const scanEnCours = useRef(false);
   const [produits, setProduits] = useState<ProduitClient[]>([]);
   const [qtes, setQtes] = useState<Record<string, number>>({});
   const [formDirect, setFormDirect] = useState({ prenom: "", nom: "", batiment: "Orion", jour: "Lundi" });
@@ -97,6 +103,14 @@ export default function AdminCommandesPage() {
     return Math.max(0, (p.stock ?? 0) - (reservesDirect.get(p._id) || 0));
   }
 
+  // Quantité maximale sélectionnable : stock moins les réservations
+  // externes (choix des menus), sans compter sa propre quantité
+  function stockSelectionnableDirect(p: ProduitClient) {
+    const reserveExterne = (reservesDirect.get(p._id) || 0) - (qtes[p._id] || 0);
+    return Math.max(0, Math.min(50, (p.stock ?? 0) - reserveExterne));
+  }
+
+
   function detailDirect(menu: ProduitClient): string[] {
     const compte = new Map<string, number>();
     menu.composition?.forEach((c, i) => {
@@ -121,7 +135,7 @@ export default function AdminCommandesPage() {
   function majQte(id: string, delta: number) {
     setQtes((q) => {
       const produit = produits.find((p) => p._id === id);
-      const max = produit?.categorie === "Menus" ? 50 : Math.min(50, produit ? stockRestantDirect(produit) : 0);
+      const max = produit?.categorie === "Menus" ? 50 : produit ? stockSelectionnableDirect(produit) : 0;
       return { ...q, [id]: Math.max(0, Math.min(max, (q[id] || 0) + delta)) };
     });
   }
@@ -201,6 +215,85 @@ export default function AdminCommandesPage() {
     charger();
   }, [charger]);
 
+  useEffect(() => {
+    if (!scanning) return;
+    let annule = false;
+    let stream: MediaStream | null = null;
+    let rafId = 0;
+
+    async function demarrer() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        const video = videoRef.current;
+        if (!video || annule) return;
+        video.srcObject = stream;
+        await video.play();
+        boucle();
+      } catch {
+        setErreur("Accès caméra impossible. Utilise le bouton Valider dans le tableau.");
+        setScanning(false);
+      }
+    }
+
+    function boucle() {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      if (!video || !canvas || annule || video.readyState !== video.HAVE_ENOUGH_DATA) {
+        rafId = requestAnimationFrame(boucle);
+        return;
+      }
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      if (!ctx) return;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+      const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(image.data, image.width, image.height);
+      if (code?.data && !scanEnCours.current) {
+        scanEnCours.current = true;
+        traiterCode(code.data);
+      } else {
+        rafId = requestAnimationFrame(boucle);
+      }
+    }
+
+    demarrer();
+
+    return () => {
+      annule = true;
+      cancelAnimationFrame(rafId);
+      stream?.getTracks().forEach((t) => t.stop());
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scanning]);
+
+  async function traiterCode(code: string) {
+    try {
+      const res = await fetch("/api/admin/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erreur de scan.");
+      setResultat(data);
+      setErreur(null);
+      setMessage(
+        data.dejaRecuperee
+          ? "Commande déjà récupérée."
+          : `Commande de ${data.commande.prenom} marquée récupérée.`
+      );
+      setTimeout(() => setMessage(null), 3000);
+      charger();
+    } catch (err) {
+      setErreur(err instanceof Error ? err.message : "Erreur inconnue.");
+    } finally {
+      setTimeout(() => {
+        scanEnCours.current = false;
+      }, 2000);
+    }
+  }
+
   const filtrees = commandeFiltrees(commandes, recherche);
 
   if (modeDirect) {
@@ -266,6 +359,13 @@ export default function AdminCommandesPage() {
             <div className="space-y-3">
               {produitsDirects.map((p) => {
                 const menu = p.categorie === "Menus";
+                const menuDispo =
+                  !menu ||
+                  (p.composition || []).every(
+                    (c) =>
+                      !c.categorie ||
+                      produits.some((v) => v.categorie === c.categorie && v.actif !== false && stockRestantDirect(v) > 0)
+                  );
                 return (
                   <div key={p._id} className="border border-line rounded-xl p-3 sm:p-4 bg-card">
                     <div className="flex gap-3">
@@ -276,6 +376,11 @@ export default function AdminCommandesPage() {
                           <p className="text-cesi-jaune font-bold shrink-0">{p.prix.toFixed(2)} €</p>
                         </div>
                         <p className="text-sm text-muted line-clamp-2 sm:line-clamp-none">{p.description || ""}</p>
+                        {menu && !menuDispo && (
+                          <span className="inline-block text-xs font-bold px-2.5 py-1 rounded-full bg-red-500/10 text-red-500 mt-1">
+                            Indisponible
+                          </span>
+                        )}
                         {!menu && (
                           <p
                             className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full mt-1 ${
@@ -293,7 +398,8 @@ export default function AdminCommandesPage() {
                       <div className="flex items-center gap-3 ml-auto">
                         <button
                           onClick={() => majQte(p._id, -1)}
-                          className="w-9 h-9 rounded-lg border border-line font-bold hover:border-cesi-jaune"
+                          disabled={!menu && (qtes[p._id] || 0) === 0}
+                          className="w-9 h-9 rounded-lg border border-line font-bold hover:border-cesi-jaune disabled:opacity-40"
                           aria-label={`Retirer un ${p.nom}`}
                         >
                           -
@@ -302,7 +408,7 @@ export default function AdminCommandesPage() {
                         <button
                           onClick={() => majQte(p._id, 1)}
                           className="w-9 h-9 rounded-lg bg-cesi-jaune text-black font-bold hover:bg-yellow-300 disabled:opacity-40"
-                          disabled={!menu && (qtes[p._id] || 0) >= Math.min(50, stockRestantDirect(p))}
+                          disabled={(!menu && (qtes[p._id] || 0) >= stockSelectionnableDirect(p)) || (menu && !menuDispo)}
                           aria-label={`Ajouter un ${p.nom}`}
                         >
                           +
@@ -422,7 +528,7 @@ export default function AdminCommandesPage() {
                   aria-label="Bâtiment"
                 >
                   <option value="Orion">Bât. Orion</option>
-                  <option value="Antares">Bât. Antares</option>
+                  {/* <option value="Antares">Bât. Antares</option> */}
                 </select>
                 <select
                   value={formDirect.jour}
@@ -479,6 +585,57 @@ export default function AdminCommandesPage() {
         </button>
       </div>
 
+      <div className="border border-line rounded-xl bg-card p-5 space-y-4 mb-4">
+        {!scanning ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-muted text-sm">
+              {commandes.filter((c) => c.statut !== "recuperee").length > 0
+                ? `${commandes.filter((c) => c.statut !== "recuperee").length} commande(s) en attente de retrait.`
+                : "Aucune commande en attente."}
+            </p>
+            <button
+              onClick={() => setScanning(true)}
+              className="bg-cesi-jaune text-black font-bold px-5 py-2.5 rounded-lg hover:bg-yellow-300 transition-colors"
+            >
+              Scanner un ticket
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <video ref={videoRef} className="w-full max-w-md rounded-lg mx-auto" playsInline muted />
+            <canvas ref={canvasRef} className="hidden" />
+            <button
+              onClick={() => setScanning(false)}
+              className="border border-line font-bold px-5 py-2.5 rounded-lg hover:border-red-500 hover:text-red-500 transition-colors"
+            >
+              Arrêter la caméra
+            </button>
+          </div>
+        )}
+        {erreur && (
+          <p className="text-red-500 border border-red-500 bg-red-500/10 rounded-lg px-4 py-2 font-semibold">{erreur}</p>
+        )}
+        {resultat && (
+          <div
+            className={`border rounded-lg p-4 ${
+              resultat.dejaRecuperee
+                ? "border-orange-500 bg-orange-500/10"
+                : "border-green-500 bg-green-500/10"
+            }`}
+          >
+            {resultat.dejaRecuperee ? (
+              <p className="font-bold text-orange-600">Commande déjà récupérée !</p>
+            ) : (
+              <p className="font-bold text-green-600">Commande marquée récupérée.</p>
+            )}
+            <p className="text-sm mt-1">
+              {resultat.commande.prenom} {resultat.commande.nom} - retrait {resultat.commande.jour.toLowerCase()} -{" "}
+              {resultat.commande.total.toFixed(2)} €
+            </p>
+          </div>
+        )}
+      </div>
+
       <input
         value={recherche}
         onChange={(e) => setRecherche(e.target.value)}
@@ -503,7 +660,7 @@ export default function AdminCommandesPage() {
                 <th className="px-3 py-3 text-right">Action</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="max-sm:block">
               {filtrees.map((c) => (
                 <tr key={c._id} className="max-sm:block max-sm:mb-3 max-sm:rounded-xl max-sm:border max-sm:border-line max-sm:bg-card max-sm:p-4 sm:border-b sm:border-line sm:last:border-0">
                   <td data-label="Date" className="px-3 py-3 whitespace-nowrap max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted">
@@ -544,7 +701,16 @@ export default function AdminCommandesPage() {
                       </span>
                     )}
                   </td>
-                  <td className="px-3 py-3 text-right max-sm:flex max-sm:justify-end max-sm:py-1.5">
+                  <td className="px-3 py-3 text-right max-sm:flex max-sm:justify-end max-sm:gap-2 max-sm:py-1.5">
+                    {c.statut !== "recuperee" && (
+                      <button
+                        onClick={() => traiterCode(c._id)}
+                        className="bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors max-sm:px-3 max-sm:py-1.5 max-sm:text-sm"
+                      >
+                        Valider
+                      </button>
+                    )}
+                    {" "}
                     <button
                       onClick={() => setASupprimer(c)}
                       className="border border-red-500 text-red-500 font-bold px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white focus-visible:bg-red-500 focus-visible:text-white transition-colors max-sm:px-3 max-sm:py-1.5 max-sm:text-sm"

@@ -10,6 +10,12 @@ addIcon("ph:shopping-cart-bold", phShoppingCartBold);
 import type { CompositionItem, ProduitClient } from "@/lib/types";
 import { CATEGORIES } from "@/lib/types";
 
+function lireCookie(nom: string): string | null {
+  if (typeof document === "undefined") return null;
+  const entree = document.cookie.split("; ").find((c) => c.startsWith(nom + "="));
+  return entree ? decodeURIComponent(entree.slice(nom.length + 1)) : null;
+}
+
 export default function CommanderPage() {
   const router = useRouter();
   const [produits, setProduits] = useState<ProduitClient[]>([]);
@@ -25,7 +31,22 @@ export default function CommanderPage() {
       .then((r) => r.json())
       .then((d) => {
         const ps = d.produits || [];
-        setProduits(ps);
+        // Tri par disponibilité au chargement uniquement (l'ordre ne bouge plus ensuite)
+        const dispoAuChargement = (p: ProduitClient) =>
+          p.categorie !== "Menus"
+            ? (p.stock ?? 0) > 0
+            : (p.composition || []).every(
+                (c) =>
+                  !c.categorie ||
+                  ps.some((v: ProduitClient) => v.categorie === c.categorie && v.actif !== false && (v.stock ?? 0) > 0)
+              );
+        setProduits(
+          [...ps].sort((a, b) => {
+            const da = dispoAuChargement(a) ? 0 : 1;
+            const db = dispoAuChargement(b) ? 0 : 1;
+            return da - db;
+          })
+        );
         // Pré-sélection de la première variante pour chaque composant au choix des menus
         const defauts: Record<string, Record<number, string[]>> = {};
         for (const menu of ps) {
@@ -100,12 +121,28 @@ export default function CommanderPage() {
   function stockRestantDe(p: ProduitClient) {
     return Math.max(0, (p.stock ?? 0) - (reserves.get(p._id) || 0));
   }
+
+  // Quantité maximale sélectionnable pour un produit : stock total moins
+  // les réservations externes (choix des menus), sans compter sa propre quantité
+  function stockSelectionnable(p: ProduitClient) {
+    const reserveExterne = (reserves.get(p._id) || 0) - (qtes[p._id] || 0);
+    return Math.max(0, Math.min(50, (p.stock ?? 0) - reserveExterne));
+  }
+
+  // Un menu est indisponible si l'un de ses composants au choix n'a plus de variante en stock
+  function menuEstDisponible(p: ProduitClient) {
+    if (p.categorie !== "Menus") return true;
+    return (p.composition || []).every(
+      (c) => !c.categorie || produits.some((v) => v.categorie === c.categorie && v.actif !== false && stockRestantDe(v) > 0)
+    );
+  }
+  const parNom = new Map(produits.map((p) => [p.nom, p]));
   const categories = CATEGORIES.filter((c) => produits.some((p) => p.categorie === c));
   const produitsFiltres = filtre ? produits.filter((p) => p.categorie === filtre) : produits;
 
   function majQte(id: string, delta: number) {
     const produit = produits.find((p) => p._id === id);
-    const max = produit?.categorie === "Menus" ? 50 : Math.min(50, produit ? stockRestantDe(produit) : 0);
+    const max = produit?.categorie === "Menus" ? 50 : produit ? stockSelectionnable(produit) : 0;
     setQtes((q) => ({ ...q, [id]: Math.max(0, Math.min(max, (q[id] || 0) + delta)) }));
   }
 
@@ -149,6 +186,19 @@ export default function CommanderPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erreur lors de l'enregistrement.");
       sessionStorage.setItem("cafet-commande", JSON.stringify(data.commande));
+      // mémorise la commande pour l'afficher sur l'accueil (retrait en attente)
+      try {
+        const ids: string[] = JSON.parse(lireCookie("cafet-commandes") || "[]");
+        ids.push(data.commande._id);
+        document.cookie =
+          "cafet-commandes=" +
+          encodeURIComponent(JSON.stringify(ids.slice(-20))) +
+          "; path=/; max-age=" +
+          60 * 60 * 24 * 30 +
+          "; samesite=lax";
+      } catch {
+        // cookie illisible : on continue sans
+      }
       router.push("/confirmation");
     } catch (err) {
       setErreur(err instanceof Error ? err.message : "Erreur inconnue.");
@@ -191,6 +241,7 @@ export default function CommanderPage() {
             {produitsFiltres.map((p) => {
               const menu = p.categorie === "Menus";
               const stock = menu ? 0 : stockRestantDe(p);
+              const menuDispo = menuEstDisponible(p);
               const avecChoix = menu && (p.composition?.some((c) => c.categorie) ?? false);
               return (
               <div key={p._id} className="space-y-2">
@@ -222,11 +273,16 @@ export default function CommanderPage() {
                       {stock > 0 ? `${stock} en stock` : "Rupture de stock"}
                     </p>
                   )}
+                  {menu && !menuDispo && (
+                    <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-red-500/10 text-red-500">
+                      Indisponible
+                    </span>
+                  )}
                   <div className="flex items-center gap-3 ml-auto">
                   <button
                     type="button"
                     onClick={() => majQte(p._id, -1)}
-                    disabled={!menu && stock === 0}
+                    disabled={!menu && (qtes[p._id] || 0) === 0}
                     className="w-9 h-9 rounded-lg border border-line font-bold hover:border-cesi-jaune disabled:opacity-40"
                   >
                     −
@@ -235,7 +291,7 @@ export default function CommanderPage() {
                   <button
                     type="button"
                     onClick={() => majQte(p._id, 1)}
-                    disabled={!menu && (stock === 0 || (qtes[p._id] || 0) >= stock)}
+                    disabled={(!menu && (qtes[p._id] || 0) >= stockSelectionnable(p)) || (menu && !menuDispo)}
                     className="w-9 h-9 rounded-lg bg-cesi-jaune text-black font-bold hover:bg-yellow-300 disabled:opacity-40"
                   >
                     +
@@ -285,7 +341,7 @@ export default function CommanderPage() {
                       </div>
                     ) : (
                       <p className="text-sm text-muted">
-                        {c.qte > 1 ? `${c.qte} × ` : ""}{c.nomProduit}
+                        {c.qte > 1 ? `${c.qte} × ` : ""}{c.nomProduit} ({stockRestantDe(parNom.get(c.nomProduit || "") ?? p)} restant)
                       </p>
                     )}
                     </div>
@@ -359,7 +415,7 @@ export default function CommanderPage() {
                 aria-label="Bâtiment"
               >
                 <option value="Orion">Bât. Orion</option>
-                <option value="Antares">Bât. Antares</option>
+                {/* <option value="Antares">Bât. Antares</option> */}
               </select>
               <select
                 value={form.jour}

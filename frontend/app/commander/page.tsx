@@ -117,13 +117,7 @@ export default function CommanderPage() {
   }
   const parNom = new Map(produits.map((p) => [p.nom, p]));
   const categories = CATEGORIES.filter((c) => produits.some((p) => p.categorie === c));
-  const produitsFiltres = (filtre ? produits.filter((p) => p.categorie === filtre) : produits)
-    .slice()
-    .sort((a, b) => {
-      const dispoA = a.categorie === "Menus" ? menuEstDisponible(a) : stockRestantDe(a) > 0;
-      const dispoB = b.categorie === "Menus" ? menuEstDisponible(b) : stockRestantDe(b) > 0;
-      return dispoA === dispoB ? 0 : dispoA ? -1 : 1;
-    });
+  const produitsFiltres = filtre ? produits.filter((p) => p.categorie === filtre) : produits;
 
   function majQte(id: string, delta: number) {
     const produit = produits.find((p) => p._id === id);

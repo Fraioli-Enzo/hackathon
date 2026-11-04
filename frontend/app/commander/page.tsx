@@ -100,8 +100,23 @@ export default function CommanderPage() {
   function stockRestantDe(p: ProduitClient) {
     return Math.max(0, (p.stock ?? 0) - (reserves.get(p._id) || 0));
   }
+
+  // Un menu est indisponible si l'un de ses composants au choix n'a plus de variante en stock
+  function menuEstDisponible(p: ProduitClient) {
+    if (p.categorie !== "Menus") return true;
+    return (p.composition || []).every(
+      (c) => !c.categorie || produits.some((v) => v.categorie === c.categorie && v.actif !== false && stockRestantDe(v) > 0)
+    );
+  }
+  const parNom = new Map(produits.map((p) => [p.nom, p]));
   const categories = CATEGORIES.filter((c) => produits.some((p) => p.categorie === c));
-  const produitsFiltres = filtre ? produits.filter((p) => p.categorie === filtre) : produits;
+  const produitsFiltres = (filtre ? produits.filter((p) => p.categorie === filtre) : produits)
+    .slice()
+    .sort((a, b) => {
+      const dispoA = a.categorie === "Menus" ? menuEstDisponible(a) : stockRestantDe(a) > 0;
+      const dispoB = b.categorie === "Menus" ? menuEstDisponible(b) : stockRestantDe(b) > 0;
+      return dispoA === dispoB ? 0 : dispoA ? -1 : 1;
+    });
 
   function majQte(id: string, delta: number) {
     const produit = produits.find((p) => p._id === id);
@@ -191,14 +206,7 @@ export default function CommanderPage() {
             {produitsFiltres.map((p) => {
               const menu = p.categorie === "Menus";
               const stock = menu ? 0 : stockRestantDe(p);
-              // Un menu est indisponible si l'un de ses composants n'a plus de variante en stock
-              const menuDispo =
-                !menu ||
-                (p.composition || []).every(
-                  (c) =>
-                    !c.categorie ||
-                    produits.some((v) => v.categorie === c.categorie && v.actif !== false && stockRestantDe(v) > 0)
-                );
+              const menuDispo = menuEstDisponible(p);
               const avecChoix = menu && (p.composition?.some((c) => c.categorie) ?? false);
               return (
               <div key={p._id} className="space-y-2">

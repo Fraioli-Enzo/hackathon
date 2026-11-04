@@ -111,19 +111,13 @@ export default function AdminComptesPage() {
               return (
                 <tr
                   key={c._id}
-                  className="max-sm:block max-sm:mb-3 max-sm:rounded-xl max-sm:border max-sm:border-line max-sm:bg-card max-sm:p-4 sm:border-b sm:border-line sm:last:border-0"
+                  className="max-sm:grid max-sm:grid-cols-[1fr,auto] max-sm:gap-x-3 max-sm:gap-y-2 max-sm:mb-3 max-sm:rounded-xl max-sm:border max-sm:border-line max-sm:bg-card max-sm:p-4 sm:border-b sm:border-line sm:last:border-0"
                 >
-                  <td
-                    data-label="Email"
-                    className="px-4 py-3 font-semibold max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted"
-                  >
+                  <td className="px-4 py-3 font-semibold max-sm:col-start-1 max-sm:row-start-1 max-sm:py-0">
                     {c.email}
                     {estMoi && <span className="text-muted text-xs font-normal sm:hidden"> (toi)</span>}
                   </td>
-                  <td
-                    data-label="Rôle"
-                    className="px-4 py-3 max-sm:flex max-sm:items-center max-sm:justify-between max-sm:gap-3 max-sm:py-1.5 max-sm:before:content-[attr(data-label)] max-sm:before:text-xs max-sm:before:text-muted"
-                  >
+                  <td className="px-4 py-3 max-sm:col-start-1 max-sm:row-start-2 max-sm:py-0">
                     {estPrincipal ? (
                       <span className="inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-cesi-jaune/15 text-yellow-600">
                         Admin principal
@@ -132,7 +126,7 @@ export default function AdminComptesPage() {
                       <span className="text-muted">Admin{estMoi ? " (toi)" : ""}</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-right max-sm:flex max-sm:justify-end max-sm:py-1.5">
+                  <td className="px-4 py-3 text-right max-sm:col-start-2 max-sm:row-start-1 max-sm:row-span-2 max-sm:self-center max-sm:justify-self-end max-sm:py-0">
                     {!estPrincipal && !estMoi ? (
                       <button
                         onClick={() => setASupprimer(c)}

@@ -75,12 +75,15 @@ export async function POST(req: NextRequest) {
           if (c.categorie) {
             // Un choix par unité du composant (ex. 2 nems = 2 types possibles)
             const ids = Array.isArray(item.choix?.[i]) ? item.choix[i] : [];
-            if (ids.length !== c.qte) {
+            // Format par instance : un choix par menu commandé, sinon ancien format partagé (x qte)
+            const parInstance = ids.length === c.qte * item.qte;
+            if (ids.length !== c.qte && !parInstance) {
               return NextResponse.json(
                 { error: `Choisis le type de chaque ${c.categorie.toLowerCase()} pour « ${produit.nom} ».` },
                 { status: 400 }
               );
             }
+            const q = parInstance ? 1 : item.qte;
             const noms = new Map<string, number>();
             for (const id of ids) {
               const variante = parId.get(String(id));
@@ -90,8 +93,8 @@ export async function POST(req: NextRequest) {
                   { status: 400 }
                 );
               }
-              qtes.set(String(variante._id), (qtes.get(String(variante._id)) || 0) + item.qte);
-              consommees.set(String(variante._id), (consommees.get(String(variante._id)) || 0) + item.qte);
+              qtes.set(String(variante._id), (qtes.get(String(variante._id)) || 0) + q);
+              consommees.set(String(variante._id), (consommees.get(String(variante._id)) || 0) + q);
               noms.set(variante.nom, (noms.get(variante.nom) || 0) + 1);
             }
             for (const [nom, q] of Array.from(noms.entries())) {

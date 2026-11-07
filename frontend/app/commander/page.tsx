@@ -24,7 +24,8 @@ export default function CommanderPage() {
   const [erreur, setErreur] = useState<string | null>(null);
   const [envoi, setEnvoi] = useState(false);
   const [filtre, setFiltre] = useState("");
-  const [choix, setChoix] = useState<Record<string, Record<number, string[]>>>({});
+  const [choix, setChoix] = useState<Record<string, string[][][]>>({}); // menu -> instance -> composant -> variantes
+  const [perso, setPerso] = useState<Record<string, boolean>>({}); // true : composer chaque menu séparément
 
   useEffect(() => {
     fetch("/api/produits")
@@ -48,19 +49,20 @@ export default function CommanderPage() {
           })
         );
         // Pré-sélection de la première variante pour chaque composant au choix des menus
-        const defauts: Record<string, Record<number, string[]>> = {};
+        const defauts: Record<string, string[][][]> = {};
         for (const menu of ps) {
           if (menu.categorie !== "Menus" || !menu.composition) continue;
-          defauts[menu._id] = {};
-          menu.composition.forEach((c: CompositionItem, i: number) => {
-            if (!c.categorie) return;
-            const variante = ps.find((v: ProduitClient) => v.categorie === c.categorie && v.actif !== false);
-            if (variante) defauts[menu._id][i] = Array(c.qte).fill(variante._id);
-          });
+          defauts[menu._id] = [
+            menu.composition.map((c: CompositionItem) => {
+              if (!c.categorie) return [];
+              const variante = ps.find((v: ProduitClient) => v.categorie === c.categorie && v.actif !== false);
+              return Array(c.qte).fill(variante?._id || "");
+            }),
+          ];
         }
         setChoix((ancien) => {
           const fusion = { ...ancien };
-          for (const [id, c] of Object.entries(defauts)) fusion[id] = { ...c, ...(ancien[id] || {}) };
+          for (const [id, insts] of Object.entries(defauts)) if (!ancien[id]?.length) fusion[id] = insts;
           return fusion;
         });
       })
@@ -88,31 +90,43 @@ export default function CommanderPage() {
       if (menu.categorie !== "Menus" || !menu.composition) continue;
       const qteMenu = qtes[menu._id] || 0;
       if (!qteMenu) continue;
-      menu.composition.forEach((c, i) => {
-        if (c.categorie) {
-          (choix[menu._id]?.[i] || []).forEach((idVariante) => {
-            if (idVariante) r.set(idVariante, (r.get(idVariante) || 0) + qteMenu);
+      // en mode "même partout", l'instance 0 vaut pour toutes les quantités
+      const insts = choix[menu._id] || [];
+      const coef = perso[menu._id] ? 1 : qteMenu;
+      for (const inst of perso[menu._id] ? insts : insts.slice(0, 1)) {
+        menu.composition.forEach((c, i) => {
+          if (!c.categorie) return;
+          (inst?.[i] || []).forEach((idVariante) => {
+            if (idVariante) r.set(idVariante, (r.get(idVariante) || 0) + coef);
           });
-        } else if (c.nomProduit) {
-          const idComposant = produits.find((p) => p.nom === c.nomProduit)?._id;
-          if (idComposant) r.set(idComposant, (r.get(idComposant) || 0) + qteMenu * c.qte);
-        }
+        });
+      }
+      menu.composition.forEach((c) => {
+        if (c.categorie || !c.nomProduit) return;
+        const idComposant = produits.find((p) => p.nom === c.nomProduit)?._id;
+        if (idComposant) r.set(idComposant, (r.get(idComposant) || 0) + qteMenu * c.qte);
       });
     }
     return r;
   }, [produits, qtes, choix]);
 
   // Détail d'un menu pour le panier : une ligne par sous-élément, avec x si doublons
-  function detailMenu(menu: ProduitClient, choixMenu?: Record<number, string[]>): string[] {
+  function detailMenu(menu: ProduitClient): string[] {
+    const qte = qtes[menu._id] || 0;
+    const insts = choix[menu._id] || [];
+    const coef = perso[menu._id] ? 1 : qte;
     const compte = new Map<string, number>();
+    const sources = perso[menu._id] ? insts.slice(0, qte) : insts.slice(0, 1);
     menu.composition?.forEach((c, i) => {
       if (c.categorie) {
-        (choixMenu?.[i] || []).forEach((id) => {
-          const nom = produits.find((p) => p._id === id)?.nom;
-          if (nom) compte.set(nom, (compte.get(nom) || 0) + 1);
-        });
+        sources.forEach((inst) =>
+          (inst?.[i] || []).forEach((id) => {
+            const nom = produits.find((p) => p._id === id)?.nom;
+            if (nom) compte.set(nom, (compte.get(nom) || 0) + coef);
+          })
+        );
       } else if (c.nomProduit) {
-        compte.set(c.nomProduit, (compte.get(c.nomProduit) || 0) + c.qte);
+        compte.set(c.nomProduit, (compte.get(c.nomProduit) || 0) + c.qte * qte);
       }
     });
     return Array.from(compte.entries()).map(([nom, n]) => (n > 1 ? `${n} × ${nom}` : nom));
@@ -122,21 +136,26 @@ export default function CommanderPage() {
     return Math.max(0, (p.stock ?? 0) - (reserves.get(p._id) || 0));
   }
 
-  // Stock affiché pour l'unité u d'un composant au choix : soustrait aussi les
-  // unités de même type déjà choisies AVANT elle dans le menu (ex. 2e nem : n-1)
-  function restantPourUnite(menu: ProduitClient, i: number, u: number, v: ProduitClient) {
+  // Stock affiché pour l'unité u du composant i de l'instance k : soustrait les
+  // unités de même type déjà choisies AVANT elle (ex. 2e nem : n-1)
+  function restantPourUnite(menu: ProduitClient, k: number, i: number, u: number, v: ProduitClient) {
     const qteMenu = qtes[menu._id] || 0;
+    const coef = perso[menu._id] ? 1 : qteMenu;
+    const insts = choix[menu._id] || [];
+    const sources = perso[menu._id] ? insts : insts.slice(0, 1);
     let prisMenu = 0;
     let prisAvant = 0;
-    (menu.composition || []).forEach((c2, i2) => {
-      if (!c2.categorie) return;
-      (choix[menu._id]?.[i2] || []).forEach((x, u2) => {
-        if (x !== v._id) return;
-        prisMenu++;
-        if (i2 < i || (i2 === i && u2 < u)) prisAvant++;
+    sources.forEach((inst, k2) => {
+      (menu.composition || []).forEach((c2, i2) => {
+        if (!c2.categorie) return;
+        (inst?.[i2] || []).forEach((x, u2) => {
+          if (x !== v._id) return;
+          prisMenu++;
+          if (k2 < k || (k2 === k && (i2 < i || (i2 === i && u2 < u)))) prisAvant++;
+        });
       });
     });
-    return Math.max(0, (v.stock ?? 0) - (reserves.get(v._id) || 0) + (prisMenu - prisAvant) * qteMenu);
+    return Math.max(0, (v.stock ?? 0) - (reserves.get(v._id) || 0) + (prisMenu - prisAvant) * coef);
   }
 
   // Quantité maximale sélectionnable pour un produit : stock total moins
@@ -160,17 +179,86 @@ export default function CommanderPage() {
   function majQte(id: string, delta: number) {
     const produit = produits.find((p) => p._id === id);
     const max = produit?.categorie === "Menus" ? 50 : produit ? stockSelectionnable(produit) : 0;
-    setQtes((q) => ({ ...q, [id]: Math.max(0, Math.min(max, (q[id] || 0) + delta)) }));
+    const n = Math.max(0, Math.min(max, (qtes[id] || 0) + delta));
+    setQtes((q) => ({ ...q, [id]: n }));
+    // Menus à choix : une composition par instance, copiée depuis la précédente
+    if (produit?.categorie === "Menus" && produit.composition?.some((c) => c.categorie)) {
+      setChoix((ch) => {
+        const copie = [...(ch[id] || [])];
+        while (copie.length < n) {
+          const modele = copie[copie.length - 1] || (ch[id] || [])[0] || [];
+          copie.push(modele.map((c) => [...c]));
+        }
+        copie.length = n;
+        return { ...ch, [id]: copie };
+      });
+    }
   }
 
-  function majChoix(menuId: string, i: number, u: number, idVariante: string) {
+  function majChoix(menuId: string, k: number, i: number, u: number, idVariante: string) {
     setChoix((ch) => {
-      const parComposant = { ...(ch[menuId] || {}) };
-      const copie = [...(parComposant[i] || [])];
+      const insts = [...(ch[menuId] || [])];
+      const inst = [...(insts[k] || [])];
+      const copie = [...(inst[i] || [])];
       copie[u] = idVariante;
-      parComposant[i] = copie;
-      return { ...ch, [menuId]: parComposant };
+      inst[i] = copie;
+      insts[k] = inst;
+      return { ...ch, [menuId]: insts };
     });
+  }
+
+  // Éditeur de la composition d'une instance k du menu p (tags sélectionnables)
+  function editeurComposition(p: ProduitClient, k: number) {
+    return (
+      <div className="divide-y divide-line">
+        {(p.composition || []).map((c, i) => (
+          <div key={i} className="py-2 first:pt-0 last:pb-0">
+            {c.categorie ? (
+              <div className="grid grid-cols-[auto,1fr] gap-x-3 gap-y-2 text-sm items-start">
+                <span className="text-muted pt-1">{c.qte > 1 ? `${c.qte} × ` : ""}{c.categorie}</span>
+                <div className="flex flex-col gap-2">
+                  {Array.from({ length: c.qte }).map((_, u) => (
+                    <div key={u}>
+                      {c.qte > 1 && (
+                        <p className="text-xs text-muted mb-1">{c.categorie} n°{u + 1}</p>
+                      )}
+                      <div className="flex flex-wrap gap-1.5" role="group" aria-label={`${c.categorie} n°${u + 1}`}>
+                        {produits
+                          .filter((v) => v.categorie === c.categorie && v.actif !== false)
+                          .map((v) => {
+                            const dispo = restantPourUnite(p, k, i, u, v);
+                            const selectionne = (choix[p._id]?.[k]?.[i]?.[u] || "") === v._id;
+                            return (
+                              <button
+                                key={v._id}
+                                type="button"
+                                aria-pressed={selectionne}
+                                onClick={() => majChoix(p._id, k, i, u, v._id)}
+                                disabled={dispo === 0 && !selectionne}
+                                className={`text-xs px-2.5 py-1.5 rounded-lg border transition-colors ${
+                                  selectionne
+                                    ? "bg-cesi-jaune text-black border-cesi-jaune font-bold"
+                                    : "border-line hover:border-cesi-jaune disabled:opacity-40 disabled:hover:border-line"
+                                }`}
+                              >
+                                {v.nom} <span className={selectionne ? "" : "text-muted"}>({dispo})</span>
+                              </button>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted">
+                {c.qte > 1 ? `${c.qte} × ` : ""}{c.nomProduit} ({stockRestantDe(parNom.get(c.nomProduit || "") ?? p)} restant)
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
+    );
   }
 
   async function valider(e: React.FormEvent) {
@@ -186,12 +274,16 @@ export default function CommanderPage() {
     }
     for (const l of panier) {
       if (l.produit.categorie !== "Menus" || !l.produit.composition) continue;
-      const incomplet = l.produit.composition.some(
-        (c, i) => c.categorie && (!choix[l.produit._id]?.[i] || choix[l.produit._id][i].length !== c.qte || choix[l.produit._id][i].some((v) => !v))
-      );
-      if (incomplet) {
-        setErreur(`Choisis le type pour chaque produit du « ${l.produit.nom} ».`);
-        return;
+      const insts = choix[l.produit._id] || [];
+      for (let k = 0; k < l.qte; k++) {
+        const inst = insts[k];
+        const incomplet = l.produit.composition.some(
+          (c, i) => c.categorie && (!inst?.[i] || inst[i].length !== c.qte || inst[i].some((v) => !v))
+        );
+        if (incomplet) {
+          setErreur(`Choisis le type pour chaque produit du « ${l.produit.nom} ».`);
+          return;
+        }
       }
     }
     setEnvoi(true);
@@ -204,7 +296,14 @@ export default function CommanderPage() {
           items: panier.map((l) => {
             const item: { produitId: string; qte: number; choix?: string[][] } = { produitId: l.produit._id, qte: l.qte };
             if (l.produit.categorie === "Menus" && l.produit.composition?.some((c) => c.categorie)) {
-              item.choix = l.produit.composition.map((c, i) => (c.categorie ? choix[l.produit._id]?.[i] || [] : []));
+              const insts = choix[l.produit._id] || [];
+              // choix aplati : un tableau de variantes par composant, pour chaque instance du menu
+              item.choix = l.produit.composition.map((c, i) => {
+                if (!c.categorie) return [];
+                return perso[l.produit._id]
+                  ? insts.slice(0, l.qte).flatMap((inst) => inst[i] || [])
+                  : Array.from({ length: l.qte }).flatMap(() => insts[0]?.[i] || []);
+              });
             }
             return item;
           }),
@@ -329,54 +428,47 @@ export default function CommanderPage() {
               {avecChoix && (qtes[p._id] || 0) > 0 && (
                 <div className="border border-line rounded-xl p-4 bg-card space-y-3">
                   <p className="text-sm font-bold">Composition de ton menu</p>
-                  <div className="divide-y divide-line">
-                  {(p.composition || []).map((c, i) => (
-                    <div key={i} className="py-2 first:pt-0 last:pb-0">
-                    {c.categorie ? (
-                      <div className="grid grid-cols-[auto,1fr] gap-x-3 gap-y-2 text-sm items-start">
-                        <span className="text-muted pt-1">{c.qte > 1 ? `${c.qte} × ` : ""}{c.categorie}</span>
-                        <div className="flex flex-col gap-2">
-                          {Array.from({ length: c.qte }).map((_, u) => (
-                            <div key={u}>
-                              {c.qte > 1 && (
-                                <p className="text-xs text-muted mb-1">{c.categorie} n°{u + 1}</p>
-                              )}
-                              <div className="flex flex-wrap gap-1.5" role="group" aria-label={`${c.categorie} n°${u + 1}`}>
-                              {produits
-                                .filter((v) => v.categorie === c.categorie && v.actif !== false)
-                                .map((v) => {
-                                  const dispo = restantPourUnite(p, i, u, v);
-                                  const selectionne = (choix[p._id]?.[i]?.[u] || "") === v._id;
-                                  return (
-                                    <button
-                                      key={v._id}
-                                      type="button"
-                                      aria-pressed={selectionne}
-                                      onClick={() => majChoix(p._id, i, u, v._id)}
-                                      disabled={dispo === 0 && !selectionne}
-                                      className={`text-xs px-2.5 py-1.5 rounded-lg border transition-colors ${
-                                        selectionne
-                                          ? "bg-cesi-jaune text-black border-cesi-jaune font-bold"
-                                          : "border-line hover:border-cesi-jaune disabled:opacity-40 disabled:hover:border-line"
-                                      }`}
-                                    >
-                                      {v.nom} <span className={selectionne ? "" : "text-muted"}>({dispo})</span>
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted">
-                        {c.qte > 1 ? `${c.qte} × ` : ""}{c.nomProduit} ({stockRestantDe(parNom.get(c.nomProduit || "") ?? p)} restant)
-                      </p>
-                    )}
+                  {(qtes[p._id] || 0) > 1 && (
+                    <div className="flex gap-2" role="group" aria-label="Mode de composition">
+                      <button
+                        type="button"
+                        aria-pressed={!perso[p._id]}
+                        onClick={() => setPerso((m) => ({ ...m, [p._id]: false }))}
+                        className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+                          !perso[p._id]
+                            ? "bg-cesi-jaune text-black border-cesi-jaune font-bold"
+                            : "border-line hover:border-cesi-jaune"
+                        }`}
+                      >
+                        Même partout
+                      </button>
+                      <button
+                        type="button"
+                        aria-pressed={!!perso[p._id]}
+                        onClick={() => setPerso((m) => ({ ...m, [p._id]: true }))}
+                        className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+                          perso[p._id]
+                            ? "bg-cesi-jaune text-black border-cesi-jaune font-bold"
+                            : "border-line hover:border-cesi-jaune"
+                        }`}
+                      >
+                        Personnaliser chaque menu
+                      </button>
                     </div>
-                  ))}
-                  </div>
+                  )}
+                  {!perso[p._id] && (qtes[p._id] || 0) > 1 && (
+                    <p className="text-xs text-muted">Cette composition vaut pour les {qtes[p._id]} menus.</p>
+                  )}
+                  {!perso[p._id] ? (
+                    editeurComposition(p, 0)
+                  ) : (
+                    Array.from({ length: qtes[p._id] || 1 }).map((_, k) => (
+                      <div key={k} className="space-y-2 pt-3 border-t border-line first:pt-0 first:border-t-0">
+                        <p className="text-xs font-bold text-muted">Menu n°{k + 1}</p>
+                        {editeurComposition(p, k)}
+                      </div>
+                    ))
+                  )}
                 </div>
               )}
               </div>
@@ -394,7 +486,7 @@ export default function CommanderPage() {
               {panier.map((l) => {
                 const detail =
                   l.produit.categorie === "Menus" && l.produit.composition
-                    ? detailMenu(l.produit, choix[l.produit._id])
+                    ? detailMenu(l.produit)
                     : [];
                 return (
                   <li key={l.produit._id} className="flex justify-between gap-2">

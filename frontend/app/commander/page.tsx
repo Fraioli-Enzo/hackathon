@@ -122,6 +122,23 @@ export default function CommanderPage() {
     return Math.max(0, (p.stock ?? 0) - (reserves.get(p._id) || 0));
   }
 
+  // Stock affiché pour l'unité u d'un composant au choix : soustrait aussi les
+  // unités de même type déjà choisies AVANT elle dans le menu (ex. 2e nem : n-1)
+  function restantPourUnite(menu: ProduitClient, i: number, u: number, v: ProduitClient) {
+    const qteMenu = qtes[menu._id] || 0;
+    let prisMenu = 0;
+    let prisAvant = 0;
+    (menu.composition || []).forEach((c2, i2) => {
+      if (!c2.categorie) return;
+      (choix[menu._id]?.[i2] || []).forEach((x, u2) => {
+        if (x !== v._id) return;
+        prisMenu++;
+        if (i2 < i || (i2 === i && u2 < u)) prisAvant++;
+      });
+    });
+    return Math.max(0, (v.stock ?? 0) - (reserves.get(v._id) || 0) + (prisMenu - prisAvant) * qteMenu);
+  }
+
   // Quantité maximale sélectionnable pour un produit : stock total moins
   // les réservations externes (choix des menus), sans compter sa propre quantité
   function stockSelectionnable(p: ProduitClient) {
@@ -326,15 +343,11 @@ export default function CommanderPage() {
                             >
                             {produits
                               .filter((v) => v.categorie === c.categorie && v.actif !== false)
-                              .map((v) => {
-                                const reserveUnite = choix[p._id]?.[i]?.[u] === v._id ? 1 : 0;
-                                const dispo = Math.max(0, (v.stock ?? 0) - ((reserves.get(v._id) || 0) - reserveUnite));
-                                return (
-                                  <option key={v._id} value={v._id}>
-                                    {v.nom} ({dispo} restant)
-                                  </option>
-                                );
-                              })}
+                              .map((v) => (
+                                <option key={v._id} value={v._id}>
+                                  {v.nom} ({restantPourUnite(p, i, u, v)} restant)
+                                </option>
+                              ))}
                           </select>
                           ))}
                         </div>

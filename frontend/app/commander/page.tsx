@@ -158,6 +158,16 @@ export default function CommanderPage() {
     return Math.max(0, (v.stock ?? 0) - (reserves.get(v._id) || 0) + (prisMenu - prisAvant) * coef);
   }
 
+  // Stock affiché pour un composant fixe (nomProduit) de l'instance k du menu :
+  // même convention dégressive que les tags, les instances suivantes voient le reste
+  function restantFixe(menu: ProduitClient, k: number, c: CompositionItem) {
+    const v = parNom.get(c.nomProduit || "");
+    if (!v) return 0;
+    const qteMenu = qtes[menu._id] || 0;
+    const prisAvant = perso[menu._id] ? c.qte * k : 0;
+    return Math.max(0, (v.stock ?? 0) - (reserves.get(v._id) || 0) + qteMenu * c.qte - prisAvant);
+  }
+
   // Quantité maximale sélectionnable pour un produit : stock total moins
   // les réservations externes (choix des menus), sans compter sa propre quantité
   function stockSelectionnable(p: ProduitClient) {
@@ -252,7 +262,7 @@ export default function CommanderPage() {
               </div>
             ) : (
               <p className="text-sm text-muted">
-                {c.qte > 1 ? `${c.qte} × ` : ""}{c.nomProduit} ({stockRestantDe(parNom.get(c.nomProduit || "") ?? p)} restant)
+                {c.qte > 1 ? `${c.qte} × ` : ""}{c.nomProduit} ({restantFixe(p, k, c)} restant)
               </p>
             )}
           </div>

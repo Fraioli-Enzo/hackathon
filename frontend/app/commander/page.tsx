@@ -163,6 +163,16 @@ export default function CommanderPage() {
     setQtes((q) => ({ ...q, [id]: Math.max(0, Math.min(max, (q[id] || 0) + delta)) }));
   }
 
+  function majChoix(menuId: string, i: number, u: number, idVariante: string) {
+    setChoix((ch) => {
+      const parComposant = { ...(ch[menuId] || {}) };
+      const copie = [...(parComposant[i] || [])];
+      copie[u] = idVariante;
+      parComposant[i] = copie;
+      return { ...ch, [menuId]: parComposant };
+    });
+  }
+
   async function valider(e: React.FormEvent) {
     e.preventDefault();
     setErreur(null);
@@ -323,32 +333,39 @@ export default function CommanderPage() {
                   {(p.composition || []).map((c, i) => (
                     <div key={i} className="py-2 first:pt-0 last:pb-0">
                     {c.categorie ? (
-                      <div className="grid grid-cols-[auto,1fr] items-center gap-x-3 text-sm">
-                        <span className="text-muted">{c.qte > 1 ? `${c.qte} × ` : ""}{c.categorie}</span>
+                      <div className="grid grid-cols-[auto,1fr] gap-x-3 gap-y-2 text-sm items-start">
+                        <span className="text-muted pt-1">{c.qte > 1 ? `${c.qte} × ` : ""}{c.categorie}</span>
                         <div className="flex flex-col gap-2">
                           {Array.from({ length: c.qte }).map((_, u) => (
-                            <select
-                              key={u}
-                              aria-label={`${c.categorie} n°${u + 1}`}
-                              value={choix[p._id]?.[i]?.[u] || ""}
-                              onChange={(e) =>
-                                setChoix((ch) => {
-                                  const actuel = ch[p._id]?.[i] || Array(c.qte).fill("");
-                                  const copie = [...actuel];
-                                  copie[u] = e.target.value;
-                                  return { ...ch, [p._id]: { ...(ch[p._id] || {}), [i]: copie } };
-                                })
-                              }
-                              className="w-full bg-card border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none"
-                            >
-                            {produits
-                              .filter((v) => v.categorie === c.categorie && v.actif !== false)
-                              .map((v) => (
-                                <option key={v._id} value={v._id}>
-                                  {v.nom} ({restantPourUnite(p, i, u, v)} restant)
-                                </option>
-                              ))}
-                          </select>
+                            <div key={u}>
+                              {c.qte > 1 && (
+                                <p className="text-xs text-muted mb-1">{c.categorie} n°{u + 1}</p>
+                              )}
+                              <div className="flex flex-wrap gap-1.5" role="group" aria-label={`${c.categorie} n°${u + 1}`}>
+                              {produits
+                                .filter((v) => v.categorie === c.categorie && v.actif !== false)
+                                .map((v) => {
+                                  const dispo = restantPourUnite(p, i, u, v);
+                                  const selectionne = (choix[p._id]?.[i]?.[u] || "") === v._id;
+                                  return (
+                                    <button
+                                      key={v._id}
+                                      type="button"
+                                      aria-pressed={selectionne}
+                                      onClick={() => majChoix(p._id, i, u, v._id)}
+                                      disabled={dispo === 0 && !selectionne}
+                                      className={`text-xs px-2.5 py-1.5 rounded-lg border transition-colors ${
+                                        selectionne
+                                          ? "bg-cesi-jaune text-black border-cesi-jaune font-bold"
+                                          : "border-line hover:border-cesi-jaune disabled:opacity-40 disabled:hover:border-line"
+                                      }`}
+                                    >
+                                      {v.nom} <span className={selectionne ? "" : "text-muted"}>({dispo})</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
                           ))}
                         </div>
                       </div>

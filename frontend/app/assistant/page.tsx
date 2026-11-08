@@ -92,9 +92,9 @@ export default function AssistantPage() {
           <Image
             src="/images/asian.png"
             alt=""
-            width={160}
-            height={120}
-            className="w-20 h-auto object-contain drop-shadow-lg"
+            width={48}
+            height={48}
+            className="w-12 h-12 object-cover object-top rounded-full shrink-0"
           />
           Agent DUONG
         </h1>

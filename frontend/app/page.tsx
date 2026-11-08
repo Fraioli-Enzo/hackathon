@@ -51,6 +51,12 @@ export default async function Accueil() {
         >
           Commander
         </Link>
+        <Link
+          href="/assistant"
+          className="inline-block ml-3 border border-line bg-card text-content font-bold px-8 py-3 rounded-lg hover:border-cesi-jaune transition-colors"
+        >
+          Passer par l'assistant IA
+        </Link>
       </section>
 
       {mesCommandes.length > 0 && (

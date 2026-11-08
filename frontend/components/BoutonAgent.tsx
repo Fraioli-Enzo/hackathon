@@ -28,14 +28,19 @@ export default function BoutonAgent() {
     <div className="fixed bottom-6 right-6 z-50">
       <div className="relative">
         {texte && (
-          <p className="absolute bottom-full right-0 mb-2 whitespace-nowrap bg-card border border-line rounded-xl px-3 py-2 text-sm font-bold shadow-lg">
+          <p className="absolute bottom-full right-0 mb-3 whitespace-nowrap bg-card border border-line rounded-xl px-3 py-2 text-sm font-bold shadow-lg">
             {texte}
+            {/* Queue de la bulle pointant vers le visage du personnage */}
+            <span
+              aria-hidden
+              className="absolute -bottom-[7px] right-10 w-3 h-3 bg-card border-b border-r border-line rotate-45"
+            />
           </p>
         )}
         <Link
           href="/assistant"
           aria-label="Ouvrir l'assistant IA"
-          className="block w-24 h-24 rounded-full hover:scale-105 transition-all shadow-lg overflow-hidden"
+          className="block w-24 h-24 rounded-full hover:scale-105 transition-all overflow-hidden"
         >
           <Image src="/images/asian.png" alt="" width={176} height={176} className="w-full h-full object-cover" />
         </Link>

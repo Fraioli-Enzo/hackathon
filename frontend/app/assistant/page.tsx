@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Icon, addIcon } from "@iconify/react";
-import { phRobotBold, phPaperPlaneTiltBold, phChatTeardropTextBold } from "@/lib/icons";
+import { phPaperPlaneTiltBold, phChatTeardropTextBold } from "@/lib/icons";
 import type { CommandeClient } from "@/lib/types";
 
-addIcon("ph:robot-bold", phRobotBold);
 addIcon("ph:paper-plane-tilt-bold", phPaperPlaneTiltBold);
 addIcon("ph:chat-teardrop-text-bold", phChatTeardropTextBold);
 
@@ -89,7 +89,7 @@ export default function AssistantPage() {
     <div className="flex flex-col gap-6 h-[calc(100vh-10rem)]">
       <section className="text-center space-y-2 py-4">
         <h1 className="text-3xl sm:text-4xl font-black flex items-center justify-center gap-3">
-          <Icon icon="ph:robot-bold" className="w-8 h-8 text-cesi-jaune" aria-hidden />
+          <Image src="/images/asian.png" alt="" width={40} height={40} className="w-10 h-10 object-cover rounded-full" />
           Assistant Cafet
         </h1>
         <p className="text-muted">

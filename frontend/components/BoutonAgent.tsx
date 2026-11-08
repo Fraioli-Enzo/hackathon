@@ -3,10 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Icon, addIcon } from "@iconify/react";
-import { phRobotBold } from "@/lib/icons";
-
-addIcon("ph:robot-bold", phRobotBold);
+import Image from "next/image";
 
 const TEXTE_INTRO = "Agent DUONG a votre service";
 
@@ -38,9 +35,9 @@ export default function BoutonAgent() {
         <Link
           href="/assistant"
           aria-label="Ouvrir l'assistant IA"
-          className="flex items-center justify-center w-14 h-14 rounded-full bg-cesi-jaune text-black hover:bg-yellow-300 hover:scale-105 transition-all shadow-lg"
+          className="flex items-center justify-center w-14 h-14 rounded-full bg-cesi-jaune hover:bg-yellow-300 hover:scale-105 transition-all shadow-lg overflow-hidden"
         >
-          <Icon icon="ph:robot-bold" className="w-7 h-7" aria-hidden />
+          <Image src="/images/asian.png" alt="" width={56} height={56} className="w-11 h-11 object-cover rounded-full" />
         </Link>
       </div>
     </div>

@@ -25,7 +25,7 @@ export default function BoutonAgent() {
   if (chemin === "/assistant") return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-1 right-6 z-50">
       <div className="relative">
         {texte && (
           <p className="absolute bottom-full right-0 mb-3 whitespace-nowrap bg-card border border-line rounded-xl px-3 py-2 text-sm font-bold shadow-lg">

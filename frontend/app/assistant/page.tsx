@@ -34,10 +34,12 @@ export default function AssistantPage() {
   const [saisie, setSaisie] = useState("");
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
-  const finRef = useRef<HTMLDivElement>(null);
+  const filRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    finRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Défile uniquement le fil de messages, jamais la page (scrollIntoView ferait
+    // défiler toute la page vers le bas)
+    if (filRef.current) filRef.current.scrollTop = filRef.current.scrollHeight;
   }, [messages, envoi]);
 
   async function envoyer(texte: string) {
@@ -95,7 +97,11 @@ export default function AssistantPage() {
         </p>
       </section>
 
-      <section className="flex-1 min-h-0 overflow-y-auto border border-line rounded-xl bg-card p-4 space-y-4" aria-label="Conversation">
+      <section
+        ref={filRef}
+        className="flex-1 min-h-0 overflow-y-auto border border-line rounded-xl bg-card p-4 space-y-4"
+        aria-label="Conversation"
+      >
         {messages.map((m, i) => (
           <div key={i} className={"flex " + (m.role === "user" ? "justify-end" : "justify-start")}>
             <div
@@ -121,7 +127,6 @@ export default function AssistantPage() {
             <div className="bg-surface border border-line rounded-xl rounded-bl-sm px-4 py-2.5 text-muted">L'assistant réfléchit…</div>
           </div>
         )}
-        <div ref={finRef} />
       </section>
 
       {erreur && <p className="text-red-600 text-sm">{erreur}</p>}

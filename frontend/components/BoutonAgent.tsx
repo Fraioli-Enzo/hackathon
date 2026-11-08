@@ -35,9 +35,9 @@ export default function BoutonAgent() {
         <Link
           href="/assistant"
           aria-label="Ouvrir l'assistant IA"
-          className="flex items-center justify-center w-24 h-24 rounded-full bg-cesi-jaune hover:bg-yellow-300 hover:scale-105 transition-all shadow-lg overflow-hidden"
+          className="block w-24 h-24 rounded-full hover:scale-105 transition-all shadow-lg overflow-hidden"
         >
-          <Image src="/images/asian.png" alt="" width={176} height={176} className="w-[88px] h-[88px] object-cover rounded-full" />
+          <Image src="/images/asian.png" alt="" width={176} height={176} className="w-full h-full object-cover" />
         </Link>
       </div>
     </div>

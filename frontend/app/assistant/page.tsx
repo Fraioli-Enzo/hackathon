@@ -89,8 +89,14 @@ export default function AssistantPage() {
     <div className="flex flex-col gap-6 h-[calc(100vh-10rem)]">
       <section className="text-center space-y-2 py-4">
         <h1 className="text-3xl sm:text-4xl font-black flex items-center justify-center gap-3">
-          <Image src="/images/asian.png" alt="" width={40} height={40} className="w-10 h-10 object-cover rounded-full" />
-          Assistant Cafet
+          <Image
+            src="/images/asian.png"
+            alt=""
+            width={160}
+            height={120}
+            className="w-20 h-auto object-contain drop-shadow-lg"
+          />
+          Agent DUONG
         </h1>
         <p className="text-muted">
           Pose tes questions sur les produits, ou commande directement en discutant. Le paiement reste sur place.

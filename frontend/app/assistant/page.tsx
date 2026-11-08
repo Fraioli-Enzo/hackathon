@@ -5,11 +5,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Icon, addIcon } from "@iconify/react";
-import { phPaperPlaneTiltBold, phChatTeardropTextBold } from "@/lib/icons";
+import { phPaperPlaneTiltBold } from "@/lib/icons";
 import type { CommandeClient } from "@/lib/types";
 
 addIcon("ph:paper-plane-tilt-bold", phPaperPlaneTiltBold);
-addIcon("ph:chat-teardrop-text-bold", phChatTeardropTextBold);
 
 type MessageChat = {
   role: "user" | "assistant";
@@ -19,8 +18,10 @@ type MessageChat = {
 
 const MESSAGE_ACCUEIL: MessageChat = {
   role: "assistant",
-  content: "Salut ! Je suis l'assistant de la Cafet CESI. Je peux te parler des produits, des prix et des stocks, ou passer ta commande directement ici. Qu'est-ce que tu veux manger cette semaine ?",
+  content: "Salut ! Je suis DUONG, l'agent de la Cafet CESI. Demande-moi les produits, les prix et les stocks, ou commande directement ici. Qu'est-ce qui te ferait plaisir cette semaine ?",
 };
+
+const SUGGESTIONS = ["Qu'est-ce qui est dispo ?", "Les menus et leurs prix", "Je veux commander"];
 
 function lireCookie(nom: string): string | null {
   if (typeof document === "undefined") return null;
@@ -86,86 +87,117 @@ export default function AssistantPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 h-[calc(100vh-10rem)]">
-      <section className="text-center space-y-2 py-4">
-        <h1 className="text-3xl sm:text-4xl font-black flex items-center justify-center gap-3">
+    <div className="flex flex-col h-[calc(100vh-10rem)]">
+      <div className="flex flex-col flex-1 min-h-0 rounded-2xl border border-line bg-card overflow-hidden shadow-sm">
+        <header className="flex items-center gap-3 border-b border-line bg-surface px-4 py-3">
           <Image
             src="/images/asian.png"
             alt=""
-            width={48}
-            height={48}
-            className="w-12 h-12 object-cover object-top rounded-full shrink-0"
+            width={40}
+            height={40}
+            className="w-10 h-10 object-cover object-top rounded-full shrink-0"
           />
-          Agent DUONG
-        </h1>
-        <p className="text-muted">
-          Pose tes questions sur les produits, ou commande directement en discutant. Le paiement reste sur place.
-        </p>
-      </section>
+          <div className="min-w-0">
+            <h1 className="text-lg font-black leading-tight">Agent DUONG</h1>
+            <p className="text-xs text-muted leading-tight">Produits, prix, stocks et commandes de la cafet</p>
+          </div>
+        </header>
 
-      <section
-        ref={filRef}
-        className="flex-1 min-h-0 overflow-y-auto border border-line rounded-xl bg-card p-4 space-y-4"
-        aria-label="Conversation"
-      >
-        {messages.map((m, i) => (
-          <div key={i} className={"flex " + (m.role === "user" ? "justify-end" : "justify-start")}>
-            <div
-              className={
-                "max-w-[85%] sm:max-w-[75%] space-y-3 rounded-xl px-4 py-2.5 " +
-                (m.role === "user" ? "bg-cesi-jaune text-black rounded-br-sm" : "bg-surface border border-line rounded-bl-sm")
-              }
-            >
-              <p className="whitespace-pre-wrap">{m.content}</p>
-              {m.commande && (
-                <button
-                  onClick={() => voirTicket(m.commande as CommandeClient)}
-                  className="block w-full bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors"
-                >
-                  Récupérer mon ticket (QR code)
-                </button>
+        <section ref={filRef} className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 space-y-4" aria-label="Conversation" aria-live="polite">
+          {messages.map((m, i) => (
+            <div key={i} className={"flex gap-2.5 " + (m.role === "user" ? "justify-end" : "justify-start")}>
+              {m.role === "assistant" && (
+                <Image
+                  src="/images/asian.png"
+                  alt=""
+                  width={28}
+                  height={28}
+                  className="w-7 h-7 object-cover object-top rounded-full shrink-0 mt-1"
+                />
               )}
+              <div
+                className={
+                  "max-w-[85%] sm:max-w-[75%] space-y-3 px-4 py-2.5 shadow-sm " +
+                  (m.role === "user"
+                    ? "bg-cesi-jaune text-black rounded-2xl rounded-br-sm"
+                    : "bg-surface border border-line text-content rounded-2xl rounded-tl-sm")
+                }
+              >
+                <p className="whitespace-pre-wrap leading-relaxed">{m.content}</p>
+                {m.commande && (
+                  <button
+                    onClick={() => voirTicket(m.commande as CommandeClient)}
+                    className="block w-full bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors"
+                  >
+                    Récupérer mon ticket (QR code)
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
-        {envoi && (
-          <div className="flex justify-start">
-            <div className="bg-surface border border-line rounded-xl rounded-bl-sm px-4 py-2.5 text-muted">L'assistant réfléchit…</div>
-          </div>
+          ))}
+
+          {messages.length === 1 && !envoi && (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {SUGGESTIONS.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => envoyer(s)}
+                  className="text-sm border border-line bg-surface text-content rounded-full px-3 py-1.5 hover:border-cesi-jaune transition-colors"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {envoi && (
+            <div className="flex justify-start gap-2.5" aria-busy="true">
+              <Image src="/images/asian.png" alt="" width={28} height={28} className="w-7 h-7 object-cover object-top rounded-full shrink-0 mt-1" />
+              <div className="bg-surface border border-line rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1.5 shadow-sm text-muted">
+                {[0, 150, 300].map((delai) => (
+                  <span key={delai} className="w-2 h-2 rounded-full bg-current animate-bounce" style={{ animationDelay: delai + "ms" }} />
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+
+        {erreur && (
+          <p role="alert" className="border-t border-line bg-card px-4 py-2 text-sm text-red-600">
+            {erreur}
+          </p>
         )}
-      </section>
 
-      {erreur && <p className="text-red-600 text-sm">{erreur}</p>}
-
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          envoyer(saisie);
-        }}
-        className="flex gap-2"
-      >
-        <label htmlFor="message-agent" className="sr-only">
-          Ton message
-        </label>
-        <input
-          id="message-agent"
-          value={saisie}
-          onChange={(e) => setSaisie(e.target.value)}
-          placeholder="Ex : il reste des mochis ? Ou : je veux 2 nems au poulet"
-          disabled={envoi}
-          className="flex-1 border border-line rounded-lg bg-surface px-4 py-3 text-content placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-cesi-jaune disabled:opacity-60"
-        />
-        <button
-          type="submit"
-          disabled={envoi || !saisie.trim()}
-          className="bg-cesi-jaune text-black font-bold px-4 sm:px-5 rounded-lg hover:bg-yellow-300 transition-colors disabled:opacity-40"
-          aria-label="Envoyer"
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            envoyer(saisie);
+          }}
+          className="border-t border-line bg-surface p-3 flex items-center gap-2"
         >
-          <Icon icon="ph:paper-plane-tilt-bold" className="w-5 h-5" aria-hidden />
-        </button>
-      </form>
+          <label htmlFor="message-agent" className="sr-only">
+            Ton message
+          </label>
+          <input
+            id="message-agent"
+            value={saisie}
+            onChange={(e) => setSaisie(e.target.value)}
+            placeholder="Ex : il reste des mochis ? Ou : je veux 2 nems au poulet"
+            disabled={envoi}
+            className="flex-1 min-w-0 border border-line rounded-full bg-card px-4 py-2.5 text-content placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-cesi-jaune focus:border-transparent disabled:opacity-60"
+          />
+          <button
+            type="submit"
+            disabled={envoi || !saisie.trim()}
+            className="w-11 h-11 shrink-0 rounded-full bg-cesi-jaune text-black hover:bg-yellow-300 hover:scale-105 active:scale-95 transition-all disabled:opacity-40 disabled:hover:scale-100"
+            aria-label="Envoyer"
+          >
+            <Icon icon="ph:paper-plane-tilt-bold" className="w-5 h-5 mx-auto" aria-hidden />
+          </button>
+        </form>
+      </div>
 
-      <p className="text-xs text-muted text-center">
+      <p className="text-xs text-muted text-center mt-2">
         Plutôt le formulaire classique ? <Link href="/commander" className="underline hover:text-content">C'est par ici</Link>.
       </p>
     </div>

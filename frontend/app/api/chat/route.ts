@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Mistral } from "@mistralai/mistralai";
-import type { ChatCompletionRequest } from "@mistralai/mistralai/models/components";
+import type { ChatCompletionRequest, ContentChunk } from "@mistralai/mistralai/models/components";
 import { AGENT_INSTRUCTIONS, AGENT_TOOLS, executerOutil } from "@/lib/agent";
 
 export const maxDuration = 60;
@@ -10,6 +10,17 @@ const MODELE = process.env.MISTRAL_MODELE ?? "mistral-large-4";
 
 // Historique envoyé par le client : [{role: "user"|"assistant", content}]
 type MessageHistorique = { role: "user" | "assistant"; content: string };
+
+// Le modèle peut répondre par tableau de chunks (thinking, text…) : on n'ertexte que le texte.
+function contenuEnTexte(content?: string | Array<ContentChunk> | null): string {
+  if (!content) return "";
+  if (typeof content === "string") return content;
+  return content
+    .filter((chunk): chunk is Extract<ContentChunk, { type: "text" }> => chunk.type === "text")
+    .map((chunk) => chunk.text)
+    .join("")
+    .trim();
+}
 
 export async function POST(req: NextRequest) {
   if (!process.env.MISTRAL_API_KEY) {
@@ -63,7 +74,8 @@ export async function POST(req: NextRequest) {
 
       // La commande créée par un outil remonte à l'UI pour proposer le ticket PDF
       const derniereCommande = trouverCommande(messages);
-      return NextResponse.json({ reply: msg.content, ...(derniereCommande ? { commande: derniereCommande } : {}) });
+      const texte = contenuEnTexte(msg.content);
+      return NextResponse.json({ reply: texte, ...(derniereCommande ? { commande: derniereCommande } : {}) });
     }
     return NextResponse.json({ error: "L'assistant n'a pas abouti, réessaie." }, { status: 502 });
   } catch (e) {

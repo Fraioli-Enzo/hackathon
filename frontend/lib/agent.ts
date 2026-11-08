@@ -14,6 +14,7 @@ Règles :
 - Si creer_commande renvoie une erreur, explique-la simplement à l'utilisateur (ex : stock insuffisant, choix manquant).
 - Le paiement se fait sur place au moment du retrait (espèces ou carte) : jamais en ligne.
 - Prix en euros, avec 2 décimales.
+- Écris en texte brut, sans markdown (pas de **gras**, pas de caractères spéciaux de formatage) : l'interface affiche du texte simple.
 - Si l'utilisateur demande autre chose que la cafet, ramène gentiment au sujet.`;
 
 type ItemChoix = { categorie?: string; nomProduit?: string; qte: number };

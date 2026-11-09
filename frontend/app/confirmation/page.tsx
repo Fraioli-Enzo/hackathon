@@ -119,7 +119,7 @@ async function telechargerTicket(commande: CommandeClient) {
 
   // Logo CESI en haut du ticket
   try {
-    const logo = await fetch("/images/logo-cesi-jaune.png");
+    const logo = await fetch("/images/logos/logo-cesi-jaune.png");
     const blob = await logo.blob();
     const dataUrl = await new Promise<string>((resoudre) => {
       const fr = new FileReader();

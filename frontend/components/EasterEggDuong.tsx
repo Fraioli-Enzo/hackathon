@@ -44,7 +44,7 @@ export default function EasterEggDuong() {
 
   useEffect(() => {
     if (phase === "attente") {
-      const timer = setTimeout(() => setPhase("evolution"), 5000);
+      const timer = setTimeout(() => setPhase("evolution"), 3500);
       return () => clearTimeout(timer);
     }
     if (phase === "evolution") {
@@ -53,7 +53,7 @@ export default function EasterEggDuong() {
       const timer = setTimeout(() => {
         definirAgentSession("duong");
         setPhase("fini");
-      }, 1700);
+      }, 1300);
       return () => clearTimeout(timer);
     }
   }, [phase]);
@@ -83,7 +83,7 @@ export default function EasterEggDuong() {
               key={"attente-" + lance}
               segments={[
                 { texte: "Quoi ? ", classe: BLANC },
-                { texte: "BAO", classe: JAUNE },
+                { texte: "Agent BAO", classe: JAUNE },
                 { texte: " réagit à quelque chose...", classe: BLANC },
               ]}
             />
@@ -114,7 +114,7 @@ export default function EasterEggDuong() {
                   key={"fini-" + lance}
                   segments={[
                     { texte: "Félicitations ! ", classe: BLANC },
-                    { texte: "BAO", classe: JAUNE },
+                    { texte: "Agent BAO", classe: JAUNE },
                     { texte: " a évolué en ", classe: BLANC },
                     { texte: "Agent DUONG", classe: JAUNE },
                     { texte: " !", classe: BLANC },

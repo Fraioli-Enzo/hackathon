@@ -205,6 +205,7 @@ export default function AssistantPage() {
           <input
             ref={saisieRef}
             id="message-agent"
+            autoComplete="off"
             value={saisie}
             onChange={(e) => setSaisie(e.target.value)}
             placeholder="Ex : il reste des mochis ? Ou : je veux 2 nems au poulet"

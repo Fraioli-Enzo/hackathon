@@ -40,10 +40,10 @@ export default function AssistantPage() {
   const [relance, setRelance] = useState(0);
 
   useEffect(() => {
-    // Le GIF se joue une seule fois : tant que l'agent réfléchit, on le rejoue
-    // en cascade via ?v= (relance toutes les 3 s)
+    // Le GIF dure 1 s (4 frames) et n'a pas de boucle : tant que l'agent réfléchit,
+    // on le rejoue dès la fin via ?v= (relance toutes les 1000 ms)
     if (!envoi) return;
-    const timer = setInterval(() => setRelance((r) => r + 1), 3000);
+    const timer = setInterval(() => setRelance((r) => r + 1), 1000);
     return () => clearInterval(timer);
   }, [envoi]);
 

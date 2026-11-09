@@ -33,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <nav className="flex items-center gap-5 text-sm font-medium">
               <Link href="/" className="hover:text-cesi-jaune transition-colors">Accueil</Link>
               <Link href="/commander" className="hover:text-cesi-jaune transition-colors">Commander</Link>
+              <Link href="/quete" className="hover:text-cesi-jaune transition-colors">Quête</Link>
               <Link href="/admin" className="hover:text-cesi-jaune transition-colors">Admin</Link>
               <ThemeToggle />
             </nav>

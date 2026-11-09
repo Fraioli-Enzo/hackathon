@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Mistral } from "@mistralai/mistralai";
 import type { ChatCompletionRequest, ContentChunk } from "@mistralai/mistralai/models/components";
-import { AGENT_INSTRUCTIONS, AGENT_TOOLS, executerOutil } from "@/lib/agent";
+import { instructionsAgent, AGENT_TOOLS, executerOutil } from "@/lib/agent";
 
 export const maxDuration = 60;
 
@@ -26,13 +26,18 @@ export async function POST(req: NextRequest) {
   if (!process.env.MISTRAL_API_KEY) {
     return NextResponse.json({ error: "Assistant non configuré (MISTRAL_API_KEY manquante)." }, { status: 503 });
   }
-  const { message, history } = (await req.json()) as { message?: string; history?: MessageHistorique[] };
+  const { message, history, agent } = (await req.json()) as {
+    message?: string;
+    history?: MessageHistorique[];
+    agent?: string;
+  };
   if (typeof message !== "string" || !message.trim()) {
     return NextResponse.json({ error: "Message manquant." }, { status: 400 });
   }
+  const identite = agent === "duong" ? "DUONG" : "BAO";
 
   const messages: ChatCompletionRequest["messages"] = [
-    { role: "system", content: AGENT_INSTRUCTIONS },
+    { role: "system", content: instructionsAgent(identite) },
     ...(history ?? []).map((m) => ({ role: m.role, content: m.content })),
     { role: "user", content: message },
   ];

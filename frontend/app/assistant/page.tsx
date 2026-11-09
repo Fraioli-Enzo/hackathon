@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Icon, addIcon } from "@iconify/react";
 import { phPaperPlaneTiltBold } from "@/lib/icons";
 import type { CommandeClient } from "@/lib/types";
+import { APPARENCES, EVT_CHANGEMENT_AGENT, lireAgentSession, type IdentiteAgent } from "@/lib/agent-identite";
 
 addIcon("ph:paper-plane-tilt-bold", phPaperPlaneTiltBold);
 
@@ -14,11 +15,6 @@ type MessageChat = {
   role: "user" | "assistant";
   content: string;
   commande?: CommandeClient; // posée par l'agent : propose le ticket PDF
-};
-
-const MESSAGE_ACCUEIL: MessageChat = {
-  role: "assistant",
-  content: "Salut ! Je suis DUONG, l'agent de la Cafet CESI. Demande-moi les produits, les prix et les stocks, ou commande directement ici. Qu'est-ce qui te ferait plaisir cette semaine ?",
 };
 
 const SUGGESTIONS = ["Qu'est-ce qui est dispo ?", "Les menus et leurs prix", "Je veux commander"];
@@ -31,21 +27,40 @@ function lireCookie(nom: string): string | null {
 
 export default function AssistantPage() {
   const router = useRouter();
-  const [messages, setMessages] = useState<MessageChat[]>([MESSAGE_ACCUEIL]);
+  const [agent, setAgent] = useState<IdentiteAgent>("bao");
+  const [messages, setMessages] = useState<MessageChat[]>([{ role: "assistant", content: APPARENCES.bao.messageAccueil }]);
   const [saisie, setSaisie] = useState("");
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const filRef = useRef<HTMLDivElement>(null);
   const saisieRef = useRef<HTMLInputElement>(null);
   const [relance, setRelance] = useState(0);
+  const apparence = APPARENCES[agent];
 
   useEffect(() => {
-    // Le GIF dure 1 s (4 frames) et n'a pas de boucle : tant que l'agent réfléchit,
-    // on le rejoue dès la fin via ?v= (relance toutes les 1000 ms)
+    // Identité de la session (BAO par défaut, DUONG si easter egg débloqué)
+    const maj = () => {
+      const identite = lireAgentSession();
+      setAgent(identite);
+      // Le message d'accueil suit l'identité tant que la conversation n'a pas commencé
+      setMessages((msgs) =>
+        msgs.length === 1 && msgs[0].role === "assistant"
+          ? [{ role: "assistant", content: APPARENCES[identite].messageAccueil }]
+          : msgs
+      );
+    };
+    maj();
+    window.addEventListener(EVT_CHANGEMENT_AGENT, maj);
+    return () => window.removeEventListener(EVT_CHANGEMENT_AGENT, maj);
+  }, []);
+
+  useEffect(() => {
+    // Le GIF dure ~1 s et n'a pas de boucle : tant que l'agent réfléchit,
+    // on le rejoue dès la fin via ?v=
     if (!envoi) return;
-    const timer = setInterval(() => setRelance((r) => r + 1), 1000);
+    const timer = setInterval(() => setRelance((r) => r + 1), apparence.dureeGifMs);
     return () => clearInterval(timer);
-  }, [envoi]);
+  }, [envoi, apparence.dureeGifMs]);
 
   useEffect(() => {
     // Défile uniquement le fil de messages, jamais la page (scrollIntoView ferait
@@ -71,7 +86,7 @@ export default function AssistantPage() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, history: historique.slice(-20) }),
+        body: JSON.stringify({ message, history: historique.slice(-20), agent, nom: apparence.nom }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erreur de l'assistant.");
@@ -106,14 +121,14 @@ export default function AssistantPage() {
       <div className="flex flex-col flex-1 min-h-0 rounded-2xl border border-line bg-card overflow-hidden shadow-sm">
         <header className="flex items-center justify-center gap-3 border-b border-line bg-surface px-4 py-3">
           <Image
-            src="/images/asian.png"
+            src={apparence.avatarBulle}
             alt=""
             width={40}
             height={40}
             className="w-10 h-10 object-cover object-top rounded-full shrink-0"
           />
           <div className="min-w-0">
-            <h1 className="text-lg font-black leading-tight">Agent DUONG</h1>
+            <h1 className="text-lg font-black leading-tight">{apparence.nom}</h1>
             <p className="text-xs text-muted leading-tight">Produits, prix, stocks et commandes de la cafet</p>
           </div>
         </header>
@@ -123,7 +138,7 @@ export default function AssistantPage() {
             <div key={i} className={"flex gap-2.5 " + (m.role === "user" ? "justify-end" : "justify-start")}>
               {m.role === "assistant" && (
                 <Image
-                  src="/images/asian_head.png"
+                  src={apparence.avatarBulle}
                   alt=""
                   width={36}
                   height={36}
@@ -168,9 +183,9 @@ export default function AssistantPage() {
 
           {envoi && (
             <div className="flex justify-start gap-2.5" aria-busy="true">
-              {/* ?v= rejoue le GIF depuis la frame 0 (les 3 s via relance) */}
+              {/* ?v= rejoue le GIF depuis la frame 0 à sa durée réelle */}
               <Image
-                src={"/images/asian_gif.gif?v=" + messages.length + "-" + relance}
+                src={apparence.gifReflexion + "?v=" + messages.length + "-" + relance}
                 alt=""
                 width={36}
                 height={36}

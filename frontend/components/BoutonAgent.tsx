@@ -4,23 +4,36 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { APPARENCES, EVT_CHANGEMENT_AGENT, lireAgentSession, type IdentiteAgent } from "@/lib/agent-identite";
 
-const TEXTE_INTRO = "Agent DUONG a votre service";
-
-// Bouton flottant vers l'assistant, visible partout sauf sur la page /assistant.
-// Au lancement, une bulle s'affiche au-dessus puis s'efface lettre par lettre
-// après 10 secondes.
+// Bouton flottant vers l'assistant (BAO par défaut, DUONG si easter egg débloqué).
+// Visible partout sauf sur la page /assistant. Au chargement, une bulle s'affiche
+// au-dessus puis s'efface lettre par lettre après 10 secondes.
 export default function BoutonAgent() {
   const chemin = usePathname();
-  const [texte, setTexte] = useState(TEXTE_INTRO);
+  const [agent, setAgent] = useState<IdentiteAgent>("bao");
+  const [texte, setTexte] = useState(APPARENCES.bao.intro);
+  const apparence = APPARENCES[agent];
+  const intro = apparence.intro;
+
+  useEffect(() => {
+    // Identité de la session + bascule en direct quand l'easter egg est débloqué
+    const maj = () => {
+      setAgent(lireAgentSession());
+      setTexte(APPARENCES[lireAgentSession()].intro);
+    };
+    maj();
+    window.addEventListener(EVT_CHANGEMENT_AGENT, maj);
+    return () => window.removeEventListener(EVT_CHANGEMENT_AGENT, maj);
+  }, []);
 
   useEffect(() => {
     if (!texte) return;
     // Texte complet : attend 10 s ; puis chaque lettre part 60 ms après la précédente
-    const delai = texte.length === TEXTE_INTRO.length ? 10000 : 60;
+    const delai = texte.length === intro.length ? 10000 : 60;
     const timer = setTimeout(() => setTexte(texte.slice(0, -1)), delai);
     return () => clearTimeout(timer);
-  }, [texte]);
+  }, [texte, intro]);
 
   if (chemin === "/assistant") return null;
 
@@ -39,11 +52,11 @@ export default function BoutonAgent() {
         )}
         <Link
           href="/assistant"
-          aria-label="Ouvrir l'assistant IA"
+          aria-label={"Ouvrir l'" + apparence.nom}
           className="block w-24 h-24 hover:scale-105 transition-all"
         >
           <Image
-            src="/images/asian.png"
+            src={apparence.imageFlottante}
             alt=""
             width={192}
             height={144}

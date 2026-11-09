@@ -53,7 +53,7 @@ export default function EasterEggDuong() {
       const timer = setTimeout(() => {
         definirAgentSession("duong");
         setPhase("fini");
-      }, 1300);
+      }, 1250);
       return () => clearTimeout(timer);
     }
   }, [phase]);

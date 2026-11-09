@@ -37,6 +37,15 @@ export default function AssistantPage() {
   const [erreur, setErreur] = useState<string | null>(null);
   const filRef = useRef<HTMLDivElement>(null);
   const saisieRef = useRef<HTMLInputElement>(null);
+  const [relance, setRelance] = useState(0);
+
+  useEffect(() => {
+    // Le GIF se joue une seule fois : tant que l'agent réfléchit, on le rejoue
+    // en cascade via ?v= (relance toutes les 3 s)
+    if (!envoi) return;
+    const timer = setInterval(() => setRelance((r) => r + 1), 3000);
+    return () => clearInterval(timer);
+  }, [envoi]);
 
   useEffect(() => {
     // Défile uniquement le fil de messages, jamais la page (scrollIntoView ferait
@@ -158,9 +167,9 @@ export default function AssistantPage() {
 
           {envoi && (
             <div className="flex justify-start gap-2.5" aria-busy="true">
-              {/* ?v= force le rechargement du GIF : le cache navigateur ne le rejoue pas sinon */}
+              {/* ?v= rejoue le GIF depuis la frame 0 (les 3 s via relance) */}
               <Image
-                src={"/images/asian_gif_loop.gif?v=" + messages.length}
+                src={"/images/asian_gif.gif?v=" + messages.length + "-" + relance}
                 alt=""
                 width={28}
                 height={28}

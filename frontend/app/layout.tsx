@@ -39,25 +39,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </header>
         <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-8">{children}</main>
-        <footer className="border-t border-line py-3 sm:py-4">
+        <footer className="relative border-t border-line py-3 sm:py-4">
+          <EasterEggDuong />
           <div className="max-w-5xl mx-auto px-4 py-2 sm:py-4 flex flex-col items-center gap-2 sm:gap-3">
             <p className="text-[11px] sm:text-xs text-muted text-center">
               Hackathon CESI - paiement sur place (espèces ou carte)
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
-              <p className="text-xs sm:text-sm text-muted text-center">
-                Suivre la traiteuse sur Facebook :{" "}
-                <a
-                  href="https://www.facebook.com/share/1C9eBVTcJK/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-bold text-cesi-jaune hover:underline"
-                >
-                  Cuisine Vietnamienne Chez Kim
-                </a>
-              </p>
-              <EasterEggDuong />
-            </div>
+            <p className="text-xs sm:text-sm text-muted text-center">
+              Suivre la traiteuse sur Facebook :{" "}
+              <a
+                href="https://www.facebook.com/share/1C9eBVTcJK/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-cesi-jaune hover:underline"
+              >
+                Cuisine Vietnamienne Chez Kim
+              </a>
+            </p>
             <Link href="/" aria-label="Retour à l'accueil" className="-my-3 sm:-my-2">
               <Image src="/images/logo-cesi-jaune.png" alt="CESI" width={200} height={200} className="logo-sombre w-24 h-24 sm:w-48 sm:h-48" />
               <Image src="/images/logo-cesi-noir.png" alt="CESI" width={200} height={200} className="logo-clair w-24 h-24 sm:w-48 sm:h-48" />

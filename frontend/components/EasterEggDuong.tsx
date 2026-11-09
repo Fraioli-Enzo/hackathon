@@ -67,7 +67,7 @@ export default function EasterEggDuong() {
         }}
         aria-label="Agent mystère"
         title="?"
-        className="opacity-40 hover:opacity-100 transition-opacity"
+        className="absolute left-2 bottom-1 opacity-20 hover:opacity-100 transition-opacity"
       >
         <Image src="/images/asian.png" alt="" width={24} height={18} className="w-6 h-auto" />
       </button>

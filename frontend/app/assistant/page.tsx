@@ -160,7 +160,7 @@ export default function AssistantPage() {
             <div className="flex justify-start gap-2.5" aria-busy="true">
               {/* ?v= force le rechargement du GIF : le cache navigateur ne le rejoue pas sinon */}
               <Image
-                src={"/images/asian_gif.gif?v=" + messages.length}
+                src={"/images/asian_gif_loop.gif?v=" + messages.length}
                 alt=""
                 width={28}
                 height={28}

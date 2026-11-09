@@ -43,6 +43,8 @@ Options : `./start.sh --seed-only`, `./start.sh --no-start`.
 ```
 MONGODB_URI=mongodb://localhost:27017/cafet
 SESSION_SECRET=<secret aléatoire>
+MISTRAL_API_KEY=<clé Mistral pour l'assistant IA (/assistant)>
+MISTRAL_MODELE=mistral-large-4
 ADMIN_EMAIL=admin@cesi.fr
 ADMIN_PASSWORD=cafet2026
 ```

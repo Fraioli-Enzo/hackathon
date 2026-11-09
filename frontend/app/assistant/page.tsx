@@ -125,9 +125,9 @@ export default function AssistantPage() {
                 <Image
                   src="/images/asian_head.png"
                   alt=""
-                  width={28}
-                  height={28}
-                  className="w-7 h-7 object-cover object-top rounded-full shrink-0 mt-1"
+                  width={36}
+                  height={36}
+                  className="w-9 h-9 object-cover object-top rounded-full shrink-0 mt-1"
                 />
               )}
               <div
@@ -171,10 +171,10 @@ export default function AssistantPage() {
               <Image
                 src={"/images/asian_gif.gif?v=" + messages.length + "-" + relance}
                 alt=""
-                width={28}
-                height={28}
+                width={36}
+                height={36}
                 unoptimized
-                className="w-7 h-7 object-cover rounded-full shrink-0 mt-1"
+                className="w-9 h-9 object-cover rounded-full shrink-0 mt-1"
               />
               <div className="bg-surface border border-line rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1.5 shadow-sm text-muted">
                 {[0, 150, 300].map((delai) => (

@@ -1,8 +1,16 @@
 import { cookies } from "next/headers";
 import Image from "next/image";
-import { SKINS_BAO } from "@/lib/agent-identite";
 
 export const dynamic = "force-dynamic";
+
+// Skins de BAO : un palier toutes les 2 commandes passées depuis ce navigateur
+const SKINS = [
+  { image: "/images/agents/bao.png", nom: "Bao", palier: 0 },
+  { image: "/images/agents/bao2.png", nom: "Bao 2", palier: 2 },
+  { image: "/images/agents/bao3.png", nom: "Bao 3", palier: 4 },
+  { image: "/images/agents/bao4.png", nom: "Bao 4", palier: 6 },
+  { image: "/images/agents/bao5.png", nom: "Bao 5", palier: 8 },
+];
 
 export default async function QuetePage() {
   // Commandes passées depuis ce navigateur (cookie écrit à chaque commande réussie)
@@ -15,7 +23,7 @@ export default async function QuetePage() {
     // cookie illisible : on commence la quête à zéro
   }
 
-  const prochain = SKINS_BAO.find((s) => s.palier > nbCommandes);
+  const prochain = SKINS.find((s) => s.palier > nbCommandes);
 
   return (
     <div className="space-y-8">
@@ -36,7 +44,7 @@ export default async function QuetePage() {
       </section>
 
       <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {SKINS_BAO.map((skin) => {
+        {SKINS.map((skin) => {
           const debloque = nbCommandes >= skin.palier;
           return (
             <div

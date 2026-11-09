@@ -1,24 +1,5 @@
 // Identité de l'agent : BAO par défaut, DUONG déblocable (easter egg, par session).
 
-// Skins de BAO : un palier toutes les 2 commandes passées (cookie cafet-commandes).
-// Le départ reprend l'image du bouton flottant pour ne pas changer d'apparence à 0 commande.
-export const SKINS_BAO = [
-  { image: "/images/agents/bao_acceuil.png", nom: "Bao", palier: 0 },
-  { image: "/images/agents/bao2.png", nom: "Bao 2", palier: 2 },
-  { image: "/images/agents/bao3.png", nom: "Bao 3", palier: 4 },
-  { image: "/images/agents/bao4.png", nom: "Bao 4", palier: 6 },
-  { image: "/images/agents/bao5.png", nom: "Bao 5", palier: 8 },
-];
-
-// Le plus grand bao débloqué pour un nombre de commandes donné
-export function skinPourCommandes(nbCommandes: number) {
-  let meilleur = SKINS_BAO[0];
-  for (const skin of SKINS_BAO) {
-    if (nbCommandes >= skin.palier) meilleur = skin;
-  }
-  return meilleur;
-}
-
 export type IdentiteAgent = "bao" | "duong";
 
 export const CLE_AGENT = "cafet-agent";

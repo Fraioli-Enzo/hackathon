@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { APPARENCES, EVT_CHANGEMENT_AGENT, lireAgentSession, skinPourCommandes, type IdentiteAgent } from "@/lib/agent-identite";
+import { APPARENCES, EVT_CHANGEMENT_AGENT, lireAgentSession, type IdentiteAgent } from "@/lib/agent-identite";
 
 // Bouton flottant vers l'assistant (BAO par défaut, DUONG si easter egg débloqué).
 // Visible partout sauf sur la page /assistant. Au chargement, une bulle s'affiche
@@ -13,35 +13,19 @@ export default function BoutonAgent() {
   const chemin = usePathname();
   const [agent, setAgent] = useState<IdentiteAgent>("bao");
   const [texte, setTexte] = useState(APPARENCES.bao.intro);
-  const [image, setImage] = useState(APPARENCES.bao.imageFlottante);
   const apparence = APPARENCES[agent];
   const intro = apparence.intro;
 
   useEffect(() => {
     // Identité de la session + bascule en direct quand l'easter egg est débloqué
     const maj = () => {
-      const identite = lireAgentSession();
-      setAgent(identite);
-      setTexte(APPARENCES[identite].intro);
-      setImage(APPARENCES[identite].imageFlottante);
+      setAgent(lireAgentSession());
+      setTexte(APPARENCES[lireAgentSession()].intro);
     };
     maj();
     window.addEventListener(EVT_CHANGEMENT_AGENT, maj);
     return () => window.removeEventListener(EVT_CHANGEMENT_AGENT, maj);
   }, []);
-
-  // Le bouton BAO porte le plus grand skin débloqué (recalculé à chaque navigation)
-  useEffect(() => {
-    if (agent !== "bao") return;
-    let nbCommandes = 0;
-    try {
-      const entree = document.cookie.split("; ").find((c) => c.startsWith("cafet-commandes="));
-      if (entree) nbCommandes = new Set(JSON.parse(decodeURIComponent(entree.slice("cafet-commandes=".length)))).size;
-    } catch {
-      // cookie illisible : skin de départ
-    }
-    setImage(skinPourCommandes(nbCommandes).image);
-  }, [agent, chemin]);
 
   useEffect(() => {
     if (!texte) return;
@@ -79,7 +63,7 @@ export default function BoutonAgent() {
           className="block w-16 h-16 lg:w-24 lg:h-24 hover:scale-105 transition-all"
         >
           <Image
-            src={image}
+            src={apparence.imageFlottante}
             alt=""
             width={192}
             height={144}

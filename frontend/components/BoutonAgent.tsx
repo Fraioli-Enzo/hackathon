@@ -35,10 +35,17 @@ export default function BoutonAgent() {
     return () => clearTimeout(timer);
   }, [texte, intro]);
 
-  if (chemin === "/assistant") return null;
+  // Pas de bouton agent dans l'espace admin ni sur la page du chat
+  if (chemin === "/assistant" || chemin.startsWith("/admin")) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    // Sur /commander (mobile), le bouton panier est en bas à droite : on secale au-dessus
+    <div
+      className={
+        "fixed right-6 z-50 " +
+        (chemin === "/commander" ? "bottom-24 lg:bottom-6" : "bottom-6")
+      }
+    >
       <div className="relative">
         {texte && (
           <p className="absolute bottom-full right-0 mb-3 whitespace-nowrap bg-card border border-line rounded-xl px-3 py-2 text-sm font-bold shadow-lg">
@@ -53,7 +60,7 @@ export default function BoutonAgent() {
         <Link
           href="/assistant"
           aria-label={"Ouvrir l'" + apparence.nom}
-          className="block w-24 h-24 hover:scale-105 transition-all"
+          className="block w-16 h-16 lg:w-24 lg:h-24 hover:scale-105 transition-all"
         >
           <Image
             src={apparence.imageFlottante}

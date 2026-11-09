@@ -152,7 +152,8 @@ export default function AssistantPage() {
           ))}
 
           {messages.length === 1 && !envoi && (
-            <div className="flex flex-wrap gap-2 pt-1">
+            /* Aligné sur les bulles de DUONG : reprend le décalage avatar (36 px) + l'écart (10 px) */
+            <div className="flex flex-wrap gap-2 pt-1 pl-[46px]">
               {SUGGESTIONS.map((s) => (
                 <button
                   key={s}

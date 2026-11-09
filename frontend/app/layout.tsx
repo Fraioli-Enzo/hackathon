@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import ThemeToggle from "@/components/ThemeToggle";
+import BoutonAgent from "@/components/BoutonAgent";
+import EasterEggDuong from "@/components/EasterEggDuong";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,8 +24,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <header className="sticky top-0 z-10 border-b border-line bg-surface/90 backdrop-blur">
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2 text-xl font-black tracking-tight">
-              <Image src="/images/logo-cesi-jaune.png" alt="" width={32} height={32} className="logo-sombre w-8 h-8" />
-              <Image src="/images/logo-cesi-noir.png" alt="" width={32} height={32} className="logo-clair w-8 h-8" />
+              <Image src="/images/logos/logo-cesi-jaune.png" alt="" width={32} height={32} className="logo-sombre w-8 h-8" />
+              <Image src="/images/logos/logo-cesi-noir.png" alt="" width={32} height={32} className="logo-clair w-8 h-8" />
               <span className="hidden sm:inline">
                 <span className="text-cesi-jaune">CAFET</span> CESI
               </span>
@@ -37,10 +39,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </header>
         <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-8">{children}</main>
-        <footer className="border-t border-line py-4">
-          <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col items-center gap-2">
-            <p className="text-xs text-muted">Hackathon CESI - paiement sur place (espèces ou carte)</p>
-            <p className="text-sm text-muted">
+        <footer className="relative border-t border-line py-3 sm:py-4">
+          <EasterEggDuong />
+          <div className="max-w-5xl mx-auto px-4 py-2 sm:py-4 flex flex-col items-center gap-2 sm:gap-3">
+            <p className="text-[11px] sm:text-xs text-muted text-center">
+              Hackathon CESI - paiement sur place (espèces ou carte)
+            </p>
+            <p className="text-xs sm:text-sm text-muted text-center">
               Suivre la traiteuse sur Facebook :{" "}
               <a
                 href="https://www.facebook.com/share/1C9eBVTcJK/"
@@ -51,12 +56,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 Cuisine Vietnamienne Chez Kim
               </a>
             </p>
-            <Link href="/">
-              <Image src="/images/logo-cesi-jaune.png" alt="CESI" width={200} height={200} className="logo-sombre w-48 h-48" />
-              <Image src="/images/logo-cesi-noir.png" alt="CESI" width={200} height={200} className="logo-clair w-48 h-48" />
+            <Link href="/" aria-label="Retour à l'accueil" className="-mb-3 sm:-mb-2">
+              <Image src="/images/logos/logo-cesi-jaune.png" alt="CESI" width={200} height={200} className="logo-sombre w-24 h-24 sm:w-48 sm:h-48" />
+              <Image src="/images/logos/logo-cesi-noir.png" alt="CESI" width={200} height={200} className="logo-clair w-24 h-24 sm:w-48 sm:h-48" />
             </Link>
           </div>
         </footer>
+        <BoutonAgent />
       </body>
     </html>
   );

@@ -1,25 +1,32 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Icon, addIcon } from "@iconify/react";
+import { phCaretLeftBold, phCaretRightBold } from "@/lib/icons";
 import ImageProduit from "@/components/ImageProduit";
 import AdminNav from "@/components/AdminNav";
 import BoutonRafraichir from "@/components/BoutonRafraichir";
+import { dernierJour } from "@/lib/week";
 import type { Recap } from "@/lib/types";
+
+addIcon("ph:caret-left-bold", phCaretLeftBold);
+addIcon("ph:caret-right-bold", phCaretRightBold);
 
 export default function AdminDashboard() {
   const [recap, setRecap] = useState<Recap | null>(null);
+  const [semaine, setSemaine] = useState(0);
   const [erreur, setErreur] = useState<string | null>(null);
 
   const charger = useCallback(async () => {
     setErreur(null);
     try {
-      const r = await fetch("/api/admin/recap");
+      const r = await fetch(`/api/admin/recap?semaine=${semaine}`);
       if (!r.ok) throw new Error("Erreur de chargement");
       setRecap(await r.json());
     } catch (e) {
       setErreur(e instanceof Error ? e.message : "Erreur de chargement");
     }
-  }, []);
+  }, [semaine]);
 
   useEffect(() => {
     charger();
@@ -36,7 +43,9 @@ export default function AdminDashboard() {
   if (!recap) return <p className="text-muted">Chargement…</p>;
 
   const debut = new Date(recap.debut).toLocaleDateString("fr-FR");
-  const fin = new Date(recap.fin).toLocaleDateString("fr-FR");
+  const fin = dernierJour(recap.fin).toLocaleDateString("fr-FR");
+  const relatif =
+    semaine === 0 ? "Cette semaine" : semaine > 0 ? `Dans ${semaine} semaine${semaine > 1 ? "s" : ""}` : `Il y a ${-semaine} semaine${semaine < -1 ? "s" : ""}`;
 
   return (
     <div>
@@ -45,9 +54,66 @@ export default function AdminDashboard() {
         <h1 className="text-3xl font-black">Panier de la semaine</h1>
         <BoutonRafraichir onClick={charger} />
       </div>
-      <p className="text-muted mb-6">
-        Semaine du {debut} au {fin}
-      </p>
+
+      <div className="mb-6 space-y-2">
+        <div className="flex items-stretch gap-2 max-sm:hidden">
+          <button
+            onClick={() => setSemaine((s) => s - 1)}
+            aria-label="Semaine précédente"
+            className="border border-line rounded-lg px-3 bg-card hover:border-cesi-jaune transition-colors"
+          >
+            <Icon icon="ph:caret-left-bold" ssr className="w-5 h-5" />
+          </button>
+          <p className="flex-1 text-center text-muted font-semibold self-center">
+            {relatif} : du {debut} au {fin}
+          </p>
+          <button
+            onClick={() => setSemaine((s) => s + 1)}
+            aria-label="Semaine suivante"
+            className="border border-line rounded-lg px-3 bg-card hover:border-cesi-jaune transition-colors"
+          >
+            <Icon icon="ph:caret-right-bold" ssr className="w-5 h-5" />
+          </button>
+          {semaine !== 0 && (
+            <button
+              onClick={() => setSemaine(0)}
+              className="text-sm px-3 rounded-lg border border-line bg-card hover:border-cesi-jaune transition-colors"
+            >
+              Aujourd&apos;hui
+            </button>
+          )}
+        </div>
+
+        {/* Mobile : barre tactile pleine largeur, tap targets de 44px */}
+        <div className="sm:hidden grid grid-cols-[44px_1fr_44px] gap-2">
+          <button
+            onClick={() => setSemaine((s) => s - 1)}
+            aria-label="Semaine précédente"
+            className="h-11 flex items-center justify-center border border-line rounded-lg bg-card active:bg-surface transition-colors"
+          >
+            <Icon icon="ph:caret-left-bold" ssr className="w-6 h-6" />
+          </button>
+          <div className="h-11 flex flex-col items-center justify-center min-w-0">
+            <p className="font-bold text-sm leading-tight truncate">{relatif}</p>
+            <p className="text-muted text-xs leading-tight truncate">du {debut} au {fin}</p>
+          </div>
+          <button
+            onClick={() => setSemaine((s) => s + 1)}
+            aria-label="Semaine suivante"
+            className="h-11 flex items-center justify-center border border-line rounded-lg bg-card active:bg-surface transition-colors"
+          >
+            <Icon icon="ph:caret-right-bold" ssr className="w-6 h-6" />
+          </button>
+        </div>
+        {semaine !== 0 && (
+          <button
+            onClick={() => setSemaine(0)}
+            className="sm:hidden w-full h-11 rounded-lg border border-line bg-card font-bold text-sm active:bg-surface transition-colors"
+          >
+            Revenir à aujourd&apos;hui
+          </button>
+        )}
+      </div>
 
       <div className="grid sm:grid-cols-4 gap-4 mb-8">
         <div className="border border-line rounded-xl bg-card p-4">

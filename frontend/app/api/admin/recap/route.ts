@@ -12,7 +12,9 @@ export async function GET(req: NextRequest) {
   }
   try {
     await connectDB();
-    const { start, end } = getWeekRange();
+    // Décalage en semaines (0 = en cours), pour selector de semaine du dashboard
+    const decalage = Number(req.nextUrl.searchParams.get("semaine")) || 0;
+    const { start, end } = getWeekRange(new Date(), decalage);
     const commandes = await Commande.find({ createdAt: { $gte: start, $lt: end } }).lean();
 
     let ca = 0;

@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import jsQR from "jsqr";
 import { Icon, addIcon } from "@iconify/react";
-import { phShoppingCartBold } from "@/lib/icons";
+import { phShoppingCartBold, phTrashBold } from "@/lib/icons";
 
 addIcon("ph:shopping-cart-bold", phShoppingCartBold);
+addIcon("ph:trash-bold", phTrashBold);
+import { getWeekRange, dernierJour } from "@/lib/week";
 import AdminNav from "@/components/AdminNav";
 import type { CommandeClient, ProduitClient } from "@/lib/types";
 import { CATEGORIES } from "@/lib/types";
@@ -318,6 +320,8 @@ export default function AdminCommandesPage() {
   }
 
   const filtrees = commandeFiltrees(commandes, recherche, filtreStatut);
+  const { start, end } = getWeekRange();
+  const semaineLabel = `${start.toLocaleDateString("fr-FR")} au ${dernierJour(end).toLocaleDateString("fr-FR")}`;
 
   if (modeDirect) {
     return (
@@ -598,7 +602,7 @@ export default function AdminCommandesPage() {
   return (
     <div>
       <AdminNav />
-      <div className="flex items-center justify-between gap-3 mb-6 max-sm:flex-col max-sm:items-stretch">
+      <div className="flex items-center justify-between gap-3 mb-1 max-sm:flex-col max-sm:items-stretch">
         <h1 className="text-3xl font-black">Commandes de la semaine</h1>
         <div className="flex items-center gap-2">
           <BoutonRafraichir onClick={charger} className="max-sm:flex-1 max-sm:justify-center" />
@@ -610,6 +614,7 @@ export default function AdminCommandesPage() {
           </button>
         </div>
       </div>
+      <p className="text-muted mb-6">Semaine du {semaineLabel}</p>
 
       <div className="border border-line rounded-xl bg-card p-5 space-y-4 mb-4">
         {!scanning ? (
@@ -749,45 +754,55 @@ export default function AdminCommandesPage() {
             <table className="w-full text-left bg-card text-sm">
               <thead className="border-b border-line text-muted">
                 <tr>
-                  <th className="px-3 py-3">Date</th>
-                  <th className="px-3 py-3">Élève</th>
-                  <th className="px-3 py-3">Bât.</th>
-                  <th className="px-3 py-3">Jour</th>
-                  <th className="px-3 py-3">Commande</th>
-                  <th className="px-3 py-3 text-right">Total</th>
-                  <th className="px-3 py-3">Statut</th>
-                  <th className="px-3 py-3 text-right">Action</th>
+                  <th className="px-4 py-3">Élève</th>
+                  <th className="px-4 py-3">Retrait</th>
+                  <th className="px-4 py-3">Commande</th>
+                  <th className="px-4 py-3 text-right">Total</th>
+                  <th className="px-4 py-3">Statut</th>
+                  <th className="px-4 py-3 text-right">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {filtrees.map((c) => (
-                  <tr key={c._id} className="border-b border-line last:border-0">
-                    <td className="px-3 py-3 whitespace-nowrap">
-                      {new Date(c.createdAt).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })}
+                  <tr key={c._id} className="border-b border-line last:border-0 hover:bg-surface transition-colors">
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <p className="font-bold">{c.prenom} {c.nom}</p>
+                      <p className="text-xs text-muted mt-0.5">
+                        {new Date(c.createdAt).toLocaleDateString("fr-FR")} · Bât. {c.batiment}
+                      </p>
                     </td>
-                    <td className="px-3 py-3 font-semibold">
-                      {c.prenom} {c.nom}
+                    <td className="px-4 py-3">
+                      {c.jour ? (
+                        <span className="px-2 py-1 rounded-md bg-surface border border-line text-xs font-semibold whitespace-nowrap">
+                          {c.jour}
+                        </span>
+                      ) : (
+                        <span className="text-muted">-</span>
+                      )}
                     </td>
-                    <td className="px-3 py-3">{c.batiment}</td>
-                    <td className="px-3 py-3">{c.jour}</td>
-                    <td className="px-3 py-3">{itemsListeCommande(c)}</td>
-                    <td className="px-3 py-3 text-right font-semibold">{c.total.toFixed(2)} €</td>
-                    <td className="px-3 py-3">{badgeStatutCommande(c)}</td>
-                    <td className="px-3 py-3 text-right">
-                      {c.statut !== "recuperee" && (
+                    <td className="px-4 py-3">{itemsListeCommande(c)}</td>
+                    <td className="px-4 py-3 text-right font-black text-cesi-jaune whitespace-nowrap">
+                      {c.total.toFixed(2)} €
+                    </td>
+                    <td className="px-4 py-3">{badgeStatutCommande(c)}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        {c.statut !== "recuperee" && (
+                          <button
+                            onClick={() => traiterCode(c._id)}
+                            className="bg-cesi-jaune text-black font-bold px-3 py-1.5 rounded-lg hover:bg-yellow-300 transition-colors text-xs"
+                          >
+                            Valider
+                          </button>
+                        )}
                         <button
-                          onClick={() => traiterCode(c._id)}
-                          className="bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors"
+                          onClick={() => setASupprimer(c)}
+                          aria-label={`Supprimer la commande de ${c.prenom} ${c.nom}`}
+                          className="border border-line text-red-500 rounded-lg w-8 h-8 inline-flex items-center justify-center hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors"
                         >
-                          Valider
+                          <Icon icon="ph:trash-bold" ssr className="w-4 h-4" />
                         </button>
-                      )}{" "}
-                      <button
-                        onClick={() => setASupprimer(c)}
-                        className="border border-red-500 text-red-500 font-bold px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white focus-visible:bg-red-500 focus-visible:text-white transition-colors"
-                      >
-                        Supprimer
-                      </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -825,15 +840,15 @@ function badgeStatutCommande(c: CommandeClient) {
 
 function itemsListeCommande(c: CommandeClient) {
   return (
-    <ul className="space-y-1.5">
+    <ul className="space-y-0.5">
       {c.items.map((i, idx) => {
         const sep = i.nom.indexOf(" (");
         const nom = sep > 0 ? i.nom.slice(0, sep) : i.nom;
         const detail = sep > 0 ? i.nom.slice(sep + 2, -1).split(" + ").join(" · ") : null;
         return (
           <li key={idx}>
-            <p><span className="font-bold">{i.qte}×</span> {nom}</p>
-            {detail && <p className="text-muted text-xs">{detail}</p>}
+            <span className="font-bold">{i.qte}×</span> {nom}
+            {detail && <span className="text-muted text-xs"> · {detail}</span>}
           </li>
         );
       })}

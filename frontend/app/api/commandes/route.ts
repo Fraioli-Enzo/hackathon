@@ -163,8 +163,9 @@ export async function GET(req: NextRequest) {
   try {
     await connectDB();
     const { start, end } = getWeekRange();
+    // En attente d'abord (c'est ce que l'admin valide en priorité), puis plus récentes
     const commandes = await Commande.find({ createdAt: { $gte: start, $lt: end } })
-      .sort({ createdAt: -1 })
+      .sort({ statut: 1, createdAt: -1 })
       .lean();
     return NextResponse.json({ commandes });
   } catch (e) {

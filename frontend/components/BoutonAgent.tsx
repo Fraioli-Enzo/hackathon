@@ -42,13 +42,13 @@ export default function BoutonAgent() {
     // Sur /commander (mobile), le bouton panier est en bas à droite : on secale au-dessus
     <div
       className={
-        "fixed right-6 z-50 " +
+        "fixed z-50 right-4 lg:right-6 " +
         (chemin === "/commander" ? "bottom-24 lg:bottom-6" : "bottom-6")
       }
     >
       <div className="relative">
         {texte && (
-          <p className="absolute bottom-full right-0 mb-3 whitespace-nowrap bg-card border border-line rounded-xl px-3 py-2 text-sm font-bold shadow-lg">
+          <p className="absolute bottom-full -right-2 lg:right-0 mb-3 whitespace-nowrap bg-card border border-line rounded-xl px-3 py-2 text-sm font-bold shadow-lg">
             {texte}
             {/* Queue de la bulle pointant vers le visage du personnage */}
             <span

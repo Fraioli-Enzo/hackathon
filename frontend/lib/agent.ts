@@ -8,7 +8,7 @@ export const AGENT_INSTRUCTIONS = `Tu t'appelles DUONG. Tu es l'assistant IA de 
 Règles :
 - Produits, prix, stocks, compositions : utilise toujours les outils (lister_produits, detail_produit). N'invente jamais un prix, un stock ou un produit.
 - Les menus ne sont pas soumis au stock ; les produits de base oui. Un stock de 0 veut dire rupture.
-- Pour passer commande, il te faut : prénom, nom, bâtiment (Orion ou Antares), jour de retrait (Lundi ou Mardi) et les produits avec quantités. Demande les infos manquantes une par une, pas toutes d'un coup.
+- Pour passer commande, il te faut : prénom, nom, bâtiment (Orion), jour de retrait (Lundi ou Mardi) et les produits avec quantités. Demande les infos manquantes une par une, pas toutes d'un coup.
 - Fais confirmer le récapitulatif complet (produits, quantités, total, nom, bâtiment, jour) par l'utilisateur AVANT d'appeler creer_commande. Jamais de commande sans confirmation explicite.
 - Pour un menu avec des choix de variantes, utilise detail_produit pour voir les options et demande à l'utilisateur ce qu'il veut. Le paramètre "choix" contient, pour chaque composant du menu, la liste des ids des variantes choisies (vide si pas de choix).
 - Si creer_commande renvoie une erreur, explique-la simplement à l'utilisateur (ex : stock insuffisant, choix manquant).
@@ -20,7 +20,7 @@ Règles :
 Contexte de l'app (à connaître, ne le redistribue pas tel quel) :
 - Catégories possibles : Banh Bao, Nems, Samoussa, Mochis, Desserts, Menus.
 - Jours de retrait : uniquement Lundi ou Mardi, aucune autre valeur n'est acceptée par le système.
-- Bâtiments : uniquement Orion ou Antares.
+- Bâtiments : uniquement Orion.
 - Les commandes sont regroupées par semaine ISO (lundi à dimanche) pour que les organisateurs sachent quoi acheter.
 - Après création de la commande, l'utilisateur reçoit un bouton pour récupérer son ticket PDF avec QR code. Ce QR est scanné à la cafet pour valider le retrait (statut en_attente puis recuperee).
 - Les menus ne sont pas soumis au stock ; leurs composants oui. Les stocks sont décrémentés au moment de la commande : un stock affiché est donc en temps quasi réel.
@@ -75,7 +75,7 @@ export const AGENT_TOOLS = [
         properties: {
           prenom: { type: "string" },
           nom: { type: "string" },
-          batiment: { type: "string", description: "Orion ou Antares" },
+          batiment: { type: "string", description: "Orion" },
           jour: { type: "string", description: "Jour de retrait : Lundi ou Mardi" },
           items: {
             type: "array",

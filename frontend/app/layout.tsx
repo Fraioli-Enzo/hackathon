@@ -56,7 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 Cuisine Vietnamienne Chez Kim
               </a>
             </p>
-            <Link href="/" aria-label="Retour à l'accueil" className="-my-3 sm:-my-2">
+            <Link href="/" aria-label="Retour à l'accueil" className="-mb-3 sm:-mb-2">
               <Image src="/images/logo-cesi-jaune.png" alt="CESI" width={200} height={200} className="logo-sombre w-24 h-24 sm:w-48 sm:h-48" />
               <Image src="/images/logo-cesi-noir.png" alt="CESI" width={200} height={200} className="logo-clair w-24 h-24 sm:w-48 sm:h-48" />
             </Link>

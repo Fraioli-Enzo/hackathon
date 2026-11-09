@@ -30,7 +30,7 @@ export const APPARENCES: Record<IdentiteAgent, ApparenceAgent> = {
   bao: {
     nom: "Agent BAO",
     court: "BAO",
-    intro: "Agent BAO a votre service",
+    intro: "Agent BAO à votre service",
     imageFlottante: "/images/bao_acceuil.png",
     avatarBulle: "/images/bao.png",
     gifReflexion: "/images/bao_gif.gif",
@@ -41,7 +41,7 @@ export const APPARENCES: Record<IdentiteAgent, ApparenceAgent> = {
   duong: {
     nom: "Agent DUONG",
     court: "DUONG",
-    intro: "Agent DUONG a votre service",
+    intro: "Agent DUONG à votre service",
     imageFlottante: "/images/asian.png",
     avatarBulle: "/images/asian_head.png",
     gifReflexion: "/images/asian_gif.gif",

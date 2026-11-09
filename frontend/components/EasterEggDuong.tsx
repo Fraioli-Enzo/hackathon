@@ -69,7 +69,7 @@ export default function EasterEggDuong() {
         title="?"
         className="absolute left-2 bottom-1 opacity-10 hover:opacity-100 transition-opacity"
       >
-        <Image src="/images/asian.png" alt="" width={24} height={18} className="w-6 h-auto" />
+        <Image src="/images/agents/asian.png" alt="" width={24} height={18} className="w-6 h-auto" />
       </button>
 
       {phase !== "repos" && (
@@ -91,7 +91,7 @@ export default function EasterEggDuong() {
 
           {phase === "evolution" && (
             <Image
-              src={"/images/bao_evolve_asian.gif?v=" + lance}
+              src={"/images/agents/bao_evolve_asian.gif?v=" + lance}
               alt=""
               width={320}
               height={320}
@@ -103,7 +103,7 @@ export default function EasterEggDuong() {
           {phase === "fini" && (
             <>
               <Image
-                src="/images/asian.png"
+                src="/images/agents/asian.png"
                 alt=""
                 width={256}
                 height={192}

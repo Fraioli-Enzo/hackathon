@@ -114,7 +114,7 @@ export default function AssistantPage() {
             <div key={i} className={"flex gap-2.5 " + (m.role === "user" ? "justify-end" : "justify-start")}>
               {m.role === "assistant" && (
                 <Image
-                  src="/images/asian.png"
+                  src="/images/asian_head.png"
                   alt=""
                   width={28}
                   height={28}
@@ -158,7 +158,14 @@ export default function AssistantPage() {
 
           {envoi && (
             <div className="flex justify-start gap-2.5" aria-busy="true">
-              <Image src="/images/asian.png" alt="" width={28} height={28} className="w-7 h-7 object-cover object-top rounded-full shrink-0 mt-1" />
+              <Image
+                src="/images/asian_gif.gif"
+                alt=""
+                width={28}
+                height={28}
+                unoptimized
+                className="w-7 h-7 object-cover rounded-full shrink-0 mt-1"
+              />
               <div className="bg-surface border border-line rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1.5 shadow-sm text-muted">
                 {[0, 150, 300].map((delai) => (
                   <span key={delai} className="w-2 h-2 rounded-full bg-current animate-bounce" style={{ animationDelay: delai + "ms" }} />

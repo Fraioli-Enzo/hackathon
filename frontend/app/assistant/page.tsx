@@ -36,12 +36,18 @@ export default function AssistantPage() {
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const filRef = useRef<HTMLDivElement>(null);
+  const saisieRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Défile uniquement le fil de messages, jamais la page (scrollIntoView ferait
     // défiler toute la page vers le bas)
     if (filRef.current) filRef.current.scrollTop = filRef.current.scrollHeight;
   }, [messages, envoi]);
+
+  useEffect(() => {
+    // Focus permanent sur la saisie : écriture directe à l'arrivée et après chaque réponse
+    if (!envoi) saisieRef.current?.focus();
+  }, [envoi, messages.length]);
 
   async function envoyer(texte: string) {
     const message = texte.trim();
@@ -89,7 +95,7 @@ export default function AssistantPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-10rem)]">
       <div className="flex flex-col flex-1 min-h-0 rounded-2xl border border-line bg-card overflow-hidden shadow-sm">
-        <header className="flex items-center gap-3 border-b border-line bg-surface px-4 py-3">
+        <header className="flex items-center justify-center gap-3 border-b border-line bg-surface px-4 py-3">
           <Image
             src="/images/asian.png"
             alt=""
@@ -179,6 +185,7 @@ export default function AssistantPage() {
             Ton message
           </label>
           <input
+            ref={saisieRef}
             id="message-agent"
             value={saisie}
             onChange={(e) => setSaisie(e.target.value)}

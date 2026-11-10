@@ -23,35 +23,46 @@ Projet hackathon : plateforme de commande de nourriture (banh bao, nems, mochis)
 
 ```
 hackathon/
-├── app/
-│   ├── page.tsx                  # Accueil : présentation + produits
-│   ├── commander/page.tsx        # Formulaire de commande + panier
-│   ├── confirmation/page.tsx     # Succès + génération PDF ticket
-│   ├── admin/
-│   │   ├── login/page.tsx       # Connexion admin
-│   │   ├── page.tsx             # Dashboard : panier de la semaine
-│   │   ├── produits/page.tsx     # CRUD produits & prix
-│   │   ├── commandes/page.tsx    # Liste des commandes de la semaine
-│   │   └── scan/page.tsx         # Scan QR → commande "récupérée"
-│   └── api/
-│       ├── commandes/route.ts    # POST (créer), GET (lister)
-│       ├── produits/route.ts     # GET, POST
-│       ├── produits/[id]/route.ts# PUT, DELETE
-│       ├── admin/login/route.ts  # POST (auth)
-│       ├── admin/me/route.ts     # GET (session)
-│       ├── admin/logout/route.ts # POST
-│       ├── admin/scan/route.ts   # POST (marquer récupérée)
-│       └── admin/recap/route.ts  # GET (aggrégation semaine)
-├── components/                   # UI réutilisable (Cart, ProductCard, etc.)
-├── lib/
-│   ├── db.ts                     # Connexion Mongoose (singleton)
-│   ├── models/                   # Schémas (Admin, Produit, Commande)
-│   └── week.ts                   # Utils semaine ISO (lundi→dimanche)
-├── scripts/seed.ts               # Création admin + produits initiaux
-├── Dockerfile                    # Build multi-stage node:20-alpine
-├── docker-compose.yml            # Services mongo + app
-├── setup.sh                      # Installation & lancement automatiques
-├── .env.local                    # MONGODB_URI (jamais commité)
+├── frontend/
+│   ├── app/
+│   │   ├── page.tsx                  # Accueil : présentation + produits + agent IA
+│   │   ├── commander/page.tsx        # Formulaire de commande + panier
+│   │   ├── confirmation/page.tsx     # Succès + génération PDF ticket
+│   │   ├── admin/
+│   │   │   ├── login/page.tsx       # Connexion admin
+│   │   │   ├── page.tsx             # Dashboard : panier de la semaine
+│   │   │   ├── produits/page.tsx    # CRUD produits & prix (images incluses)
+│   │   │   ├── commandes/page.tsx   # Commandes de la semaine + scan QR + commande sur place
+│   │   │   ├── stock/page.tsx       # Stock restant
+│   │   │   └── comptes/page.tsx     # Gestion des comptes admins
+│   │   └── api/
+│   │       ├── commandes/route.ts   # POST (créer), GET (lister)
+│   │       ├── commandes/[id]/route.ts # PATCH (statut/payé), DELETE
+│   │       ├── produits/route.ts    # GET, POST
+│   │       ├── produits/[id]/route.ts # PUT, DELETE
+│   │       ├── images/[id]/route.ts # Images produits
+│   │       ├── chat/route.ts        # Agent IA (BAO)
+│   │       ├── admin/login/route.ts # POST (auth)
+│   │       ├── admin/logout/route.ts # POST
+│   │       ├── admin/me/route.ts    # GET (session)
+│   │       ├── admin/scan/route.ts  # POST (marquer récupérée + payée)
+│   │       ├── admin/recap/route.ts # GET (aggrégation semaine)
+│   │       ├── admin/image/route.ts # Image admin
+│   │       └── admin/comptes/       # CRUD comptes admins
+│   ├── components/                   # UI réutilisable (AdminNav, Banniere, PopupConfirmation, ImageProduit…)
+│   ├── lib/
+│   │   ├── db.ts                     # Connexion Mongoose (singleton)
+│   │   ├── models/                   # Schémas (Admin, Produit, Commande)
+│   │   ├── auth.ts                   # Session cookie signé HMAC
+│   │   ├── agent.ts                  # Prompt + outils de l'agent IA
+│   │   ├── icons.ts                  # Icônes Iconify embarquées (addIcon)
+│   │   ├── types.ts                  # Types partagés (ProduitClient, CommandeClient, Recap…)
+│   │   └── week.ts                    # Semaine cafet : mercredi 00h → mardi suivant
+│   └── scripts/seed.ts               # Création admin + produits initiaux
+├── mcp/                              # Serveur MCP stdio cafet-produits (lister_produits, detail_produit)
+├── docker-compose.yml                # Services mongo + app
+├── start.sh                          # Installation & lancement automatiques (dev)
+├── .env.local                        # MONGODB_URI (jamais commité)
 └── README.md
 ```
 
@@ -59,15 +70,16 @@ hackathon/
 
 ```
 admins     { email, passwordHash }
-produits   { nom, prix, description, actif }
-commandes  { prenom, nom, email, batiment: "Orion"|"Antares",
-             items: [{ produitId, nom, prix, qte }],
+produits   { nom, prix, description, actif, image, categorie, stock, composition (menus) }
+commandes  { prenom, nom, batiment: "Orion"|"Antares",
+             jour: "Lundi"|"Mardi"|"Mercredi"|"Jeudi"|"Vendredi",
+             items: [{ produitId, nom, prix, qte, variantes (menus) }],
              total, statut: "en_attente"|"recuperee",
-             createdAt }
+             paye: boolean, createdAt }
 ```
 
 - Le QR code encode l'`_id` de la commande.
-- Le panier de la semaine = agrégation des commandes dont `createdAt` est dans la semaine ISO courante (lundi → dimanche), groupée par produit (somme des quantités).
+- Le panier de la semaine = agrégation des commandes dont `createdAt` est dans la semaine cafet courante (**mercredi 00h → mardi suivant**, cf. `lib/week.ts` : les élèves commandent en avance pour les retraits du lundi au vendredi, hors week-end), groupée par produit (somme des quantités).
 
 ## 🖥️ Pages & fonctionnalités
 

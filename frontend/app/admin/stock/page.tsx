@@ -290,21 +290,21 @@ export default function AdminStockPage() {
                     {edition === p._id ? (
                       <button
                         onClick={() => setEdition(null)}
-                        className="bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors max-sm:px-3 max-sm:py-1.5 max-sm:text-sm"
+                        className="bg-cesi-jaune text-black font-bold px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors min-w-28 max-sm:px-3 max-sm:py-1.5 max-sm:text-sm"
                       >
                         Terminé
                       </button>
                     ) : (
                       <button
                         onClick={() => setEdition(p._id)}
-                        className="border border-line font-bold px-4 py-2 rounded-lg hover:border-cesi-jaune transition-colors max-sm:px-3 max-sm:py-1.5 max-sm:text-sm"
+                        className="border border-line font-bold px-4 py-2 rounded-lg hover:border-cesi-jaune transition-colors min-w-28 max-sm:px-3 max-sm:py-1.5 max-sm:text-sm"
                       >
                         Modifier
                       </button>
                     )}
                     <button
                       onClick={() => setASupprimer(p)}
-                      className="border border-red-500 text-red-500 font-bold px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white focus-visible:bg-red-500 focus-visible:text-white transition-colors max-sm:px-3 max-sm:py-1.5 max-sm:text-sm"
+                      className="border border-red-500 text-red-500 font-bold px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white focus-visible:bg-red-500 focus-visible:text-white transition-colors min-w-28 max-sm:px-3 max-sm:py-1.5 max-sm:text-sm"
                     >
                       Supprimer
                     </button>

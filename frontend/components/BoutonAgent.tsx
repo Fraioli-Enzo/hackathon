@@ -41,9 +41,10 @@ export default function BoutonAgent() {
   // Sur /commander, l'agent est en bas à gauche (le bouton panier mobile est en bas à droite)
   const aGauche = chemin === "/commander";
   const positionX = aGauche ? "left-4 lg:left-6" : "right-4 lg:right-6";
+  const positionY = aGauche ? "bottom-2" : "bottom-6";
 
   return (
-    <div className={"fixed z-50 bottom-6 " + positionX}>
+    <div className={"fixed z-50 " + positionY + " " + positionX}>
       <div className="relative">
         {texte && (
           <p className={"absolute bottom-full mb-3 whitespace-nowrap bg-card border border-line rounded-xl px-3 py-2 text-sm font-bold shadow-lg " + (aGauche ? "-left-2 lg:left-0" : "-right-2 lg:right-0")}>

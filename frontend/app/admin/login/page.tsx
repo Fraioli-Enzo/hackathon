@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [erreur, setErreur] = useState<string | null>(null);
@@ -22,8 +20,10 @@ export default function AdminLoginPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erreur de connexion.");
-      router.push("/admin");
-      router.refresh();
+      // Navigation complète : la navigation client (router.push) peut servir
+      // la redirection du middleware mise en cache avant la connexion,
+      // d'où le dashboard qui ne s'ouvrait pas à la première connexion.
+      window.location.assign("/admin");
     } catch (err) {
       setErreur(err instanceof Error ? err.message : "Erreur inconnue.");
       setEnvoi(false);

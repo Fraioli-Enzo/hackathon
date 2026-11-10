@@ -41,7 +41,9 @@ export default function BoutonAgent() {
   // Sur /commander, l'agent est en bas à gauche (le bouton panier mobile est en bas à droite)
   const aGauche = chemin === "/commander";
   const positionX = aGauche ? "left-4 lg:left-6" : "right-4 lg:right-6";
-  const positionY = aGauche ? "bottom-2" : "bottom-6";
+  // /commander : visage aligne avec le bouton "aller au panier" (bottom-4 ;
+  // bottom-0 car le conteneur a 16px vides sous l'image 4:3)
+  const positionY = aGauche ? "bottom-0" : "bottom-6";
 
   return (
     <div className={"fixed z-50 " + positionY + " " + positionX}>

@@ -41,9 +41,8 @@ export default function BoutonAgent() {
   // Sur /commander, l'agent est en bas à gauche (le bouton panier mobile est en bas à droite)
   const aGauche = chemin === "/commander";
   const positionX = aGauche ? "left-4 lg:left-6" : "right-4 lg:right-6";
-  // /commander : visage aligne avec le bouton "aller au panier" (bottom-4 ;
-  // bottom-0 car le conteneur a 16px vides sous l'image 4:3)
-  const positionY = aGauche ? "bottom-0" : "bottom-6";
+  // /commander : 16px de marge sous l'agent, aligne avec le bouton "aller au panier"
+  const positionY = aGauche ? "bottom-4" : "bottom-6";
 
   return (
     <div className={"fixed z-50 " + positionY + " " + positionX}>
@@ -61,7 +60,7 @@ export default function BoutonAgent() {
         <Link
           href="/assistant"
           aria-label={"Ouvrir l'" + apparence.nom}
-          className="block w-16 h-16 lg:w-24 lg:h-24 hover:scale-105 transition-all"
+          className={"block w-16 lg:w-24 hover:scale-105 transition-all" + (aGauche ? "" : " h-16 lg:h-24")}
         >
           <Image
             src={apparence.imageFlottante}

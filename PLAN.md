@@ -74,20 +74,22 @@ commandes  { prenom, nom, email, batiment: "Orion"|"Antares",
 ### Côté utilisateur
 1. **Accueil** (`/`) : présentation du concept, liste des produits actifs avec prix, CTA "Commander".
 2. **Commander** (`/commander`) :
-   - Formulaire : prénom, nom, adresse mail, bâtiment (**Orion** / **Antares**)
-   - Chaque produit avec sélecteur de quantité (+/-)
+   - Formulaire : prénom, nom, bâtiment (**Orion** / **Antares**), jour de retrait (**lundi à vendredi**, hors week-end)
+   - Chaque produit avec sélecteur de quantité (+/-), composition des menus (choix des variantes), gestion du stock en temps réel
    - Panier en temps réel, total dynamique
    - Validation → `POST /api/commandes` → redirection vers la confirmation
 3. **Confirmation** (`/confirmation`) :
    - Génération et téléchargement du **PDF ticket de caisse** : produits, quantités, prix, total, QR code unique
-   - Mention "paiement sur place" (espèces ou carte à la cafet)
+   - Mention "paiement sur place (par carte uniquement)"
+4. **Agent IA (BAO)** (`/`) : chat intégré qui répond aux questions produits et passe commande via les outils (`lister_produits`, `detail_produit`, `creer_commande`). Un serveur **MCP** (`mcp/cafet-produits`) expose aussi le catalogue (`lister_produits`, `detail_produit`) en stdio.
 
 ### Côté admin
 1. **Login** (`/admin/login`) : email + mot de passe (hashé en BDD), session par cookie httpOnly.
 2. **Dashboard** (`/admin`) : panier de la semaine - total par produit à acheter (ex. "45 banh bao, 38 nems, 52 mochis"), nombre de commandes, CA de la semaine.
-3. **Produits** (`/admin/produits`) : ajouter / modifier / supprimer des produits et leur prix (donc facile d'ajouter un produit au-delà des 3 de départ).
-4. **Commandes** (`/admin/commandes`) : liste détaillée de la semaine, statut par commande.
-5. **Scan QR** (`/admin/scan`) : scanner le QR du ticket → passe la commande en "récupérée" (évite les doubles retraits). Fallback : recherche manuelle par email.
+3. **Produits** (`/admin/produits`) : ajouter / modifier / supprimer des produits et leur prix (donc facile d'ajouter un produit au-delà des 3 de départ). Gestion des images.
+4. **Commandes** (`/admin/commandes`) : liste détaillée de la semaine, badges de statut (**récupérée / pas récupérée**, **payée / pas payée**), filtres (statut, payées / non payées), recherche par nom. Actions : **Valider** (marque récupérée *et* payée), **Dévalider**, **Marquer payée / pas payée**, **Supprimer**, plus une saisie de **commande sur place**.
+5. **Scan QR** (intégré à `/admin/commandes`) : scanner le QR du ticket → passe la commande en "récupérée" *et* "payée" (évite les doubles retraits). Fallback : bouton "Valider" dans le tableau.
+6. **Stock** (`/admin/stock`) : stock restant par produit. **Comptes** (`/admin/comptes`) : gestion des comptes admins.
 
 ## 🐳 Docker
 
@@ -97,36 +99,36 @@ commandes  { prenom, nom, email, batiment: "Orion"|"Antares",
   - `app` : Next.js, `MONGODB_URI=mongodb://mongo:27017/cafet`
 - Données persistantes entre `docker compose down` / `up` (volume).
 
-## 🔧 setup.sh
+## 🔧 start.sh
 
 Script unique et idempotent :
-1. Vérifie `node` ≥ 20, `docker`, `docker compose`
+1. Vérifie `node` ≥ 20
 2. `npm install`
 3. Crée `.env.local` (sans écraser une config existante)
-4. `docker compose up -d mongo` + attente de connexion
-5. Seed : compte admin + produits de départ
-6. Lance `npm run dev`
+4. Lance `npm run dev` (mode dev)
 
-Options : `--seed-only`, `--no-start`.
+Le seed se lance via `npm run seed` (compte admin + produits de départ). En dev, MongoDB tourne en container Docker (`docker compose up -d mongo`).
 
 ## ✅ Ordre de développement
 
-| Étape | Contenu | Test |
+| Étape | Contenu | Statut |
 |---|---|---|
-| 1 | Squelette Next.js + Tailwind, thème noir/jaune | Site se lance |
-| 2 | Docker (Dockerfile + compose) + `setup.sh` | `docker compose up` OK |
-| 3 | Connexion Mongo + modèles + seed | Données visibles en BDD |
-| 4 | API produits + page admin produits (CRUD) | Ajout/modif/suppression produit |
-| 5 | Formulaire commande + panier + `POST /api/commandes` | Commande enregistrée |
-| 6 | PDF ticket + QR code | Téléchargement du ticket |
-| 7 | Login admin + sessions | Accès protégé |
-| 8 | Dashboard semaine (agrégation) + liste commandes + scan QR | Parcours complet OK |
+| 1 | Squelette Next.js + Tailwind, thème | ✅ Fait |
+| 2 | Docker (Dockerfile + compose) | ✅ Fait |
+| 3 | Connexion Mongo + modèles + seed | ✅ Fait |
+| 4 | API produits + page admin produits (CRUD) | ✅ Fait |
+| 5 | Formulaire commande + panier + `POST /api/commandes` | ✅ Fait |
+| 6 | PDF ticket + QR code | ✅ Fait |
+| 7 | Login admin + sessions (cookie signé HMAC) | ✅ Fait |
+| 8 | Dashboard semaine (aggrégation) + liste commandes + scan QR | ✅ Fait |
+| 9 | Agent IA (BAO) + serveur MCP | ✅ Fait |
+| 10 | Retours v1 : paiement carte uniquement, retraits lun-ven, statuts admin (payé, dévalidation), fix login dashboard | ✅ Fait (`fix/v1`) |
 
 ## 🔐 Sécurité & config
 
 - `.env.local` jamais commité (`.gitignore`), `MONGODB_URI` en variable d'env
 - Mots de passe admin hashés (bcrypt), cookie de session httpOnly
-- Validation des entrées côté serveur (email, bâtiment, quantités > 0)
+- Validation des entrées côté serveur (prénom/nom, bâtiment, jour de retrait lun-ven, quantités > 0) et "pas de paiement en ligne" (sur place, par carte uniquement)
 
 ## 🗓️ Backlog après la hackathon
 

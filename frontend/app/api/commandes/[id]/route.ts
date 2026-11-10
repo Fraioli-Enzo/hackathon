@@ -14,7 +14,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const { statut, paye } = await req.json();
     const maj: { statut?: string; paye?: boolean } = {};
-    if (statut === "en_attente" || statut === "recuperee") maj.statut = statut;
+    if (statut === "en_attente" || statut === "recuperee") {
+      maj.statut = statut;
+      // Marquer récupérée = commande payée et retirée sur place
+      if (statut === "recuperee") maj.paye = true;
+    }
     if (typeof paye === "boolean") maj.paye = paye;
     if (Object.keys(maj).length === 0) {
       return NextResponse.json({ error: "Rien à mettre à jour." }, { status: 400 });

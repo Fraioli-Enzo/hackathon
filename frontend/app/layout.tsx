@@ -43,7 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <EasterEggDuong />
           <div className="max-w-5xl mx-auto px-4 py-2 sm:py-4 flex flex-col items-center gap-2 sm:gap-3">
             <p className="text-[11px] sm:text-xs text-muted text-center">
-              Hackathon CESI - paiement sur place (espèces ou carte)
+              Hackathon CESI - paiement sur place (par carte)
             </p>
             <p className="text-xs sm:text-sm text-muted text-center">
               Suivre la traiteuse sur Facebook :{" "}

@@ -48,7 +48,7 @@ export default function ConfirmationPage() {
         <h1 className="text-3xl font-black">Commande enregistrée !</h1>
         <p className="text-muted">
           Merci {commande.prenom} ! Ton ticket est prêt.
-          {commande.jour ? ` Retrait le ${commande.jour.toLowerCase()}, présente le QR code sur place, paiement en espèces ou carte.` : " Présente le QR code sur place, paiement en espèces ou carte."}
+          {commande.jour ? ` Retrait le ${commande.jour.toLowerCase()}, présente le QR code sur place, paiement par carte.` : " Présente le QR code sur place, paiement par carte."}
         </p>
       </div>
 
@@ -83,7 +83,7 @@ export default function ConfirmationPage() {
         <div className="flex items-end justify-between px-6 py-4 border-t border-line bg-surface">
           <div>
             <p className="font-bold">Total</p>
-            <p className="text-xs text-muted">à payer sur place (espèces ou carte)</p>
+            <p className="text-xs text-muted">à payer sur place (par carte)</p>
           </div>
           <span className="text-2xl font-black text-cesi-jaune">{commande.total.toFixed(2)} €</span>
         </div>
@@ -157,7 +157,7 @@ async function telechargerTicket(commande: CommandeClient) {
   doc.text(`Total : ${commande.total.toFixed(2)} EUR`, 14, y);
   doc.setFontSize(11);
   y += 10;
-  doc.text("Paiement sur place (especes ou carte).", 14, y);
+  doc.text("Paiement sur place (par carte).", 14, y);
   y += 8;
   doc.text("Presente ce QR code au retrait.", 14, y);
 

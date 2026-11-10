@@ -38,22 +38,20 @@ export default function BoutonAgent() {
   // Pas de bouton agent dans l'espace admin ni sur la page du chat
   if (chemin === "/assistant" || chemin.startsWith("/admin")) return null;
 
+  // Sur /commander, l'agent est en bas à gauche (le bouton panier mobile est en bas à droite)
+  const aGauche = chemin === "/commander";
+  const positionX = aGauche ? "left-4 lg:left-6" : "right-4 lg:right-6";
+
   return (
-    // Sur /commander (mobile), le bouton panier est en bas à droite : on secale au-dessus
-    <div
-      className={
-        "fixed z-50 right-4 lg:right-6 " +
-        (chemin === "/commander" ? "bottom-24 lg:bottom-6" : "bottom-6")
-      }
-    >
+    <div className={"fixed z-50 bottom-6 " + positionX}>
       <div className="relative">
         {texte && (
-          <p className="absolute bottom-full -right-2 lg:right-0 mb-3 whitespace-nowrap bg-card border border-line rounded-xl px-3 py-2 text-sm font-bold shadow-lg">
+          <p className={"absolute bottom-full mb-3 whitespace-nowrap bg-card border border-line rounded-xl px-3 py-2 text-sm font-bold shadow-lg " + (aGauche ? "-left-2 lg:left-0" : "-right-2 lg:right-0")}>
             {texte}
             {/* Queue de la bulle pointant vers le visage du personnage */}
             <span
               aria-hidden
-              className="absolute -bottom-[7px] right-10 w-3 h-3 bg-card border-b border-r border-line rotate-45"
+              className={"absolute -bottom-[7px] w-3 h-3 bg-card border-b border-r border-line rotate-45 " + (aGauche ? "left-10" : "right-10")}
             />
           </p>
         )}

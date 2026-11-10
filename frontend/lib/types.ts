@@ -61,6 +61,7 @@ export type CommandeClient = {
   items: LigneCommande[];
   total: number;
   statut: "en_attente" | "recuperee";
+  paye?: boolean;
   createdAt: string;
 };
 

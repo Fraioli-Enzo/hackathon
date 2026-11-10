@@ -16,8 +16,8 @@ export async function POST(req: NextRequest) {
     if (batiment !== "Orion" && batiment !== "Antares") {
       return NextResponse.json({ error: "Bâtiment invalide (Orion ou Antares)." }, { status: 400 });
     }
-    if (jour !== "Lundi" && jour !== "Mardi") {
-      return NextResponse.json({ error: "Choisis ton jour de retrait (lundi ou mardi)." }, { status: 400 });
+    if (!["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"].includes(jour)) {
+      return NextResponse.json({ error: "Choisis ton jour de retrait (lundi à vendredi)." }, { status: 400 });
     }
     if (!Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: "Au moins un produit est requis." }, { status: 400 });

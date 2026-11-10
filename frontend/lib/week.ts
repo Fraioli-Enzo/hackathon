@@ -1,6 +1,6 @@
 // Semaine "cafet" : du mercredi 00h00 (heure locale) au mercredi suivant 00h00 (exclus).
-// Les élèves commandent en avance : les retraits du lundi/mardi sont passés avant,
-// donc la semaine utile de commandes va du mercredi au mardi inclus.
+// Les élèves commandent en avance : la semaine utile de commandes va du
+// mercredi au mardi inclus (retraits du lundi au vendredi, hors week-end).
 // "decalage" décale de N semaines (0 = en cours, 1 = suivante, -1 = précédente).
 
 export function getWeekRange(date: Date = new Date(), decalage = 0): { start: Date; end: Date } {

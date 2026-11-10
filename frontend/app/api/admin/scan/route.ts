@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ commande, dejaRecuperee: true });
     }
 
-    const miseAJour = await Commande.findByIdAndUpdate(code, { statut: "recuperee" }, { new: true }).lean();
+    const miseAJour = await Commande.findByIdAndUpdate(code, { statut: "recuperee", paye: true }, { new: true }).lean();
     return NextResponse.json({ commande: miseAJour, dejaRecuperee: false });
   } catch (e) {
     console.error("POST /api/admin/scan", e);

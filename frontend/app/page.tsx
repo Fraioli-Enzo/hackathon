@@ -96,7 +96,7 @@ export default async function Accueil() {
                   <span className="text-cesi-jaune">{Number(c.total).toFixed(2)} €</span>
                 </p>
                 <p className="text-muted text-xs">
-                  Présente le QR code de ton ticket au retrait, paiement sur place (espèces ou carte).
+                  Présente le QR code de ton ticket au retrait, paiement sur place (par carte).
                 </p>
               </div>
             </div>
@@ -132,7 +132,7 @@ export default async function Accueil() {
             <span className="text-cesi-jaune font-bold">2.</span> Tu reçois un ticket PDF avec un QR code unique.
           </li>
           <li>
-            <span className="text-cesi-jaune font-bold">3.</span> Tu paies sur place (espèces ou carte) et récupères ta commande en présentant le QR code.
+            <span className="text-cesi-jaune font-bold">3.</span> Tu paies sur place (par carte) et récupères ta commande en présentant le QR code.
           </li>
         </ol>
       </section>

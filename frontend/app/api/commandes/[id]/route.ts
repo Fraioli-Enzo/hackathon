@@ -6,6 +6,35 @@ import { getAdminEmail } from "@/lib/auth";
 
 type Params = { params: { id: string } };
 
+export async function PATCH(req: NextRequest, { params }: Params) {
+  const admin = await getAdminEmail(req);
+  if (!admin) {
+    return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
+  }
+  try {
+    const { statut, paye } = await req.json();
+    const maj: { statut?: string; paye?: boolean } = {};
+    if (statut === "en_attente" || statut === "recuperee") {
+      maj.statut = statut;
+      // Marquer récupérée = commande payée et retirée sur place
+      if (statut === "recuperee") maj.paye = true;
+    }
+    if (typeof paye === "boolean") maj.paye = paye;
+    if (Object.keys(maj).length === 0) {
+      return NextResponse.json({ error: "Rien à mettre à jour." }, { status: 400 });
+    }
+    await connectDB();
+    const commande = await Commande.findByIdAndUpdate(params.id, maj, { new: true }).lean();
+    if (!commande) {
+      return NextResponse.json({ error: "Commande introuvable." }, { status: 404 });
+    }
+    return NextResponse.json({ commande });
+  } catch (e) {
+    console.error("PATCH /api/commandes/[id]", e);
+    return NextResponse.json({ error: "Erreur serveur." }, { status: 500 });
+  }
+}
+
 export async function DELETE(req: NextRequest, { params }: Params) {
   const admin = await getAdminEmail(req);
   if (!admin) {

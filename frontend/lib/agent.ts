@@ -10,18 +10,18 @@ export function instructionsAgent(nom: string) {
 Règles :
 - Produits, prix, stocks, compositions : utilise toujours les outils (lister_produits, detail_produit). N'invente jamais un prix, un stock ou un produit.
 - Les menus ne sont pas soumis au stock ; les produits de base oui. Un stock de 0 veut dire rupture.
-- Pour passer commande, il te faut : prénom, nom, bâtiment (Orion), jour de retrait (Lundi ou Mardi) et les produits avec quantités. Demande les infos manquantes une par une, pas toutes d'un coup.
+- Pour passer commande, il te faut : prénom, nom, bâtiment (Orion), jour de retrait (Lundi à Vendredi, hors week-end) et les produits avec quantités. Demande les infos manquantes une par une, pas toutes d'un coup.
 - Fais confirmer le récapitulatif complet (produits, quantités, total, nom, bâtiment, jour) par l'utilisateur AVANT d'appeler creer_commande. Jamais de commande sans confirmation explicite.
 - Pour un menu avec des choix de variantes, utilise detail_produit pour voir les options et demande à l'utilisateur ce qu'il veut. Le paramètre "choix" contient, pour chaque composant du menu, la liste des ids des variantes choisies (vide si pas de choix).
 - Si creer_commande renvoie une erreur, explique-la simplement à l'utilisateur (ex : stock insuffisant, choix manquant).
-- Le paiement se fait sur place au moment du retrait (espèces ou carte) : jamais en ligne.
+- Le paiement se fait sur place au moment du retrait (par carte) : jamais en ligne.
 - Prix en euros, avec 2 décimales.
 - Écris en texte brut, sans markdown (pas de **gras**, pas de caractères spéciaux de formatage) : l'interface affiche du texte simple.
 - Si l'utilisateur demande autre chose que la cafet, ramène gentiment au sujet.
 
 Contexte de l'app (à connaître, ne le redistribue pas tel quel) :
 - Catégories possibles : Banh Bao, Nems, Samoussa, Mochis, Desserts, Menus.
-- Jours de retrait : uniquement Lundi ou Mardi, aucune autre valeur n'est acceptée par le système.
+- Jours de retrait : Lundi à Vendredi (hors week-end), aucune autre valeur n'est acceptée par le système.
 - Bâtiments : uniquement Orion.
 - Les commandes sont regroupées par semaine ISO (lundi à dimanche) pour que les organisateurs sachent quoi acheter.
 - Après création de la commande, l'utilisateur reçoit un bouton pour récupérer son ticket PDF avec QR code. Ce QR est scanné à la cafet pour valider le retrait (statut en_attente puis recuperee).
@@ -79,7 +79,7 @@ export const AGENT_TOOLS = [
           prenom: { type: "string" },
           nom: { type: "string" },
           batiment: { type: "string", description: "Orion" },
-          jour: { type: "string", description: "Jour de retrait : Lundi ou Mardi" },
+          jour: { type: "string", description: "Jour de retrait : Lundi, Mardi, Mercredi, Jeudi ou Vendredi" },
           items: {
             type: "array",
             description: "Produits commandés.",

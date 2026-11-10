@@ -16,13 +16,14 @@ import Banniere from "@/components/Banniere";
 import PopupConfirmation from "@/components/PopupConfirmation";
 import BoutonRafraichir from "@/components/BoutonRafraichir";
 
-function commandeFiltrees(commandes: CommandeClient[], recherche: string, statut: string) {
+function commandeFiltrees(commandes: CommandeClient[], recherche: string, filtre: string) {
   const q = recherche.trim().toLowerCase();
-  return commandes.filter(
-    (c) =>
-      (!statut || c.statut === statut) &&
-      (!q || `${c.prenom} ${c.nom}`.toLowerCase().includes(q))
-  );
+  return commandes.filter((c) => {
+    if (filtre === "payees" && !c.paye) return false;
+    if (filtre === "non_payees" && c.paye) return false;
+    if ((filtre === "en_attente" || filtre === "recuperee") && c.statut !== filtre) return false;
+    return !q || `${c.prenom} ${c.nom}`.toLowerCase().includes(q);
+  });
 }
 
 export default function AdminCommandesPage() {
@@ -289,6 +290,21 @@ export default function AdminCommandesPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scanning]);
+
+  async function majCommande(id: string, maj: { statut?: string; paye?: boolean }) {
+    const res = await fetch(`/api/commandes/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(maj),
+    });
+    if (res.ok) {
+      setErreur(null);
+      informer("Commande mise à jour.");
+      charger();
+    } else {
+      setErreur("Mise à jour impossible.");
+    }
+  }
 
   async function traiterCode(code: string) {
     try {
@@ -565,6 +581,9 @@ export default function AdminCommandesPage() {
                 >
                   <option value="Lundi">Retrait lundi</option>
                   <option value="Mardi">Retrait mardi</option>
+                  <option value="Mercredi">Retrait mercredi</option>
+                  <option value="Jeudi">Retrait jeudi</option>
+                  <option value="Vendredi">Retrait vendredi</option>
                 </select>
               </div>
             </div>
@@ -576,7 +595,7 @@ export default function AdminCommandesPage() {
             >
               Enregistrer la commande
             </button>
-            <p className="text-xs text-muted text-center">Paiement sur place (espèces ou carte).</p>
+            <p className="text-xs text-muted text-center">Paiement sur place (par carte).</p>
           </aside>
         </div>
 
@@ -674,6 +693,8 @@ export default function AdminCommandesPage() {
             { valeur: "", libelle: "Toutes" },
             { valeur: "en_attente", libelle: "En attente" },
             { valeur: "recuperee", libelle: "Récupérées" },
+            { valeur: "payees", libelle: "Payées" },
+            { valeur: "non_payees", libelle: "Non payées" },
           ].map(({ valeur, libelle }) => (
             <button
               key={valeur || "toutes"}
@@ -729,20 +750,35 @@ export default function AdminCommandesPage() {
                   <span className="text-xs text-muted">Total</span>
                   <span className="font-black text-cesi-jaune">{c.total.toFixed(2)} €</span>
                 </p>
-                <div className="flex gap-2">
-                  {c.statut !== "recuperee" && (
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    {c.statut !== "recuperee" ? (
+                      <button
+                        onClick={() => traiterCode(c._id)}
+                        className="flex-1 bg-cesi-jaune text-black font-bold px-4 py-3 rounded-lg hover:bg-yellow-300 transition-colors"
+                      >
+                        Valider
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => majCommande(c._id, { statut: "en_attente" })}
+                        className="flex-1 border border-line font-bold px-4 py-3 rounded-lg hover:border-cesi-jaune transition-colors"
+                      >
+                        Dévalider
+                      </button>
+                    )}
                     <button
-                      onClick={() => traiterCode(c._id)}
-                      className="flex-1 bg-cesi-jaune text-black font-bold px-4 py-3 rounded-lg hover:bg-yellow-300 transition-colors"
+                      onClick={() => setASupprimer(c)}
+                      className="flex-1 border border-red-500 text-red-500 font-bold px-4 py-3 rounded-lg hover:bg-red-500 hover:text-white focus-visible:bg-red-500 focus-visible:text-white transition-colors"
                     >
-                      Valider
+                      Supprimer
                     </button>
-                  )}
+                  </div>
                   <button
-                    onClick={() => setASupprimer(c)}
-                    className="flex-1 border border-red-500 text-red-500 font-bold px-4 py-3 rounded-lg hover:bg-red-500 hover:text-white focus-visible:bg-red-500 focus-visible:text-white transition-colors"
+                    onClick={() => majCommande(c._id, { paye: !c.paye })}
+                    className="w-full border border-line font-bold px-4 py-2 rounded-lg hover:border-cesi-jaune transition-colors text-sm"
                   >
-                    Supprimer
+                    {c.paye ? "Marquer pas payée" : "Marquer payée"}
                   </button>
                 </div>
               </div>
@@ -787,14 +823,29 @@ export default function AdminCommandesPage() {
                     <td className="px-4 py-3">{badgeStatutCommande(c)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
-                        {c.statut !== "recuperee" && (
+                        {c.statut !== "recuperee" ? (
                           <button
                             onClick={() => traiterCode(c._id)}
                             className="bg-cesi-jaune text-black font-bold px-3 py-1.5 rounded-lg hover:bg-yellow-300 transition-colors text-xs"
                           >
                             Valider
                           </button>
+                        ) : (
+                          <button
+                            onClick={() => majCommande(c._id, { statut: "en_attente" })}
+                            className="border border-line font-bold px-3 py-1.5 rounded-lg hover:border-cesi-jaune transition-colors text-xs"
+                          >
+                            Dévalider
+                          </button>
                         )}
+                        <button
+                          onClick={() => majCommande(c._id, { paye: !c.paye })}
+                          className={`border font-bold px-3 py-1.5 rounded-lg transition-colors text-xs ${
+                            c.paye ? "bg-blue-500/10 border-blue-500 text-blue-600" : "border-line hover:border-cesi-jaune"
+                          }`}
+                        >
+                          {c.paye ? "Pas payée" : "Payée"}
+                        </button>
                         <button
                           onClick={() => setASupprimer(c)}
                           aria-label={`Supprimer la commande de ${c.prenom} ${c.nom}`}
@@ -827,13 +878,26 @@ export default function AdminCommandesPage() {
 }
 
 function badgeStatutCommande(c: CommandeClient) {
-  return c.statut === "recuperee" ? (
-    <span className="shrink-0 inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-600">
-      Récupérée
-    </span>
-  ) : (
-    <span className="shrink-0 inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-orange-500/10 text-orange-600">
-      En attente
+  return (
+    <span className="flex flex-wrap gap-1.5 justify-end sm:justify-start">
+      {c.statut === "recuperee" ? (
+        <span className="shrink-0 inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-600">
+          Récupérée
+        </span>
+      ) : (
+        <span className="shrink-0 inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-orange-500/10 text-orange-600">
+          Pas récupérée
+        </span>
+      )}
+      {c.paye ? (
+        <span className="shrink-0 inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-600">
+          Payée
+        </span>
+      ) : (
+        <span className="shrink-0 inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-red-500/10 text-red-600">
+          Pas payée
+        </span>
+      )}
     </span>
   );
 }

@@ -557,6 +557,9 @@ export default function CommanderPage() {
               >
                 <option value="Lundi">Retrait lundi</option>
                 <option value="Mardi">Retrait mardi</option>
+                <option value="Mercredi">Retrait mercredi</option>
+                <option value="Jeudi">Retrait jeudi</option>
+                <option value="Vendredi">Retrait vendredi</option>
               </select>
             </div>
           </div>
@@ -568,7 +571,7 @@ export default function CommanderPage() {
           >
             {envoi ? "Envoi…" : "Valider la commande"}
           </button>
-          <p className="text-xs text-muted text-center">Paiement sur place (espèces ou carte).</p>
+          <p className="text-xs text-muted text-center">Paiement sur place (par carte).</p>
         </aside>
       </form>
       <button

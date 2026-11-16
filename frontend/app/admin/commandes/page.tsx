@@ -3,12 +3,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import jsQR from "jsqr";
 import { Icon, addIcon } from "@iconify/react";
-import { phShoppingCartBold, phTrashBold } from "@/lib/icons";
+import { phShoppingCartBold, phTrashBold, phCheckBold, phXBold } from "@/lib/icons";
 
 addIcon("ph:shopping-cart-bold", phShoppingCartBold);
 addIcon("ph:trash-bold", phTrashBold);
-import { getWeekRange, dernierJour } from "@/lib/week";
+addIcon("ph:check-bold", phCheckBold);
+addIcon("ph:x-bold", phXBold);
 import AdminNav from "@/components/AdminNav";
+import SelecteurSemaine from "@/components/SelecteurSemaine";
 import type { CommandeClient, ProduitClient } from "@/lib/types";
 import { CATEGORIES } from "@/lib/types";
 import ImageProduit from "@/components/ImageProduit";
@@ -28,6 +30,7 @@ function commandeFiltrees(commandes: CommandeClient[], recherche: string, filtre
 
 export default function AdminCommandesPage() {
   const [commandes, setCommandes] = useState<CommandeClient[]>([]);
+  const [semaine, setSemaine] = useState(0);
   const [recherche, setRecherche] = useState("");
   const [filtreStatut, setFiltreStatut] = useState("");
   const [aSupprimer, setASupprimer] = useState<CommandeClient | null>(null);
@@ -213,13 +216,13 @@ export default function AdminCommandesPage() {
 
   const charger = useCallback(async () => {
     try {
-      const res = await fetch("/api/commandes");
+      const res = await fetch(`/api/commandes?semaine=${semaine}`);
       const data = await res.json();
       if (res.ok) setCommandes(data.commandes || []);
     } catch {
       setCommandes([]);
     }
-  }, []);
+  }, [semaine]);
 
   async function confirmerSuppression() {
     if (!aSupprimer) return;
@@ -336,8 +339,6 @@ export default function AdminCommandesPage() {
   }
 
   const filtrees = commandeFiltrees(commandes, recherche, filtreStatut);
-  const { start, end } = getWeekRange();
-  const semaineLabel = `${start.toLocaleDateString("fr-FR")} au ${dernierJour(end).toLocaleDateString("fr-FR")}`;
 
   if (modeDirect) {
     return (
@@ -633,7 +634,9 @@ export default function AdminCommandesPage() {
           </button>
         </div>
       </div>
-      <p className="text-muted mb-6">Semaine du {semaineLabel}</p>
+      <div className="mb-6">
+        <SelecteurSemaine semaine={semaine} onChange={setSemaine} />
+      </div>
 
       <div className="border border-line rounded-xl bg-card p-5 space-y-4 mb-4">
         {!scanning ? (
@@ -774,12 +777,7 @@ export default function AdminCommandesPage() {
                       Supprimer
                     </button>
                   </div>
-                  <button
-                    onClick={() => majCommande(c._id, { paye: !c.paye })}
-                    className="w-full border border-line font-bold px-4 py-2 rounded-lg hover:border-cesi-jaune transition-colors text-sm"
-                  >
-                    {c.paye ? "Marquer pas payée" : "Marquer payée"}
-                  </button>
+                  <BoutonPaye c={c} onToggle={majCommande} className="w-full px-4 py-3 text-sm" />
                 </div>
               </div>
             ))}
@@ -838,14 +836,7 @@ export default function AdminCommandesPage() {
                             Dévalider
                           </button>
                         )}
-                        <button
-                          onClick={() => majCommande(c._id, { paye: !c.paye })}
-                          className={`border font-bold px-3 py-1.5 rounded-lg transition-colors text-xs ${
-                            c.paye ? "bg-blue-500/10 border-blue-500 text-blue-600" : "border-line hover:border-cesi-jaune"
-                          }`}
-                        >
-                          {c.paye ? "Pas payée" : "Payée"}
-                        </button>
+                        <BoutonPaye c={c} onToggle={majCommande} className="px-3 py-1.5 text-xs" />
                         <button
                           onClick={() => setASupprimer(c)}
                           aria-label={`Supprimer la commande de ${c.prenom} ${c.nom}`}
@@ -889,16 +880,24 @@ function badgeStatutCommande(c: CommandeClient) {
           Pas récupérée
         </span>
       )}
-      {c.paye ? (
-        <span className="shrink-0 inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-600">
-          Payée
-        </span>
-      ) : (
-        <span className="shrink-0 inline-block px-2.5 py-1 rounded-full text-xs font-bold bg-red-500/10 text-red-600">
-          Pas payée
-        </span>
-      )}
     </span>
+  );
+}
+
+function BoutonPaye({ c, onToggle, className }: { c: CommandeClient; onToggle: (id: string, maj: { paye: boolean }) => void; className: string }) {
+  return (
+    <button
+      onClick={() => onToggle(c._id, { paye: !c.paye })}
+      aria-pressed={c.paye}
+      className={`inline-flex items-center justify-center gap-1.5 border font-bold rounded-lg transition-colors ${
+        c.paye
+          ? "bg-green-500/10 border-green-500 text-green-600 hover:bg-green-500/20"
+          : "bg-red-500/10 border-red-500 text-red-600 hover:bg-red-500/20"
+      } ${className}`}
+    >
+      <Icon icon={c.paye ? "ph:check-bold" : "ph:x-bold"} ssr className="w-4 h-4" />
+      {c.paye ? "Payée" : "Pas payée"}
+    </button>
   );
 }
 

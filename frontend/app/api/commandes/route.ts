@@ -162,7 +162,8 @@ export async function GET(req: NextRequest) {
   }
   try {
     await connectDB();
-    const { start, end } = getWeekRange();
+    const decalage = Number(req.nextUrl.searchParams.get("semaine")) || 0;
+    const { start, end } = getWeekRange(new Date(), decalage);
     // En attente d'abord (c'est ce que l'admin valide en priorité), puis plus récentes
     const commandes = await Commande.find({ createdAt: { $gte: start, $lt: end } })
       .sort({ statut: 1, createdAt: -1 })

@@ -27,6 +27,15 @@ export default function CommanderPage() {
   const [choix, setChoix] = useState<Record<string, string[][][]>>({}); // menu -> instance -> composant -> variantes
   const [perso, setPerso] = useState<Record<string, boolean>>({}); // true : composer chaque menu séparément
 
+  // Jour de retrait par défaut : le jour même (fallback lundi le week-end)
+  useEffect(() => {
+    const aujourdhui = new Date().toLocaleDateString("fr-FR", { weekday: "long" });
+    const jour = aujourdhui.charAt(0).toUpperCase() + aujourdhui.slice(1);
+    if (["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"].includes(jour)) {
+      setForm((f) => ({ ...f, jour }));
+    }
+  }, []);
+
   useEffect(() => {
     fetch("/api/produits")
       .then((r) => r.json())

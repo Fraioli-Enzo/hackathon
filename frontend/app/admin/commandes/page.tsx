@@ -28,6 +28,13 @@ function commandeFiltrees(commandes: CommandeClient[], recherche: string, filtre
   });
 }
 
+// Jour de retrait par défaut : le jour même (fallback lundi le week-end)
+function jourRetraitParDefaut() {
+  const aujourdhui = new Date().toLocaleDateString("fr-FR", { weekday: "long" });
+  const jour = aujourdhui.charAt(0).toUpperCase() + aujourdhui.slice(1);
+  return ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"].includes(jour) ? jour : "Lundi";
+}
+
 export default function AdminCommandesPage() {
   const [commandes, setCommandes] = useState<CommandeClient[]>([]);
   const [semaine, setSemaine] = useState(0);
@@ -44,7 +51,7 @@ export default function AdminCommandesPage() {
   const minuteurErreur = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [produits, setProduits] = useState<ProduitClient[]>([]);
   const [qtes, setQtes] = useState<Record<string, number>>({});
-  const [formDirect, setFormDirect] = useState({ prenom: "", nom: "", batiment: "Orion", jour: "Lundi" });
+  const [formDirect, setFormDirect] = useState({ prenom: "", nom: "", batiment: "Orion", jour: jourRetraitParDefaut() });
   const [filtreDirect, setFiltreDirect] = useState("");
   const [rechercheDirect, setRechercheDirect] = useState("");
   const [triDirect, setTriDirect] = useState("nom-asc");
@@ -55,7 +62,7 @@ export default function AdminCommandesPage() {
     setFiltreDirect("");
     setRechercheDirect("");
     setTriDirect("nom-asc");
-    setFormDirect({ prenom: "", nom: "", batiment: "Orion", jour: "Lundi" });
+    setFormDirect({ prenom: "", nom: "", batiment: "Orion", jour: jourRetraitParDefaut() });
     const res = await fetch("/api/produits");
     const data = await res.json();
     if (res.ok) {
@@ -552,6 +559,7 @@ export default function AdminCommandesPage() {
                 <input
                   value={formDirect.prenom}
                   onChange={(e) => setFormDirect({ ...formDirect, prenom: e.target.value })}
+                  maxLength={50}
                   placeholder="Prénom"
                   className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
                   required
@@ -559,6 +567,7 @@ export default function AdminCommandesPage() {
                 <input
                   value={formDirect.nom}
                   onChange={(e) => setFormDirect({ ...formDirect, nom: e.target.value })}
+                  maxLength={50}
                   placeholder="Nom"
                   className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
                   required

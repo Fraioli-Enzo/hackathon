@@ -527,6 +527,7 @@ export default function CommanderPage() {
               <input
                 value={form.prenom}
                 onChange={(e) => setForm({ ...form, prenom: e.target.value })}
+                maxLength={50}
                 placeholder="Prénom"
                 className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
                 required
@@ -534,6 +535,7 @@ export default function CommanderPage() {
               <input
                 value={form.nom}
                 onChange={(e) => setForm({ ...form, nom: e.target.value })}
+                maxLength={50}
                 placeholder="Nom"
                 className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
                 required

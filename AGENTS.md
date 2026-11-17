@@ -1,5 +1,9 @@
 # Règles du projet - Cafet CESI
 
+## Mémoire
+
+- Lire `MEMOIRE.md` avant de modifier une page : il liste les pages miroir (ex. `/commander` et la commande admin) dont les modifications doivent être répercutées des deux côtés.
+
 ## Typographie
 
 - INTERDIT d'utiliser des tirets longs (U+2014, U+2013, U+2015) dans le code, les commentaires, les messages de commit et la documentation. Utiliser le tiret simple "-" ou reformuler avec ":".

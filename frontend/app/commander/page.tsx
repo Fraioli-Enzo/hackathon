@@ -27,6 +27,15 @@ export default function CommanderPage() {
   const [choix, setChoix] = useState<Record<string, string[][][]>>({}); // menu -> instance -> composant -> variantes
   const [perso, setPerso] = useState<Record<string, boolean>>({}); // true : composer chaque menu séparément
 
+  // Jour de retrait par défaut : le jour même (fallback lundi le week-end)
+  useEffect(() => {
+    const aujourdhui = new Date().toLocaleDateString("fr-FR", { weekday: "long" });
+    const jour = aujourdhui.charAt(0).toUpperCase() + aujourdhui.slice(1);
+    if (["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"].includes(jour)) {
+      setForm((f) => ({ ...f, jour }));
+    }
+  }, []);
+
   useEffect(() => {
     fetch("/api/produits")
       .then((r) => r.json())
@@ -527,6 +536,7 @@ export default function CommanderPage() {
               <input
                 value={form.prenom}
                 onChange={(e) => setForm({ ...form, prenom: e.target.value })}
+                maxLength={50}
                 placeholder="Prénom"
                 className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
                 required
@@ -534,6 +544,7 @@ export default function CommanderPage() {
               <input
                 value={form.nom}
                 onChange={(e) => setForm({ ...form, nom: e.target.value })}
+                maxLength={50}
                 placeholder="Nom"
                 className="w-full bg-surface border border-line rounded-lg px-3 py-2 focus:border-cesi-jaune focus:outline-none text-sm"
                 required

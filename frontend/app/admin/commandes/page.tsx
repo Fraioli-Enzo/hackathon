@@ -731,7 +731,7 @@ export default function AdminCommandesPage() {
               <div key={c._id} className="border border-line rounded-xl bg-card p-4 space-y-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-bold truncate">
+                    <p className="font-bold truncate" title={`${c.prenom} ${c.nom}`}>
                       {c.prenom} {c.nom}
                     </p>
                     <p className="text-xs text-muted mt-0.5">
@@ -800,7 +800,7 @@ export default function AdminCommandesPage() {
                 {filtrees.map((c) => (
                   <tr key={c._id} className="border-b border-line last:border-0 hover:bg-surface transition-colors">
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <p className="font-bold">{c.prenom} {c.nom}</p>
+                      <p className="font-bold truncate max-w-[10rem]" title={`${c.prenom} ${c.nom}`}>{c.prenom} {c.nom}</p>
                       <p className="text-xs text-muted mt-0.5">
                         {new Date(c.createdAt).toLocaleDateString("fr-FR")} · Bât. {c.batiment}
                       </p>

@@ -41,6 +41,10 @@ export default function AdminStockPage() {
   const produitsAffiches = produits
     .filter((p) => !filtre || p.categorie === filtre)
     .sort((a, b) => {
+      // Ruptures toujours en bas, comme sur le Dashboard
+      const ra = (a.stock ?? 0) === 0 ? 1 : 0;
+      const rb = (b.stock ?? 0) === 0 ? 1 : 0;
+      if (ra !== rb) return ra - rb;
       const va = tri.champ === "nom" ? a.nom : a[tri.champ] ?? 0;
       const vb = tri.champ === "nom" ? b.nom : b[tri.champ] ?? 0;
       return va < vb ? -tri.sens : va > vb ? tri.sens : 0;

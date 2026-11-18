@@ -1,6 +1,6 @@
 node_modules
 .next
-.git
+# .git est necessaire au build (stage builder) pour lire le tag de version ; il n'est pas copie dans l'image finale (runner)
 .env
 .env.local
 .env.*.local

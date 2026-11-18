@@ -12,7 +12,9 @@ export default function MiseAJour() {
   const [swEnAttente, setSwEnAttente] = useState<ServiceWorker | null>(null);
 
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production" || !("serviceWorker" in navigator)) return;
+    // En prod toujours actif ; en dev uniquement avec ?sw dans l'URL pour pouvoir tester
+    const actif = process.env.NODE_ENV === "production" || new URLSearchParams(window.location.search).has("sw");
+    if (!actif || !("serviceWorker" in navigator)) return;
 
     let reg: ServiceWorkerRegistration;
     navigator.serviceWorker.register("/sw.js").then((r) => {

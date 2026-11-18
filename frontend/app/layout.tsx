@@ -61,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Image src="/images/logos/logo-cesi-jaune.png" alt="CESI" width={200} height={200} className="logo-sombre w-24 h-24 sm:w-48 sm:h-48" />
               <Image src="/images/logos/logo-cesi-noir.png" alt="CESI" width={200} height={200} className="logo-clair w-24 h-24 sm:w-48 sm:h-48" />
             </Link>
+            <p className="text-[10px] text-muted text-center">v{process.env.APP_VERSION}</p>
           </div>
         </footer>
         <BoutonAgent />

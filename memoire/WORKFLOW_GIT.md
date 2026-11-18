@@ -39,9 +39,17 @@ git checkout prod
 git merge main
 git push origin prod
 
+# Taguer la release en SemVer (vX.Y.Z) sur prod, puis pousser le tag :
+# - patch (v1.0.1) : correction de bug
+# - mineur (v1.1.0) : nouvelle fonctionnalité
+# - majeur (v2.0.0) : changement cassant
+# Le numéro du tag est celui affiché dans le footer de l'app (APP_VERSION).
+git tag v1.1.0 prod
+git push origin v1.1.0
+
 git checkout dev
 ```
 
 ## En résumé
 
-`dev → push → merge dans main → push → merge dans prod → push → retour sur dev`
+`dev → push → merge dans main → push → merge dans prod → push → tag vX.Y.Z sur prod → push du tag → retour sur dev`

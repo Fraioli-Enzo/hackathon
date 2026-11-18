@@ -39,12 +39,18 @@ git checkout prod
 git merge main
 git push origin prod
 
-# Taguer la release en SemVer (vX.Y.Z) sur prod, puis pousser le tag :
+# Release SemVer (vX.Y.Z) :
 # - patch (v1.0.1) : correction de bug
-# - mineur (v1.1.0) : nouvelle fonctionnalité
+# - mineur (v1.1.0) : nouvelle fonctionnalite
 # - majeur (v2.0.0) : changement cassant
-# Le numéro du tag est celui affiché dans le footer de l'app (APP_VERSION).
+# 1. Ecrire le numero dans frontend/VERSION (c'est ce fichier, commite, qui est affiche
+#    dans le footer en prod : git/.git peut etre absent du build chez l'hebergeur) :
+echo "v1.1.0" > frontend/VERSION
+git add frontend/VERSION
+git commit -m "Release v1.1.0"
+# 2. Taguer la release sur prod, puis tout pousser :
 git tag v1.1.0 prod
+git push origin prod
 git push origin v1.1.0
 
 git checkout dev

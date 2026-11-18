@@ -1,4 +1,5 @@
 import { execSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 
 function git(cmd) {
   try {
@@ -8,11 +9,22 @@ function git(cmd) {
   }
 }
 
-// Version affichee dans le footer : dernier tag SemVer (vX.Y.Z) du repo, sinon hash du commit.
-// Les tags sont poses sur prod a chaque release (voir memoire/WORKFLOW_GIT.md).
+// Version affichee dans le footer. Source fiable : le fichier VERSION (commite, present partout,
+// meme quand git ou .git est absent au build, ex. hebergeur ou image alpine sans git).
+// Fallbacks : variable d'env APP_VERSION, puis tags git, puis hash du commit.
+function versionDepuisFichier() {
+  try {
+    return readFileSync(new URL("./VERSION", import.meta.url), "utf8").trim();
+  } catch {
+    return "";
+  }
+}
+
 const version =
-  git("git describe --tags --abbrev=0") || // tag pose sur un ancetre du commit (build depuis prod)
-  git("git tag --sort=-version:refname | head -1") || // dernier tag SemVer du repo
+  versionDepuisFichier() ||
+  process.env.APP_VERSION ||
+  git("git describe --tags --abbrev=0") ||
+  git("git tag --sort=-version:refname | head -1") ||
   git("git rev-parse --short HEAD") ||
   "dev";
 

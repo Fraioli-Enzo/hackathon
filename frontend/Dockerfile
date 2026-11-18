@@ -17,6 +17,8 @@ RUN npm ci
 # Build
 FROM node:20-alpine AS builder
 WORKDIR /app
+# git est necessaire au build pour lire le tag de version (APP_VERSION), .git est exclu de l'image finale
+RUN apk add --no-cache git
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1

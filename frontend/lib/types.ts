@@ -65,6 +65,31 @@ export type CommandeClient = {
   createdAt: string;
 };
 
+export type LigneStats = {
+  nom: string;
+  qte: number;
+  ca: number;
+  cout: number;
+  marge: number;
+};
+
+export type LigneVentes = {
+  nom: string;
+  seul: number;
+  enMenu: number;
+};
+
+export type Stats = {
+  debut: string;
+  fin: string;
+  nbCommandes: number;
+  ca: number;
+  cout: number;
+  benefice: number;
+  produits: LigneStats[];
+  ventes: LigneVentes[];
+};
+
 export type Recap = {
   debut: string;
   fin: string;

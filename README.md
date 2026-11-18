@@ -13,7 +13,7 @@ Next.js 14 (App Router) full-stack, Tailwind CSS (thème clair par défaut, basc
 
 ```
 hackathon/
-├── PLAN.md               # plan projet
+├── memoire/              # docs projet encore utiles (plan, fiche technique, règles de cohérence)
 ├── start.sh              # lancement en une commande
 ├── docker-compose.yml    # mongo + app
 └── frontend/             # application Next.js complète (front + API intégrée)

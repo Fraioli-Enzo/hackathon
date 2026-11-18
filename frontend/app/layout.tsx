@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import ThemeToggle from "@/components/ThemeToggle";
 import BoutonAgent from "@/components/BoutonAgent";
+import MiseAJour from "@/components/MiseAJour";
 import EasterEggDuong from "@/components/EasterEggDuong";
 import "./globals.css";
 
@@ -63,6 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </footer>
         <BoutonAgent />
+        <MiseAJour />
       </body>
     </html>
   );

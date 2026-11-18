@@ -2,7 +2,7 @@
 
 ## Mémoire
 
-- Lire `MEMOIRE.md` avant de modifier une page : il liste les pages miroir (ex. `/commander` et la commande admin) dont les modifications doivent être répercutées des deux côtés.
+- Avant toute modification, regarder le dossier `memoire/` : il contient toute la documentation encore utile du projet (règles de cohérence entre pages, fiche technique, plan). `memoire/MEMOIRE.md` liste notamment les pages miroir (ex. `/commander` et la commande admin) dont les modifications doivent être répercutées des deux côtés.
 
 ## Typographie
 

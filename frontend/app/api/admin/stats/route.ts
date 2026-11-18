@@ -35,28 +35,35 @@ export async function GET(req: NextRequest) {
     for (const commande of commandes) {
       ca += commande.total;
       for (const item of commande.items) {
-        // Coût depuis les variantes si tous les produits existent encore,
-        // sinon (produits supprimés / anciennes commandes) depuis la composition dans le nom
-        let coutUnitaire = coutComposition(item.nom);
-        if (item.variantes?.length && item.variantes.every((v) => noms.has(String(v.produitId)))) {
-          coutUnitaire = item.variantes.reduce((s, v) => s + coutAchat(noms.get(String(v.produitId))!) * v.qte, 0);
-        }
-        cout += coutUnitaire * item.qte;
+        // Les variantes stockent déjà le total consommé pour la ligne (qte menus incluse)
+        const resolvables = Boolean(item.variantes?.length) && item.variantes!.every((v) => noms.has(String(v.produitId)));
+        const elements = elementsComposition(item.nom);
+        const estMenu = Boolean(item.variantes?.length) || elements.length > 0;
+
+        // Composition du nom : par menu (ancien format) ou totale (un choix par instance).
+        // Les quantités des variantes servent à distinguer les deux.
+        const nomSum = elements.reduce((s, e) => s + e.qte, 0);
+        const varSum = item.variantes?.reduce((s, v) => s + v.qte, 0) ?? 0;
+        const facteurNom = item.variantes?.length ? (varSum === nomSum ? 1 : item.qte) : item.qte;
+
+        const coutLigne = resolvables
+          ? item.variantes!.reduce((s, v) => s + coutAchat(noms.get(String(v.produitId))!) * v.qte, 0)
+          : coutComposition(item.nom) * facteurNom;
+        cout += coutLigne;
 
         const ligne = parProduit.get(item.nom) ?? { nom: item.nom, qte: 0, ca: 0, cout: 0 };
         ligne.qte += item.qte;
         ligne.ca += item.prix * item.qte;
-        ligne.cout += coutUnitaire * item.qte;
+        ligne.cout += coutLigne;
         parProduit.set(item.nom, ligne);
 
         // Ventes en menu ou seul, pour les produits de base
-        const estMenu = item.variantes?.length || elementsComposition(item.nom).length;
         if (!estMenu) {
           compterVente(item.nom, item.qte, false);
-        } else if (item.variantes?.length && item.variantes.every((v) => noms.has(String(v.produitId)))) {
-          for (const v of item.variantes) compterVente(noms.get(String(v.produitId))!, v.qte * item.qte, true);
+        } else if (resolvables) {
+          for (const v of item.variantes!) compterVente(noms.get(String(v.produitId))!, v.qte, true);
         } else {
-          for (const el of elementsComposition(item.nom)) compterVente(el.nom, el.qte * item.qte, true);
+          for (const el of elements) compterVente(el.nom, el.qte * facteurNom, true);
         }
       }
     }

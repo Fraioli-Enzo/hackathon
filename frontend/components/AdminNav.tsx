@@ -13,6 +13,7 @@ import {
   phUsersBold,
   phListBold,
   phXBold,
+  phChartBarBold,
 } from "@/lib/icons";
 
 addIcon("ph:squares-four-bold", phSquaresFourBold);
@@ -23,9 +24,11 @@ addIcon("ph:sign-out-bold", phSignOutBold);
 addIcon("ph:users-bold", phUsersBold);
 addIcon("ph:list-bold", phListBold);
 addIcon("ph:x-bold", phXBold);
+addIcon("ph:chart-bar-bold", phChartBarBold);
 
 const LIENS = [
   { href: "/admin", label: "Dashboard", icone: "ph:squares-four-bold" },
+  { href: "/admin/statistiques", label: "Stats", icone: "ph:chart-bar-bold" },
   { href: "/admin/produits", label: "Produits", icone: "ph:fork-knife-bold" },
   { href: "/admin/stock", label: "Stock", icone: "ph:package-bold" },
   { href: "/admin/commandes", label: "Commandes", icone: "ph:receipt-bold" },

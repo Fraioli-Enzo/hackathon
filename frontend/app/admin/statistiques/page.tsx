@@ -78,7 +78,7 @@ export default function AdminStatistiques() {
             {stats.produits.map((p) => (
               <div key={p.nom} className="mb-3 rounded-xl border border-line bg-card p-4">
                 <div className="flex items-start justify-between gap-3">
-                  <p className="font-semibold leading-snug">{p.nom}</p>
+                  <p className="font-semibold leading-snug min-w-0 truncate" title={p.nom}>{p.nom}</p>
                   <p className={`shrink-0 text-lg font-black ${p.marge >= 0 ? "text-green-600" : "text-red-500"}`}>
                     {p.marge.toFixed(2)} €
                   </p>
@@ -105,7 +105,7 @@ export default function AdminStatistiques() {
               <tbody>
                 {stats.produits.map((p) => (
                   <tr key={p.nom} className="border-b border-line last:border-0">
-                    <td className="px-4 py-3 font-semibold">{p.nom}</td>
+                    <td className="px-4 py-3 font-semibold max-w-[18rem] truncate" title={p.nom}>{p.nom}</td>
                     <td className="px-4 py-3 text-right">{p.qte}</td>
                     <td className="px-4 py-3 text-right">{p.ca.toFixed(2)} €</td>
                     <td className="px-4 py-3 text-right">{p.cout.toFixed(2)} €</td>
@@ -134,7 +134,7 @@ export default function AdminStatistiques() {
               return (
                 <div key={v.nom} className="mb-3 rounded-xl border border-line bg-card p-4">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="font-semibold">{v.nom}</p>
+                    <p className="font-semibold min-w-0 truncate" title={v.nom}>{v.nom}</p>
                     <p className="shrink-0 font-bold">{total}</p>
                   </div>
                   <div className="mt-2 h-1.5 rounded-full bg-line overflow-hidden" aria-hidden="true">
@@ -168,8 +168,8 @@ export default function AdminStatistiques() {
                   const partMenu = total ? (v.enMenu / total) * 100 : 0;
                   return (
                     <tr key={v.nom} className="border-b border-line last:border-0">
-                      <td className="px-4 py-3">
-                        <p className="font-semibold">{v.nom}</p>
+                      <td className="px-4 py-3 max-w-[18rem]">
+                        <p className="font-semibold truncate" title={v.nom}>{v.nom}</p>
                         <div className="mt-1.5 h-1.5 w-28 rounded-full bg-line overflow-hidden" aria-hidden="true">
                           <div className="h-full bg-cesi-jaune" style={{ width: `${partMenu}%` }} />
                         </div>

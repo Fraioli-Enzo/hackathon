@@ -137,14 +137,14 @@ function decrireProduit(p: ProduitDB) {
   };
 }
 
-async function listerProduits(args: { categorie?: string }) {
+export async function listerProduits(args: { categorie?: string }) {
   await connectDB();
   const query = args.categorie ? { actif: true, categorie: args.categorie } : { actif: true };
   const produits = (await Produit.find(query).sort({ nom: 1 }).lean()) as unknown as ProduitDB[];
   return { produits: produits.map(decrireProduit) };
 }
 
-async function detailProduit(args: { produitId: string }) {
+export async function detailProduit(args: { produitId: string }) {
   await connectDB();
   const produit = (await Produit.findById(args.produitId).lean()) as unknown as ProduitDB | null;
   if (!produit || produit.actif === false) return { erreur: "Produit introuvable ou plus disponible." };

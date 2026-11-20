@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { Admin } from "@/lib/models/Admin";
 import { getAdminEmail } from "@/lib/auth";
+import { emailAdminPrincipal } from "@/lib/env";
 
 type Params = { params: { id: string } };
 
@@ -16,8 +17,8 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     if (!cible) {
       return NextResponse.json({ error: "Compte introuvable." }, { status: 404 });
     }
-    const principal = (process.env.ADMIN_EMAIL || "admin@cesi.fr").toLowerCase();
-    if (cible.email === principal) {
+    const principal = emailAdminPrincipal();
+    if (principal && cible.email === principal) {
       return NextResponse.json({ error: "Le compte admin principal ne peut pas être supprimé." }, { status: 403 });
     }
     if (cible.email === admin) {

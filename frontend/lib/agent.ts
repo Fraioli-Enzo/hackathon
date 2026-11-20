@@ -144,21 +144,62 @@ export async function listerProduits(args: { categorie?: string }) {
   return { produits: produits.map(decrireProduit) };
 }
 
+// Options disponibles pour les composants de menu à choix (ex. les types de nems)
+async function variantesPourCategories(categories: string[]) {
+  if (!categories.length) return [];
+  const variantes = (await Produit.find({ actif: true, categorie: { $in: categories } })
+    .sort({ nom: 1 })
+    .lean()) as unknown as ProduitDB[];
+  return variantes.map((v) => decrireProduit(v));
+}
+
 export async function detailProduit(args: { produitId: string }) {
   await connectDB();
   const produit = (await Produit.findById(args.produitId).lean()) as unknown as ProduitDB | null;
   if (!produit || produit.actif === false) return { erreur: "Produit introuvable ou plus disponible." };
 
   const base = decrireProduit(produit);
-  // Options disponibles pour chaque composant de menu à choix (ex. les types de nems)
   if (produit.composition?.length) {
     const categories = Array.from(new Set(produit.composition.map((c) => c.categorie).filter((c): c is string => Boolean(c))));
-    const variantes = (await Produit.find({ actif: true, categorie: { $in: categories } })
-      .sort({ nom: 1 })
-      .lean()) as unknown as ProduitDB[];
-    return { produit: base, options: variantes.map((v) => decrireProduit(v)) };
+    return { produit: base, options: await variantesPourCategories(categories) };
   }
   return { produit: base };
+}
+
+// Version batch de detail_produit : un seul appel pour plusieurs produits.
+// ponytail: les ids invalides (mauvais format ObjectId) sont écartés un par un
+// au lieu de faire échouer tout le batch (CastError mongoose).
+export async function detailProduits(args: { produitIds: string[] }) {
+  await connectDB();
+  const demandes = args.produitIds.filter((id) => typeof id === "string").slice(0, 20);
+  const idsValides = demandes.filter((id) => /^[0-9a-fA-F]{24}$/.test(id));
+  if (!idsValides.length) return { erreur: "Aucun id de produit valide fourni (ObjectId 24 caractères hex)." };
+
+  const produits = (await Produit.find({ _id: { $in: idsValides } }).lean()) as unknown as ProduitDB[];
+  const parId = new Map(produits.map((p) => [String(p._id), p]));
+
+  // Une seule requête pour toutes les variantes de tous les menus demandés
+  const categories = new Set<string>();
+  for (const p of produits) for (const c of p.composition ?? []) if (c.categorie) categories.add(c.categorie);
+  const variantes = await variantesPourCategories(Array.from(categories));
+  const parCategorie = new Map<string, ReturnType<typeof decrireProduit>[]>();
+  for (const v of variantes) {
+    const arr = parCategorie.get(v.categorie!) ?? [];
+    arr.push(v);
+    parCategorie.set(v.categorie!, arr);
+  }
+
+  return {
+    produits: demandes.map((id) => {
+      if (!/^[0-9a-fA-F]{24}$/.test(id)) return { id, erreur: "Id invalide (ObjectId 24 caractères hex attendu)." };
+      const p = parId.get(id);
+      if (!p || p.actif === false) return { id, erreur: "Produit introuvable ou plus disponible." };
+      const base = decrireProduit(p);
+      if (!p.composition?.length) return { id, produit: base };
+      const options = p.composition.flatMap((c) => (c.categorie ? (parCategorie.get(c.categorie) ?? []) : []));
+      return { id, produit: base, options };
+    }),
+  };
 }
 
 async function creerCommande(args: Record<string, unknown>, origin: string) {

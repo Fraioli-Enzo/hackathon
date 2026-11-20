@@ -4,6 +4,7 @@
 // ponytail: pas d'écran de consentement, /authorize auto-approuve si session admin valide (usage perso).
 // ponytail: pas de refresh token, on n'annonce que authorization_code -> le client re-autorise à l'expiration.
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { envRequise } from "./env";
 
 export const SCOPES = ["mcp:read"] as const;
 export const DUREE_CODE_MS = 60_000; // un code d'autorisation vit 60 s
@@ -43,7 +44,7 @@ export function resourceMcp(): string {
 }
 
 function getSecret() {
-  return process.env.SESSION_SECRET || "cafet-dev-secret-a-changer";
+  return envRequise("SESSION_SECRET");
 }
 
 function b64url(buf: Buffer | string): string {
@@ -61,7 +62,7 @@ function signer(payload: object): string {
 
 function verifier<T>(token: string): T | null {
   const [body, sig] = token.split(".");
-  if (!body || !sig) return null;
+  if (!body || !sig || !process.env.SESSION_SECRET) return null;
   const attendu = Buffer.from(hmac(body));
   const recu = Buffer.from(sig);
   if (attendu.length !== recu.length || !timingSafeEqual(attendu, recu)) return null;

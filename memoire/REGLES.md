@@ -2,6 +2,10 @@
 
 Toutes les règles à respecter sont dans ce dossier `memoire/`. Lire `memoire/` avant toute modification.
 
+## Secrets
+
+- Aucun secret ou identifiant en dur dans le code, les scripts ou docker-compose. Les variables critiques (`MONGODB_URI`, `SESSION_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `MCP_API_TOKEN`, `MISTRAL_API_KEY`) viennent exclusivement de `.env.local` (jamais commité) ou de l'environnement. Si l'une manque, le code échoue (fail closed) via `envRequise()` (`frontend/lib/env.ts`) : jamais de valeur de repli.
+
 ## Typographie
 
 - INTERDIT d'utiliser des tirets longs (U+2014, U+2013, U+2015) dans le code, les commentaires, les messages de commit et la documentation. Utiliser le tiret simple "-" ou reformuler avec ":".

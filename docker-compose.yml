@@ -24,8 +24,8 @@ services:
       - /app/node_modules
       - /app/.next
     environment:
-      MONGODB_URI: mongodb://mongo:27017/cafet
-      SESSION_SECRET: ${SESSION_SECRET:-cafet-secret-a-changer-en-prod}
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017/cafet}
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET obligatoire dans l'environnement}
     depends_on:
       - mongo
 

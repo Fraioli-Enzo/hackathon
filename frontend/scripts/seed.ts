@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import { Admin } from "../lib/models/Admin";
 import { Produit } from "../lib/models/Produit";
+import { envRequise } from "../lib/env";
 
 // Catalogue du stand cafet. Les menus (categorie "Menus") ne sont pas
 // soumis à la gestion de stock : le stock suit les produits de base.
@@ -50,12 +51,11 @@ const PRODUITS_INITIAUX = [
 ];
 
 async function main() {
-  const uri = process.env.MONGODB_URI || "mongodb://localhost:27017/cafet";
-  await mongoose.connect(uri);
-  console.log(`Connecté à MongoDB (${uri})`);
+  await mongoose.connect(envRequise("MONGODB_URI"));
+  console.log("Connecté à MongoDB.");
 
-  const email = (process.env.ADMIN_EMAIL || "admin@cesi.fr").toLowerCase();
-  const password = process.env.ADMIN_PASSWORD || "cafet2026";
+  const email = envRequise("ADMIN_EMAIL").toLowerCase();
+  const password = envRequise("ADMIN_PASSWORD");
   const passwordHash = await bcrypt.hash(password, 10);
   await Admin.findOneAndUpdate({ email }, { email, passwordHash }, { upsert: true });
   console.log(`Admin prêt : ${email}`);

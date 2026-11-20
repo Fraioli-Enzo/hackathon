@@ -13,10 +13,10 @@ services:
     ports:
       - "127.0.0.1:3000:3000"
     environment:
-      MONGODB_URI: ${MONGODB_URI}
-      SESSION_SECRET: ${SESSION_SECRET}
-      ADMIN_EMAIL: ${ADMIN_EMAIL}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      MONGODB_URI: ${MONGODB_URI:?MONGODB_URI obligatoire dans l'environnement}
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET obligatoire dans l'environnement}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?ADMIN_EMAIL obligatoire dans l'environnement}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD obligatoire dans l'environnement}
     healthcheck:
       # Le runner est en alpine : wget (busybox) est present
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/"]

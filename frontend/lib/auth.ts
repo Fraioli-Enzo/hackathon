@@ -1,4 +1,5 @@
 // Sessions admin : cookie signé HMAC-SHA256 (compatible edge middleware via Web Crypto).
+import { envRequise } from "./env";
 
 export const SESSION_COOKIE = "cafet_admin";
 const DUREE_SESSION_MS = 7 * 24 * 3600 * 1000; // 7 jours
@@ -6,7 +7,7 @@ const DUREE_SESSION_MS = 7 * 24 * 3600 * 1000; // 7 jours
 const encoder = new TextEncoder();
 
 function getSecret() {
-  return encoder.encode(process.env.SESSION_SECRET || "cafet-dev-secret-a-changer");
+  return encoder.encode(envRequise("SESSION_SECRET"));
 }
 
 async function hmac(data: string): Promise<string> {
@@ -33,7 +34,7 @@ export async function createSessionToken(email: string): Promise<string> {
 }
 
 export async function verifySessionToken(token?: string | null): Promise<string | null> {
-  if (!token) return null;
+  if (!token || !process.env.SESSION_SECRET) return null;
   const [payload, sig] = token.split(".");
   if (!payload || !sig) return null;
   if ((await hmac(payload)) !== sig) return null;

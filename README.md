@@ -45,11 +45,13 @@ MONGODB_URI=mongodb://localhost:27017/cafet
 SESSION_SECRET=<secret aléatoire>
 MISTRAL_API_KEY=<clé Mistral pour l'assistant IA (/assistant)>
 MISTRAL_MODELE=mistral-large-4
+MCP_API_TOKEN=<token aléatoire pour /api/mcp>
+PUBLIC_BASE_URL=http://localhost:3000
 ADMIN_EMAIL=admin@cesi.fr
-ADMIN_PASSWORD=cafet2026
+ADMIN_PASSWORD=<généré aléatoirement par setup.sh>
 ```
 
-Admin par défaut après seed : `admin@cesi.fr` / `cafet2026` (à changer pour la prod).
+`setup.sh` génère `SESSION_SECRET` et `ADMIN_PASSWORD` aléatoirement (affichés une fois au premier lancement, stockés dans `.env.local`). En prod, toutes ces variables sont injectées par l'environnement (Coolify) : aucune valeur par défaut n'existe dans le code, l'app refuse de démarrer si une variable critique manque.
 
 ## Docker (tout conteneurisé)
 

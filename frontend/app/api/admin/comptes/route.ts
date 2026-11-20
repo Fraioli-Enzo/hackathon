@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db";
 import { Admin } from "@/lib/models/Admin";
 import { getAdminEmail } from "@/lib/auth";
+import { emailAdminPrincipal } from "@/lib/env";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest) {
     const admins = await Admin.find({}).select("email").lean();
     return NextResponse.json({
       admins,
-      principal: (process.env.ADMIN_EMAIL || "admin@cesi.fr").toLowerCase(),
+      principal: emailAdminPrincipal(),
     });
   } catch (e) {
     console.error("GET /api/admin/comptes", e);

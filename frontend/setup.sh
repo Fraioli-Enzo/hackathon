@@ -38,14 +38,19 @@ npm install
 # 3. .env.local (sans écraser une config existante)
 if [ ! -f .env.local ]; then
   echo ">> Création de .env.local…"
-  SECRET=$(openssl rand -hex 32 2>/dev/null || echo "cafet-secret-dev")
+  if ! command -v openssl >/dev/null 2>&1; then
+    echo "Erreur : openssl est requis pour générer les secrets (aucune valeur par défaut)." >&2
+    exit 1
+  fi
+  SECRET=$(openssl rand -hex 32)
+  ADMIN_PWD=$(openssl rand -hex 16)
   cat > .env.local <<EOF
 MONGODB_URI=mongodb://localhost:27017/cafet
 SESSION_SECRET=$SECRET
 ADMIN_EMAIL=admin@cesi.fr
-ADMIN_PASSWORD=cafet2026
+ADMIN_PASSWORD=$ADMIN_PWD
 EOF
-  echo ">> .env.local créé (admin : admin@cesi.fr / cafet2026 - à changer)."
+  echo ">> .env.local créé (admin : admin@cesi.fr / $ADMIN_PWD)."
 else
   echo ">> .env.local existant, conservé."
 fi

@@ -31,6 +31,16 @@ const version =
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: { APP_VERSION: version },
+  async rewrites() {
+    // RFC 9728 / 8414 : les clients OAuth sondent /.well-known/* à la racine du domaine.
+    // Les routes vivent sous /api/.well-known/*, on les expose aussi à la racine.
+    return [
+      { source: "/.well-known/oauth-protected-resource", destination: "/api/.well-known/oauth-protected-resource" },
+      { source: "/.well-known/oauth-protected-resource/:path*", destination: "/api/.well-known/oauth-protected-resource" },
+      { source: "/.well-known/oauth-authorization-server", destination: "/api/.well-known/oauth-authorization-server" },
+      { source: "/.well-known/oauth-authorization-server/:path*", destination: "/api/.well-known/oauth-authorization-server" },
+    ];
+  },
 };
 
 export default nextConfig;

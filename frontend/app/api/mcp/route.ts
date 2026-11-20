@@ -1,17 +1,23 @@
 // Route MCP HTTP (streamable) : expose creerServeurMcp() sur POST /api/mcp.
-// Protégée par token partagé : Authorization: Bearer <MCP_API_TOKEN> (.env.local).
-// Fail closed : si MCP_API_TOKEN n'est pas défini, on refuse tout (401).
+// Deux auth acceptées : token partagé statique (Bearer <MCP_API_TOKEN>, clients locaux)
+// OU access token OAuth émis par /api/oauth/token (connecteurs type ChatGPT).
+// Fail closed : sans aucun bearer valide, on refuse tout (401 + WWW-Authenticate RFC 9728).
 import { timingSafeEqual } from "node:crypto";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { creerServeurMcp } from "@/scripts/mcp-server";
+import { baseUrl, verifierAccessToken } from "@/lib/oauth";
 
-function autorise(req: Request): boolean {
+function tokenStatiqueValide(recu: string): boolean {
   const attendu = process.env.MCP_API_TOKEN;
-  if (!attendu) return false;
-  const recu = req.headers.get("authorization")?.replace(/^Bearer /i, "") ?? "";
+  if (!attendu || !recu) return false;
   const a = Buffer.from(recu);
   const b = Buffer.from(attendu);
   return a.length === b.length && timingSafeEqual(a, b);
+}
+
+function autorise(req: Request): boolean {
+  const recu = req.headers.get("authorization")?.replace(/^Bearer /i, "") ?? "";
+  return tokenStatiqueValide(recu) || verifierAccessToken(recu) !== null;
 }
 
 // Mode stateless : chaque requête HTTP est indépendante, pas de session à gérer.
@@ -19,7 +25,11 @@ export async function POST(req: Request) {
   if (!autorise(req)) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        // RFC 9728 : le client découvre ainsi les métadonnées OAuth de la ressource.
+        "WWW-Authenticate": `Bearer resource_metadata="${baseUrl()}/.well-known/oauth-protected-resource"`,
+      },
     });
   }
   const server = creerServeurMcp();

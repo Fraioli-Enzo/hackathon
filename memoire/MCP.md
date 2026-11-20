@@ -1,6 +1,6 @@
 # Serveur MCP de la cafet, exposé en HTTP (mémo)
 
-Objectif : exposer les outils `lister_produits` / `detail_produit` en HTTP pour pouvoir brancher un connecteur personnalisé dans Vibe ("Add custom connector" demande une URL). Le serveur stdio existant (`npm run mcp`) reste dispo pour les clients locaux.
+Objectif : exposer les outils du catalogue (`lister_produits`, `detail_produit(s)`) et les outils admin (`commandes_semaine`, `stats_semaine`, `stats_semaines`, `stocks`) en HTTP pour pouvoir brancher un connecteur personnalisé dans Vibe ("Add custom connector" demande une URL). Le serveur stdio existant (`npm run mcp`) reste dispo pour les clients locaux. Tous les tools sont en lecture seule ; l'accès HTTP reste protégé par `MCP_API_TOKEN`.
 
 ## Architecture
 
@@ -8,8 +8,10 @@ Objectif : exposer les outils `lister_produits` / `detail_produit` en HTTP pour 
 flowchart LR
   vibe["Vibe (connecteur custom, URL HTTP)"] -->|"POST /api/mcp"| route["app/api/mcp/route.ts"]
   route --> factory["scripts/mcp-server.ts : creerServeurMcp()"]
-  factory --> agent["lib/agent.ts : listerProduits / detailProduit"]
+  factory --> agent["lib/agent.ts : listerProduits / detailProduit(s)"]
+  factory --> stats["lib/stats.ts : statsSemaine / statsSemaines / commandesSemaine / stocksRestants"]
   agent --> mongo[("MongoDB")]
+  stats --> mongo
   stdio["Client MCP local (stdio)"] -->|"npm run mcp"| script["scripts/mcp-server.ts (main guardé)"]
   script --> factory
 ```
@@ -18,49 +20,24 @@ Un seul fichier serveur : `creerServeurMcp()` est exportée et le lancement stdi
 
 ## Fichiers
 
-### 1. `frontend/scripts/mcp-server.ts` (modifié : factory exportée + lanceur stdio)
+### 1. `frontend/scripts/mcp-server.ts` (factory exportée + lanceur stdio)
 
-```ts
-// Serveur MCP : expose les produits de la cafet à un client MCP.
-// - lancé tel quel (npm run mcp) : transport stdio
-// - importé par app/api/mcp/route.ts : transport HTTP (le main() ne tourne pas)
-import { config } from "dotenv";
-config({ path: ".env.local" }); // inoffensif côté Next (ne remplace pas les vars existantes)
+`creerServeurMcp()` enregistre tous les tools (tous en lecture seule, `readOnlyHint: true`) et retourne le serveur ; le lancement stdio est guardé (ne tourne que si le fichier est exécuté directement, pas importé par Next).
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { z } from "zod";
-import { listerProduits, detailProduit } from "../lib/agent";
+Tools exposés (v1.1.0) :
 
-export function creerServeurMcp() {
-  const server = new McpServer({ name: "cafet-produits", version: "1.0.0" });
-  const reponse = (data: unknown) => ({
-    content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],
-  });
+| Tool | Params | Rôle |
+|---|---|---|
+| `lister_produits` | `categorie?` | Catalogue actif (id, nom, prix, stock, catégorie) |
+| `detail_produit` | `produitId` | Détail d'un produit (composition, options de menu) |
+| `detail_produits` | `produitIds[]` (max 20) | **Batch** : détail de plusieurs produits en un seul appel ; une seule requête pour toutes les variantes de menu |
+| `commandes_semaine` | `semaine?`, `statut?`, `jour?`, `limite?` | Commandes d'une semaine cafet, filtres + pagination (`hasMore`) |
+| `stats_semaine` | `semaine?` | CA, coût, **bénéfice**, nb commandes, par jour de retrait, marge par produit, ventes seul vs menu |
+| `stats_semaines` | `nbSemaines?` (défaut 8, max 26) | Évolution CA/coût/bénéfice **semaine par semaine** + `vsPrecedente` (évolution en % vs semaine précédente), prête pour un graphique |
+| `top_clients` | `semaine?`, `limite?` | Top clients par total dépensé (regroupement insensible à la casse) ; sans `semaine` = depuis toujours |
+| `stocks` | `seuil?` | Stocks restants hors menus, triés croissant ; `seuil` = alerte rupture |
 
-  server.tool(
-    "lister_produits",
-    "Liste les produits actifs de la cafet avec id, nom, prix, stock et catégorie. Un stock de 0 veut dire rupture ; les menus n'ont pas de stock.",
-    { categorie: z.string().optional().describe("Filtre optionnel : Banh Bao, Nems, Samoussa, Mochis, Desserts, Menus.") },
-    async ({ categorie }) => reponse(await listerProduits({ categorie }))
-  );
-
-  server.tool(
-    "detail_produit",
-    "Détail d'un produit par son id : prix, stock, description, composition et options disponibles si menu.",
-    { produitId: z.string().describe("L'id du produit.") },
-    async ({ produitId }) => reponse(await detailProduit({ produitId }))
-  );
-
-  return server;
-}
-
-// Lance le transport stdio uniquement si exécuté directement (tsx scripts/mcp-server.ts),
-// pas quand Next importe ce fichier pour la route HTTP.
-if (process.argv[1]?.endsWith("mcp-server.ts")) {
-  creerServeurMcp().connect(new StdioServerTransport());
-}
-```
+Les requêtes admin (stats, commandes, stocks) vivent dans `frontend/lib/stats.ts`, **partagé avec la route `/api/admin/stats`** (qui n'est plus qu'un wrapper auth) : une seule source de vérité pour le calcul du bénéfice (`lib/couts.ts`). `detailProduits` est dans `lib/agent.ts` à côté de `detailProduit`.
 
 ### 2. `frontend/app/api/mcp/route.ts` (nouveau : exposition HTTP pour Vibe, protégée par token)
 
